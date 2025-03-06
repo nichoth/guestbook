@@ -7,6 +7,14 @@
     }
 }
 
+h1 {
+    border-bottom: 2px solid;
+}
+
+h1, h2, p {
+    margin-bottom: 1rem;
+}
+
 button {
     cursor: pointer;
 
@@ -16,6 +24,9 @@ button {
 }
 
 body {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    margin: 1rem;
+
     & div {
         margin-bottom: 1rem;
     }

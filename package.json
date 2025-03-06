@@ -16,9 +16,11 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@substrate-system/routes": "^5.0.0",
     "@nichoth/components": "^0.16.16",
     "@preact/signals": "^2.0.0",
+    "@substrate-system/css-normalize": "^0.0.7",
+    "@substrate-system/routes": "^5.0.0",
+    "fauna": "^2.5.0",
     "htm": "^3.1.1",
     "ky": "^1.7.4",
     "preact": "^10.25.4",
@@ -26,10 +28,10 @@
     "stylelint": "^16.13.0"
   },
   "devDependencies": {
-    "@substrate-system/debug": "^0.7.18",
-    "@substrate-system/tapzero": "^0.10.13",
     "@netlify/functions": "^3.0.0",
     "@preact/preset-vite": "^2.9.4",
+    "@substrate-system/debug": "^0.7.18",
+    "@substrate-system/tapzero": "^0.10.13",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.8.1",
     "auto-changelog": "^2.4.0",
