@@ -39,9 +39,10 @@ export function State ():{
 }
 
 State.add = async function (state:ReturnType<typeof State>, data:{
-    username,
-    email,
-    body
+    username;
+    email;
+    bluesky;
+    body;
 }) {
     debug('adding things', state, data)
     ky.post('/api/guestbook', {

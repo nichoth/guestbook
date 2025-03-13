@@ -17,8 +17,9 @@ export const HomeRoute:FunctionComponent<{
         const body = els['text'].value
         const username = els['username'].value
         const email = els['email'].value
+        const bluesky = els['bluesky'].value
         debug('requesting...', body)
-        await State.add(state, { body, username, email })
+        await State.add(state, { body, username, email, bluesky })
         debug('all done')
     }, [])
 

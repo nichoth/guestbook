@@ -29,9 +29,10 @@ export const handler:Handler = async function handler (
     // parse the incoming request
     if (!ev.body) return { statusCode: 400 }
     const data:{
-        username:string,
-        body:string,
-        email:string
+        username:string;
+        body:string;
+        email:string;
+        bluesky:string;
     } = JSON.parse(ev.body)
 
     console.log('parsed request...', data)
@@ -84,13 +85,14 @@ export const handler:Handler = async function handler (
     // add the content in the new branch
     // create a new file, or update existing file
     const createRequest = (`PUT /repos/${REPO_OWNER}/${REPO_NAME}/contents/` +
-        'data/testing.md')
+        `data/${gitName}.md`)
 
     await octokit.request(createRequest, {
+        branch: gitName,
         owner: REPO_OWNER,
         repo: REPO_NAME,
-        path: 'data/testing.md',
-        message: 'my commit message',
+        path: `data/${gitName}.md`,
+        message: 'Update from the website',
         committer: {
             name: 'netlify script',
             email: 'innovatebellingham@proton.me'
@@ -109,13 +111,17 @@ export const handler:Handler = async function handler (
     }
 }
 
-function getFileContent (data:{ username, email, body }) {
-    const { username, email, body } = data
+function getFileContent (data:{ username, email, body, bluesky }) {
+    const { username, email, body, bluesky } = data
 
-    return `# ${username}
+    return '' +
+`## ${username}
 
-## email
+### email
 ${email}
+
+### bluesky
+${bluesky}
 
 -------
 
