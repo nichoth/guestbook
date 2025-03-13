@@ -18,7 +18,6 @@
   "dependencies": {
     "@bicycle-codes/one-webcrypto": "^1.1.2",
     "@nichoth/components": "^0.16.16",
-    "@nichoth/zx": "^8.4.1",
     "@octokit/core": "^6.1.4",
     "@preact/signals": "^2.0.0",
     "@substrate-system/css-normalize": "^0.0.7",

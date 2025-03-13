@@ -3,20 +3,11 @@ import type {
     HandlerEvent,
 } from '@netlify/functions'
 import { Octokit } from '@octokit/core'
-// import { spawn } from 'node:child_process'
-import { writeFile } from 'node:fs/promises'
-// import { writeFileSync } from 'node:fs'
-
-// writeFileSync('./package.json', JSON.stringify({ version: '0.0.0' }))
-
-// eslint-disable-next-line
-// import { $ } from 'zx'
+import { REPO_NAME, REPO_OWNER } from '../constants.js'
 
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
-    // ctx:HandlerContext
 ) {
-    console.log('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
     if (ev.httpMethod !== 'GET' && ev.httpMethod !== 'POST') {
         return { statusCode: 405 }
     }
@@ -29,8 +20,6 @@ export const handler:Handler = async function handler (
             body: JSON.stringify({ hello: 'hello' })
         }
     }
-
-    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
     /**
      * method is POST
@@ -47,7 +36,7 @@ export const handler:Handler = async function handler (
 
     console.log('parsed request...', data)
 
-    const { username, body, email } = data
+    const { username, body } = data
     if (username.length > 100) {
         return { statusCode: 413 }
     }
@@ -61,20 +50,6 @@ export const handler:Handler = async function handler (
     if (!gitName) {
         return { statusCode: 401 }
     }
-
-    // we are assuming the git repo is setup already
-
-    // update local repo
-    await writeFile(`./data/${gitName}.md`, `# ${username}
-
-## email
-${email}
-
--------
-
-${body}
-`
-    )
 
     // const child = spawn('git config user.email "innovatebellingham.proton.me"')
     // const childPromise = new Promise((resolve, reject) => {
@@ -116,38 +91,69 @@ ${body}
         auth: process.env.GH_KEY
     })
 
-    await octokit.request('PUT /repos/nichoth/bellingham-guestbook/contents/data/testing.md', {
-        owner: 'nichoth',
-        repo: 'bellingham-guestbook',
-        path: 'data/testing.md',
-        message: 'my commit message',
-        committer: {
-            name: 'Monalisa Octocat',
-            email: 'octocat@github.com'
-        },
-        content: 'bXkgbmV3IGZpbGUgY29udGVudHM=',
+    const get = `GET /repos/${REPO_OWNER}/${REPO_NAME}/git/ref/heads/main`
+    console.log('getting things...', get)
+
+    // get the sha for main
+    const res = await octokit.request(get, {
+        owner: REPO_OWNER,
+        repo: REPO_NAME,
+        ref: 'heads/main',
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+
+    const sha = res.data.object.sha
+    console.log('shaaaaaaaaaaaaaaaaaaaaaa', sha)
+
+    // create a new branch
+    await octokit.request(`POST /repos/${REPO_OWNER}/${REPO_NAME}/git/refs`, {
+        owner: 'OWNER',
+        repo: 'REPO',
+        ref: `refs/heads/${gitName}`,
+        sha,
         headers: {
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
 
     // add the content
+    // create a new file, or update existing file
+    const createRequest = (`PUT /repos/${REPO_OWNER}/${REPO_NAME}/contents/` +
+        'data/testing.md')
 
-    // make a PR
-    // await octokit.request('POST /repos/nichoth/bellingham-guestbook/pulls', {
-    //     owner: 'nichoth',
-    //     repo: 'bellingham-guestbook',
-    //     title: 'Add a contact',
-    //     body: `Adding ${username} to the guestbook.`,
-    //     head: `bellingham-guestbook:addition-${gitName}`,
-    //     base: 'main',
-    //     headers: {
-    //         'X-GitHub-Api-Version': '2022-11-28'
-    //     }
-    // })
+    await octokit.request(createRequest, {
+        owner: REPO_OWNER,
+        repo: REPO_NAME,
+        path: 'data/testing.md',
+        message: 'my commit message',
+        committer: {
+            name: 'netlify script',
+            email: 'innovatebellingham@proton.me'
+        },
+        content: Buffer.from(getFileContent(data)).toString('base64'),
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
 
     return {
         statusCode: 200,
         body: JSON.stringify({ hello: 'hello' })
     }
+}
+
+function getFileContent (data:{ username, email, body }) {
+    const { username, email, body } = data
+
+    return `# ${username}
+
+## email
+${email}
+
+-------
+
+${body}
+`
 }
