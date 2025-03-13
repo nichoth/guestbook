@@ -81,7 +81,7 @@ export const handler:Handler = async function handler (
         }
     })
 
-    // add the content
+    // add the content in the new branch
     // create a new file, or update existing file
     const createRequest = (`PUT /repos/${REPO_OWNER}/${REPO_NAME}/contents/` +
         'data/testing.md')
@@ -100,6 +100,8 @@ export const handler:Handler = async function handler (
             'X-GitHub-Api-Version': '2022-11-28'
         }
     })
+
+    // create a PR to main
 
     return {
         statusCode: 200,
