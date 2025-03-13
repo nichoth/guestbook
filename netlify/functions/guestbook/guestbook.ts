@@ -51,48 +51,11 @@ export const handler:Handler = async function handler (
         return { statusCode: 401 }
     }
 
-    // const child = spawn('git config user.email "innovatebellingham.proton.me"')
-    // const childPromise = new Promise((resolve, reject) => {
-    //     child.once('close', code => {
-    //         console.log('*** closed ***')
-
-    //         if (code === 0) {
-    //             console.log('all good')
-    //             resolve(0)
-    //         } else {
-    //             console.log('oh no...', code)
-    //             reject(new Error('code ' + code))
-    //         }
-    //     })
-
-    //     child.once('error', err => {
-    //         console.log('caught this error....', err)
-    //     })
-    // })
-
-    // try {
-    //     await childPromise
-    // } catch (err) {
-    //     console.log('caught an error', err)
-    //     return { statusCode: 500, body: 'woops' }
-    // }
-
-    // commit and push
-    // await $`
-    //     git config user.email "innovatebellingham@proton.me"
-    //     git config user.name "netlify script"
-    //     git checkout -b addition-${gitName}
-    //     git add .
-    //     git commit -m 'Add a new contact'
-    //     git push origin $addition-${gitName} -o ci.skip
-    // `
-
     const octokit = new Octokit({
         auth: process.env.GH_KEY
     })
 
     const get = `GET /repos/${REPO_OWNER}/${REPO_NAME}/git/ref/heads/main`
-    console.log('getting things...', get)
 
     // get the sha for main
     const res = await octokit.request(get, {
