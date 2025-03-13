@@ -9,6 +9,11 @@
         padding: 0.4rem;
     }
 
+    & label[for="text"] {
+        display: block;
+        margin-bottom: 0.4rem;
+    }
+
     & .input-group {
         & input {
             padding-bottom: 0.2rem;
