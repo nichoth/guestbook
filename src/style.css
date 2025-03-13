@@ -7,8 +7,24 @@
     }
 }
 
+.route {
+    width: 100%;
+    max-width: 30rem;
+    margin: 0 auto;
+    margin-top: 4rem;
+}
+
+.controls {
+    margin-top: 1rem;
+    text-align: right;
+}
+
 h1 {
     border-bottom: 2px solid;
+}
+
+h2 {
+    font-size: 1.2rem;
 }
 
 h1, h2, p {

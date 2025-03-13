@@ -1,15 +1,15 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
-import { createDebug } from '@substrate-system/debug'
-import ky from 'ky'
+// import ky from 'ky'
 import { State } from './state.js'
 import Router from './routes/index.js'
 import '@substrate-system/css-normalize'
 import './style.css'
+// import { createDebug } from '@substrate-system/debug'
+// const debug = createDebug()
 
 const router = Router()
 const state = State()
-const debug = createDebug()
 
 if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
     // @ts-expect-error DEV env
@@ -17,10 +17,23 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
 }
 
 // example of calling our API
-const json = await ky.get('/api/example').json()
+// const json = await ky.get('/api/example').json()
+// const json = await ky.post('/api/guestbook', {
+//     json: {
+//         username: 'abc',
+//         email: 'abc@123.com',
+//         body: `
+//             hello world
 
-export const Example:FunctionComponent = function Example () {
-    debug('rendering example...')
+//             * [github](https://github.com/nichoth/)
+//             * [nichoth.com](https://nichoth.com/)
+//         `
+//     }
+// }).json()
+
+// debug('the json response', json)
+
+export const Guestbook:FunctionComponent = function Example () {
     const match = router.match(state.route.value)
     const ChildNode = match.action(match, state.route)
 
@@ -38,13 +51,8 @@ export const Example:FunctionComponent = function Example () {
             </a>
         </p>
 
-        <h2>the API response</h2>
-        <pre>
-            ${JSON.stringify(json, null, 2)}
-        </pre>
-
-        <${ChildNode} />
+        <${ChildNode} state=${state} />
     </div>`
 }
 
-render(html`<${Example} />`, document.getElementById('root')!)
+render(html`<${Guestbook} />`, document.getElementById('root')!)

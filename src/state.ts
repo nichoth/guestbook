@@ -1,5 +1,8 @@
-import { Signal, signal } from '@preact/signals'
+import { type Signal, signal } from '@preact/signals'
+import ky from 'ky'
 import Route from 'route-event'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 /**
  * Setup any state
@@ -7,14 +10,12 @@ import Route from 'route-event'
  */
 export function State ():{
     route:Signal<string>;
-    count:Signal<number>;
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
     const onRoute = Route()
 
     const state = {
         _setRoute: onRoute.setRoute.bind(onRoute),
-        count: signal<number>(0),
         route: signal<string>(location.pathname + location.search)
     }
 
@@ -37,10 +38,13 @@ export function State ():{
     return state
 }
 
-State.Increase = function (state:ReturnType<typeof State>) {
-    state.count.value++
-}
-
-State.Decrease = function (state:ReturnType<typeof State>) {
-    state.count.value--
+State.add = async function (state:ReturnType<typeof State>, data:{
+    username,
+    email,
+    body
+}) {
+    debug('adding things', state, data)
+    ky.post('/api/guestbook', {
+        json: data
+    })
 }

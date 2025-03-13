@@ -16,7 +16,10 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@bicycle-codes/one-webcrypto": "^1.1.2",
     "@nichoth/components": "^0.16.16",
+    "@nichoth/zx": "^8.4.1",
+    "@octokit/core": "^6.1.4",
     "@preact/signals": "^2.0.0",
     "@substrate-system/css-normalize": "^0.0.7",
     "@substrate-system/routes": "^5.0.0",
@@ -40,7 +43,7 @@
     "esbuild": "^0.25.1",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
-    "netlify-cli": "^19.0.0",
+    "netlify-cli": "^19.0.2",
     "postcss-nesting": "^13.0.1",
     "stylelint-config-standard": "^37.0.0",
     "tap-spec": "^5.0.0",
