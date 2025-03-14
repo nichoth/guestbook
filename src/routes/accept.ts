@@ -4,9 +4,11 @@ import { useCallback } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { TextInput } from '@nichoth/components/htm/text-input'
+import { useSignal } from '@preact/signals'
+import { Primary as BtnPrimary } from '../components/button-outline.js'
 import './link.css'
-import Debug from '@substrate-system/debug'
-const debug = Debug()
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 /**
  * Accept invitation route.
@@ -17,7 +19,7 @@ const debug = Debug()
 export const AcceptRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
-    debug('link route', state)
+    const isInvitationValid = useSignal<boolean>(false)
 
     const redeemInvitation = useCallback((ev:SubmitEvent) => {
         ev.preventDefault()
@@ -25,12 +27,31 @@ export const AcceptRoute:FunctionComponent<{
         State.acceptInvitation(state, els['invcode'].value)
     }, [])
 
+    const handleInput = useCallback((ev:InputEvent) => {
+        const value = (ev.target as HTMLInputElement).value
+        if (value.trim().length) {
+            isInvitationValid.value = true
+        } else {
+            isInvitationValid.value = false
+        }
+    }, [])
+
     return html`<div class="route add">
-        <form onSuvmit=${redeemInvitation}>
+        <form onSubmit=${redeemInvitation}>
             <${TextInput}
+                onInput=${handleInput}
                 name="invcode"
                 displayName="Invitation code"
             />
+
+            <div class="controls">
+                <${BtnPrimary}
+                    type="submit"
+                    disabled=${!isInvitationValid.value}
+                >
+                    Accept Invitation
+                <//>
+            </div>
         </form>
     </div>`
 }

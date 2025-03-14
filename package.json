@@ -18,6 +18,7 @@
   "dependencies": {
     "@bicycle-codes/keys": "^0.1.12",
     "@bicycle-codes/one-webcrypto": "^1.1.2",
+    "@bicycle-codes/request": "^0.6.19",
     "@nichoth/components": "^0.16.16",
     "@octokit/core": "^6.1.4",
     "@preact/signals": "^2.0.0",

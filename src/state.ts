@@ -1,9 +1,13 @@
 import { type Signal, signal } from '@preact/signals'
 import { Keys } from '@bicycle-codes/keys'
-import ky from 'ky'
+import Ky, { type KyInstance } from 'ky'
 import Route from 'route-event'
+import { SignedRequest } from '@bicycle-codes/request'
+import type { User } from './types'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
+
+let ky:KyInstance
 
 /**
  * Setup any state
@@ -12,6 +16,7 @@ const debug = Debug()
  */
 export function State ():{
     route:Signal<string>;
+    user:Signal<null|User>;
     keys:Signal<Keys|null>;
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
@@ -20,13 +25,14 @@ export function State ():{
     const state = {
         _setRoute: onRoute.setRoute.bind(onRoute),
         keys: signal<Keys|null>(null),
+        user: signal(null),
         route: signal<string>(location.pathname + location.search)
     }
 
-    Keys.load().then(keys => {
-        // we are using the `keys` property to
-        // know if they have an account or not
-        if (keys.persisted) state.keys.value = keys
+    Keys.load().then(async keys => {
+        state.keys.value = keys
+        await keys.persist()
+        ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
     })
 
     // if (navigator.storage && navigator.storage.persist) {
@@ -79,4 +85,14 @@ State.acceptInvitation = async function (
     invitationCode:string
 ) {
     debug('accept an invitation', invitationCode)
+}
+
+State.Login = async function (
+    state:ReturnType<typeof State>,
+) {
+    const keys = state.keys
+    if (!keys) throw new Error('not keys')
+    const userData = await ky.get('/login').json<{ user:User }>()
+    debug('user data', userData)
+    state.user.value = userData.user
 }

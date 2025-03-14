@@ -32,7 +32,7 @@ export const Guestbook:FunctionComponent = function Example () {
         <header>
             <h1>
                 <a href="/">
-                    Bellingham Guestbook
+                    Guestbook
                 </a>
             </h1>
 

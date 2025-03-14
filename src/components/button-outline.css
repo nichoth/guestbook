@@ -1,0 +1,96 @@
+:root {
+    --button-outine-color: black;
+    --button-primary-outline: #07f;
+    --button-primary-outline-disabled: #0077ff5f;
+    --button-outine-primary-bg-hover: rgb(0 255 255 / 28%);
+    --button-outline-disabled-ol: #0077ff5c;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+.btn-outline {
+    position: relative;
+    border: 2px solid black;
+    outline: 2px solid transparent;
+    border-radius: 0;
+    font-size: 1rem;
+    padding: 0.4rem 1rem;
+    transition: 0.4s all;
+
+    &:disabled {
+        cursor: not-allowed;
+        outline-color: transparent;
+    }
+
+    &:hover {
+        outline: 2px solid;
+
+        &:disabled {
+            opacity: 0.4;
+        }
+    }
+
+    &.danger {
+        border-color: var(--danger-color, red);
+
+        &:hover {
+            outline-color: var(--danger-color, red);
+        }
+    }
+
+    &.primary {
+        border-color: var(--button-primary-outline, #07f);
+
+        &:hover {
+            border-color: var(--button-primary-outline, #07f);
+            outline-color: var(--button-primary-outline, #07f);
+        }
+
+        /* stylelint-disable-next-line */
+        &:disabled {
+            outline-color: transparent;
+            border-color: var(--button-primary-outline-disabled);
+        }
+    }
+
+    &.spinning {
+        opacity: 0.6;
+
+        & .btn-content {
+            visibility: hidden;
+        }
+
+        cursor: initial;
+
+        &::after {
+            content: "";
+            box-sizing: border-box;
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            inset: 0;
+            margin: auto;
+            border-radius: 50%;
+            border-top: 2px solid var(--button-outline-color, black);
+            border-right: 2px solid transparent;
+            animation: spinner 0.6s linear infinite;
+        }
+    }
+}
+
+a {
+    &.btn-outline {
+        border: 2px solid;
+        background-color: white;
+        color: black;
+        outline: 2px solid transparent;
+        text-align: center;
+
+        &:hover {
+            color: black;
+            outline: 2px solid black;
+        }
+    }
+}
