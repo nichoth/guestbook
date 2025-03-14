@@ -1,0 +1,38 @@
+:root {
+    --form-color: #4285f4;
+}
+
+.route.add {
+    & textarea {
+        width: 100%;
+        min-height: 20vh;
+        padding: 0.4rem;
+    }
+
+    & label[for="text"] {
+        display: block;
+        margin-bottom: 0.4rem;
+    }
+
+    & .input-group {
+        & input {
+            padding-bottom: 0.2rem;
+            width: 100%;
+
+            &:focus {
+                border-bottom-width: 1px;
+                box-shadow: 0 2px 0 0 var(--form-color);
+            }
+
+            &:focus~label {
+                top: -10px;
+            }
+
+            &:not(:placeholder-shown) ~ label {
+                top: -16px;
+                font-size: 14px;
+                color: var(--form-color);
+            }
+        }
+    }
+}

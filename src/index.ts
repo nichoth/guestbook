@@ -1,6 +1,5 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
-// import ky from 'ky'
 import { State } from './state.js'
 import Router from './routes/index.js'
 import '@substrate-system/css-normalize'
@@ -16,23 +15,6 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
     window.state = state
 }
 
-// example of calling our API
-// const json = await ky.get('/api/example').json()
-// const json = await ky.post('/api/guestbook', {
-//     json: {
-//         username: 'abc',
-//         email: 'abc@123.com',
-//         body: `
-//             hello world
-
-//             * [github](https://github.com/nichoth/)
-//             * [nichoth.com](https://nichoth.com/)
-//         `
-//     }
-// }).json()
-
-// debug('the json response', json)
-
 export const Guestbook:FunctionComponent = function Example () {
     const match = router.match(state.route.value)
     const ChildNode = match.action(match, state.route)
@@ -43,10 +25,29 @@ export const Guestbook:FunctionComponent = function Example () {
         </div>`
     }
 
+    // how to tell if someone is "logged in"?
+    // need to right away get their keys, and call the server
+
     return html`<div>
-        <h1>Bellingham Guestbook</h1>
-        <p>
-            A guestbook for <a href="https://innovatebellingham.org/">
+        <header>
+            <h1>
+                <a href="/">
+                    Bellingham Guestbook
+                </a>
+            </h1>
+
+            <nav class="nav">
+                <ul>
+                    <li><a href="/">Index</a></li>
+                </ul>
+            </nav>
+        </header>
+        <p class="explanation">
+            A guestbook for <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://innovatebellingham.org/"
+            >
                 Innovate Bellingham
             </a>
         </p>
