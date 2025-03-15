@@ -1,5 +1,6 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
+import { Nav } from './nav.js'
 import { State } from './state.js'
 import Router from './routes/index.js'
 import '@substrate-system/css-normalize'
@@ -17,13 +18,14 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
 
 export const Guestbook:FunctionComponent = function Example () {
     const match = router.match(state.route.value)
-    const ChildNode = match.action(match, state.route)
-
     if (!match) {
         return html`<div class="404">
             <h1>404</h1>
         </div>`
     }
+
+    const ChildNode = match.action!(match, state.route)
+    const { params } = match
 
     // how to tell if someone is "logged in"?
     // need to right away get their keys, and call the server
@@ -36,11 +38,7 @@ export const Guestbook:FunctionComponent = function Example () {
                 </a>
             </h1>
 
-            <nav class="nav">
-                <ul>
-                    <li><a href="/">Index</a></li>
-                </ul>
-            </nav>
+            <${Nav} state=${state} />
         </header>
         <p class="explanation">
             A guestbook for <a
@@ -52,7 +50,7 @@ export const Guestbook:FunctionComponent = function Example () {
             </a>
         </p>
 
-        <${ChildNode} state=${state} />
+        <${ChildNode} state=${state} params=${params} />
     </div>`
 }
 

@@ -2,8 +2,6 @@ import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
-import { Octokit } from '@octokit/core'
-import { REPO_NAME, REPO_OWNER } from '../constants.js'
 
 export const handler:Handler = async function handler (
     ev:HandlerEvent,

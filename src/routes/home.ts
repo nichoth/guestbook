@@ -18,5 +18,9 @@ export const HomeRoute:FunctionComponent<{
         <p>
             Or <a href="/accept">redeem an invitation.</a>
         </p>
+
+        <p>
+            Lost your keys? <a href="lost">Reset my keys</a>
+        </p>
     </div>`
 }

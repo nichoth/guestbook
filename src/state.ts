@@ -80,11 +80,21 @@ State.add = async function (state:ReturnType<typeof State>, data:{
     })
 }
 
+State.forgot = async function (
+    state:ReturnType<typeof State>,
+    email:string
+) {
+    return ky.post('/api/forgot', {
+        json: { email }
+    })
+}
+
 State.acceptInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string
 ) {
-    debug('accept an invitation', invitationCode)
+    debug('accept an invitation in State', invitationCode)
+    await ky.post('')
 }
 
 State.Login = async function (

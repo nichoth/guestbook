@@ -10,6 +10,10 @@ import './link.css'
 // import Debug from '@substrate-system/debug'
 // const debug = Debug()
 
+type Params = {
+    token?:string
+}
+
 /**
  * Accept invitation route.
  *   - check with the server if the invitation is valid.
@@ -18,7 +22,8 @@ import './link.css'
  */
 export const AcceptRoute:FunctionComponent<{
     state:ReturnType<typeof State>
-}> = function ({ state }) {
+    params:Params
+}> = function ({ state, params }) {
     const isInvitationValid = useSignal<boolean>(false)
 
     const redeemInvitation = useCallback((ev:SubmitEvent) => {
@@ -35,6 +40,12 @@ export const AcceptRoute:FunctionComponent<{
             isInvitationValid.value = false
         }
     }, [])
+
+    if (params.token) {
+        return html`<div class="route add">
+            <p>Accepting your invitation...</p>
+        </div>`
+    }
 
     return html`<div class="route add">
         <form onSubmit=${redeemInvitation}>
