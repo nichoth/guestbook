@@ -44,8 +44,6 @@ const Request = z.object({
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
-    if (!ev.body) return { statusCode: 400 }
-
     const secret = Netlify.env.get('FAUNA_SECRET')
     const client = new Client({ secret })
 
@@ -80,18 +78,31 @@ export const handler:Handler = async function handler (
             // a new person checking an invitation code
             const code = params.code!
 
-            const res = await client.query<{ code, creator }>(fql`
-                let inv = Invitation.by_code(${code})
-                if (inv == null) {
-                    abort('Invalid invitation code')
-                } else {
-                    inv { code, creator { id, username, humanName } }
-                }
-            `)
+            try {
+                const res = await client.query<{ code, creator }>(fql`
+                    let inv = Invitation.by_code(${code}).first()
+                    if (inv == null) {
+                        abort('Invalid invitation code')
+                    } else {
+                        inv { code, creator { id, username, humanName } }
+                    }
+                `)
 
-            return { statusCode: 200, body: JSON.stringify(res.data) }
+                return { statusCode: 200, body: JSON.stringify(res.data) }
+            } catch (_err) {
+                const err = _err as AbortError
+                if (err.code === 'abort') {
+                    return { statusCode: 404, body: 'Invalid invitation code' }
+                } else {
+                    console.log('**unexpected error**', err)
+                    return { statusCode: 500, body: err.message }
+                }
+            }
         }
     }
+
+    // is either PATCH or POST
+    if (!ev.body) return { statusCode: 400 }
 
     // redeem an invitation (create a new user)
     if (ev.httpMethod === 'PATCH') {

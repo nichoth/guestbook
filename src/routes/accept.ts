@@ -28,6 +28,7 @@ export const AcceptRoute:FunctionComponent<{
     const isInvitationValid = useSignal<boolean>(false)
     const isResolving = useSignal<boolean>(false)
     const invitation = useSignal<{ code, ts, creator }|null>(null)
+    const invitationErr = useSignal<string|null>(null)
 
     useEffect(() => {
         if (params.token) {
@@ -43,10 +44,15 @@ export const AcceptRoute:FunctionComponent<{
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
         try {
-            await State.acceptInvitation(state, els['invcode'].value)
+            const code = els['invcode'].value
+            const invitation = await State.fetchInvitation(state, code)
+            debug('got this...', invitation)
         } catch (_err) {
             const err = _err as HTTPError
-            debug('error', err)
+            debug('error aaaaaaaaaaaaaaa', err)
+            const errMsg = await err.response.text()
+            debug(errMsg)
+            invitationErr.value = errMsg
         }
     }, [])
 
@@ -99,5 +105,12 @@ export const AcceptRoute:FunctionComponent<{
                 <//>
             </div>
         </form>
+
+        ${invitationErr.value ?
+            html`<div class="error invitation-error">
+                ${invitationErr.value}
+            </div>` :
+            null
+        }
     </div>`
 }
