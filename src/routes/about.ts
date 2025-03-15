@@ -18,7 +18,7 @@ export const AboutRoute:FunctionComponent = function () {
         <p>How does it work?</p>
 
         <p>
-            This site is a <a href="https://developer.mozilla.org/en-US/docs/Glossary/SPA">
+            This website is a <a href="https://developer.mozilla.org/en-US/docs/Glossary/SPA">
                 single page application</a>.
             The words you are reading were rendered by${NBSP}
             <a href="https://preactjs.com/">preact</a>, using${NBSP}
@@ -79,6 +79,9 @@ export const AboutRoute:FunctionComponent = function () {
             This is good because it is one less thing that my server needs to
             remember about you ${EM_DASH} your password, and it eliminates
             a security vector ${EM_DASH} there is no password to think about.
+        </p>
+
+        <p>
             A drawback is that your web browser is the only place that has your
             keys. So if you do something like delete your browser data, then
             your keys disappear too.
@@ -111,6 +114,15 @@ export const AboutRoute:FunctionComponent = function () {
         </p>
 
         <h2>Contact</h2>
+        <p>
+            This website was made by <a href="https://nichoth.com/">nichoth</a>,
+            for <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://innovatebellingham.org/"
+            >the Bellingham meetings</a>.
+        </p>
+
         <ul>
             <li>
                 <a href="mailto:nichoth@bicycle.codes">nichoth@bicycle.codes</a>

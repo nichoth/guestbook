@@ -33,7 +33,6 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     // check the the given keys are related to a user
     // check the the given `seq` number is ok
     // return the user and their machines
-    console.log('**start query**', seq)
     let user:(User & { machines: (Machine & { id })[] })
     try {
         const res = await client.query<
@@ -57,16 +56,18 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
 
         user = res.data
     } catch (_err) {
-        console.log('**caught error**', _err)
         const err = _err as AbortError
         if (err.code === 'abort') {
-            return { statusCode: 403, body: err.message }
+            if (err.abort?.toString().includes('sequence number')) {
+                return { statusCode: 403, body: 'Bad signature' }
+            }
+
+            return { statusCode: 401, body: err.message }
         }
 
+        console.log('**unhandled error**', _err)
         return { statusCode: 500, body: err.message }
     }
-
-    console.log('**end query**', user)
 
     return {
         statusCode: 200,

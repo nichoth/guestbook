@@ -46,7 +46,7 @@ export const HomeRoute:FunctionComponent<{
         </p>
 
         <p>
-            <a href="/list">The contact list</a> is only visible to other
+            The contact list is only visible to other
             members of the group. To join this group, you must be invited by
             someone who is already a member.
         </p>

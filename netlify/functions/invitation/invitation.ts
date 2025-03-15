@@ -28,14 +28,18 @@ const Request = z.object({
 })
 
 /**
- * Accept an invitation.
- *
- * __create a new user__
+ * Get, create or accept invitations.
  *
  * To become a member of the website, you must be invited by someone who
  * is already a member (the country-club rule).
- *   - POST method means create a new invitation
- *   - PATCH method means redeem an invitation (create a new user)
+ *
+ * POST method means create a new invitation
+ * PATCH method means redeem an invitation (create a new user)
+ * GET does two things
+ *   - if you pass a query string with the code, then it is a new potential
+ *     user checking that an invitation exists
+ *   - if no query string, then it should be an existing user, fetching
+ *     the invitations they have created
  */
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
@@ -44,6 +48,50 @@ export const handler:Handler = async function handler (
 
     const secret = Netlify.env.get('FAUNA_SECRET')
     const client = new Client({ secret })
+
+    if (ev.httpMethod === 'GET') {
+        const params = ev.queryStringParameters
+        if (!params || !params.code) {
+            // an existing user, getting the invitations they have created
+            const headerString = ev.headers.authorization
+            if (!headerString) {
+                return { body: 'Need to authenticate', statusCode: 401 }
+            }
+            const parsedHeader:ParsedHeader = parseHeader(headerString)
+            const { seq, author } = parsedHeader
+
+            // check signature
+            const isOk = await verifyParsed(parsedHeader)   // check signature
+            if (!isOk) {
+                return { body: 'Invalid signature', statusCode: 403 }
+            }
+
+            // check the author & seq in the query
+            const res = await client.query(fql`
+                let machine = Machine.by_did(${author})
+                if (machine.seq <= ${seq}) {
+                    abort('Invalid signature')
+                }
+                Invitation.by_creator(machine.owner) { code, ts, note, id }
+            `)
+
+            return { statusCode: 200, body: JSON.stringify(res.data) }
+        } else {
+            // a new person checking an invitation code
+            const code = params.code!
+
+            const res = await client.query<{ code, creator }>(fql`
+                let inv = Invitation.by_code(${code})
+                if (inv == null) {
+                    abort('Invalid invitation code')
+                } else {
+                    inv { code, creator { id, username, humanName } }
+                }
+            `)
+
+            return { statusCode: 200, body: JSON.stringify(res.data) }
+        }
+    }
 
     // redeem an invitation (create a new user)
     if (ev.httpMethod === 'PATCH') {
@@ -59,6 +107,7 @@ export const handler:Handler = async function handler (
         const { username, email, humanName } = data.user
         const { code, machine } = data
         const { did } = machine
+        const slugUsername = username.split(' ').filter(Boolean).join('_')
         const machineName = await Keys.deviceName(did)
 
         // query the DB
@@ -69,7 +118,7 @@ export const handler:Handler = async function handler (
                 RedeemInvitation(${code})
 
                 let user = User.create({
-                    username: ${username},
+                    username: ${slugUsername},
                     email: ${email},
                     humanName: ${humanName}
                 })
@@ -105,6 +154,7 @@ export const handler:Handler = async function handler (
     if (ev.httpMethod === 'POST') {
         let data:{
             note:string;
+            remainingUses:number;
         }
 
         try {
@@ -114,7 +164,7 @@ export const handler:Handler = async function handler (
         }
 
         // check that they are a user
-        const headerString = ev.headers.Authorization
+        const headerString = ev.headers.authorization
         if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
         const parsedHeader:ParsedHeader = parseHeader(headerString)
         const { seq, author } = parsedHeader
@@ -125,23 +175,26 @@ export const handler:Handler = async function handler (
             return { body: 'Invalid signature', statusCode: 403 }
         }
 
-        const { note } = data
+        const { note, remainingUses } = data
 
         let invitation:{ note:string; code:string }
         try {
             const res = await client.query<{ note, code }>(fql`
                 // check sequence has changed
-                let user = User.byDID(${author}).first()
+                let machine = Machine.by_did(${author})
+                let user = machine?.owner
                 if (user == null) {
                     abort('Bad author')
                 }
-                if (${seq} >= user?.seq)  {
+                if (${seq} <= machine?.seq)  {
                     abort('Bad auth')
                 }
 
                 Invitation.create({
                     note: ${note},
-                    code: ${code}
+                    code: ${code},
+                    remainingUses: ${remainingUses}
+                    creator: user
                 })
             `)
 

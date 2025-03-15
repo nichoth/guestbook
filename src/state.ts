@@ -108,6 +108,21 @@ State.forgot = async function (
     })
 }
 
+/**
+ * A new user checking if an invitation code is ok.
+ */
+State.fetchInvitation = async function (
+    state:ReturnType<typeof State>,
+    invitationCode:string
+) {
+    debug('fetching invitation', invitationCode)
+    const res = await ky.get('/api/invitation', {
+        searchParams: { code: invitationCode }
+    }).json<{ code, ts, creator }>()
+
+    return res
+}
+
 State.acceptInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string

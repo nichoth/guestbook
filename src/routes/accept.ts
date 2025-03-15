@@ -1,14 +1,15 @@
 // import { TextInput } from '@nichoth/components/htm/text-input'
 import { html } from 'htm/preact'
+import { type HTTPError } from 'ky'
 import { useCallback, useEffect } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { TextInput } from '@nichoth/components/htm/text-input'
 import { useSignal } from '@preact/signals'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
-import './link.css'
-// import Debug from '@substrate-system/debug'
-// const debug = Debug()
+import './accept.css'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 type Params = {
     token?:string
@@ -17,8 +18,8 @@ type Params = {
 /**
  * Accept invitation route.
  *   - check with the server if the invitation is valid.
- *   - if we are passed a parameter, then call to redeem
- *     else, show a text input for the invitation code
+ *   - if we are passed a parameter, then call to redeem.
+ *     Else, show a text input for the invitation code.
  */
 export const AcceptRoute:FunctionComponent<{
     state:ReturnType<typeof State>
@@ -26,6 +27,7 @@ export const AcceptRoute:FunctionComponent<{
 }> = function ({ state, params }) {
     const isInvitationValid = useSignal<boolean>(false)
     const isResolving = useSignal<boolean>(false)
+    const invitation = useSignal<{ code, ts, creator }|null>(null)
 
     useEffect(() => {
         if (params.token) {
@@ -37,10 +39,25 @@ export const AcceptRoute:FunctionComponent<{
         }
     }, [params.token])
 
-    const redeemInvitation = useCallback((ev:SubmitEvent) => {
+    const fetchInvitation = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
-        State.acceptInvitation(state, els['invcode'].value)
+        try {
+            await State.acceptInvitation(state, els['invcode'].value)
+        } catch (_err) {
+            const err = _err as HTTPError
+            debug('error', err)
+        }
+    }, [])
+
+    const redeemInvitation = useCallback(async (ev:SubmitEvent) => {
+        ev.preventDefault()
+        const els = (ev.target as HTMLFormElement).elements
+        try {
+            await State.acceptInvitation(state, els['invcode'].value)
+        } catch (_err) {
+
+        }
     }, [])
 
     const handleInput = useCallback((ev:InputEvent) => {
@@ -58,8 +75,15 @@ export const AcceptRoute:FunctionComponent<{
         </div>`
     }
 
-    return html`<div class="route add">
-        <form onSubmit=${redeemInvitation}>
+    if (invitation.value) {
+        return html`<div class="route accept">
+            <h2>Invitation</h2>
+            <pre>${invitation.value}</pre>
+        </div>`
+    }
+
+    return html`<div class="route accept">
+        <form onSubmit=${fetchInvitation}>
             <${TextInput}
                 onInput=${handleInput}
                 name="invcode"

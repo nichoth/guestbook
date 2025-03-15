@@ -2,11 +2,22 @@ import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
+import {
+    verifyParsed,
+    parseHeader,
+    type ParsedHeader
+} from '@bicycle-codes/request'
+import { Client, fql } from 'fauna'
 
+/**
+ * PUT call means add or update the contact info for the given user.
+ *   - Must authenticate using the machine key.
+ *
+ */
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
-    if (ev.httpMethod !== 'GET' && ev.httpMethod !== 'POST') {
+    if (ev.httpMethod !== 'GET' && ev.httpMethod !== 'PUT') {
         return { statusCode: 405 }
     }
 
@@ -20,109 +31,63 @@ export const handler:Handler = async function handler (
     }
 
     /**
-     * method is POST
-     *   - make a PR to the github repo
+     * method is PUT
+     *   - write to the DB
      */
 
     // parse the incoming request
     if (!ev.body) return { statusCode: 400 }
     const data:{
         username:string;
+        humanName:string;
         body:string;
         email:string;
         bluesky:string;
     } = JSON.parse(ev.body)
 
-    console.log('parsed request...', data)
-
-    const { username, body } = data
-    if (username.length > 100) {
+    const { username, body, email } = data
+    if (email.length > 100 || username.length > 100) {
         return { statusCode: 413 }
     }
     if (body.length > 6000) {
         return { statusCode: 413 }
     }
 
-    // for git, no spaces
-    const gitName = username.split(' ').filter(Boolean).join('_')
+    // check the auth/header
+    const headerString = ev.headers.authorization
+    if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
+    const parsedHeader:ParsedHeader = parseHeader(headerString)
+    const { seq, author } = parsedHeader
 
-    if (!gitName) {
+    // check signature
+    const isOk = await verifyParsed(parsedHeader)   // check signature
+    if (!isOk) {
+        return { body: 'Invalid signature', statusCode: 403 }
+    }
+
+    // no spaces
+    const slugUsername = username.split(' ').filter(Boolean).join('_')
+
+    if (!slugUsername) {
         return { statusCode: 401 }
     }
 
-    const octokit = new Octokit({
-        auth: process.env.GH_KEY
+    // update the DB
+    const client = new Client({
+        secret: Netlify.env.get('FAUNA_SECRET')
     })
-
-    const get = `GET /repos/${REPO_OWNER}/${REPO_NAME}/git/ref/heads/main`
-
-    // get the sha for main
-    const res = await octokit.request(get, {
-        owner: REPO_OWNER,
-        repo: REPO_NAME,
-        ref: 'heads/main',
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
+    client.query(fql`
+        let machine = Machine.by_did(${author})
+        if (machine.seq <= ${seq}) {
+            abort('Bad signature')
         }
-    })
+        let user = machine.owner
 
-    const sha = res.data.object.sha
-    console.log('shaaaaaaaaaaaaaaaaaaaaaa', sha)
-
-    // create a new branch
-    await octokit.request(`POST /repos/${REPO_OWNER}/${REPO_NAME}/git/refs`, {
-        owner: 'OWNER',
-        repo: 'REPO',
-        ref: `refs/heads/${gitName}`,
-        sha,
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
-
-    // add the content in the new branch
-    // create a new file, or update existing file
-    const createRequest = (`PUT /repos/${REPO_OWNER}/${REPO_NAME}/contents/` +
-        `data/${gitName}.md`)
-
-    await octokit.request(createRequest, {
-        branch: gitName,
-        owner: REPO_OWNER,
-        repo: REPO_NAME,
-        path: `data/${gitName}.md`,
-        message: 'Update from the website',
-        committer: {
-            name: 'netlify script',
-            email: 'innovatebellingham@proton.me'
-        },
-        content: Buffer.from(getFileContent(data)).toString('base64'),
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
-    })
-
-    // create a PR to main
+        user.update(${data})
+    `)
 
     return {
         statusCode: 200,
         body: JSON.stringify({ hello: 'hello' })
     }
-}
-
-function getFileContent (data:{ username, email, body, bluesky }) {
-    const { username, email, body, bluesky } = data
-
-    return '' +
-`## ${username}
-
-### email
-${email}
-
-### bluesky
-${bluesky}
-
--------
-
-${body}
-`
 }
