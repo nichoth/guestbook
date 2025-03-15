@@ -1,8 +1,10 @@
 import { v4 as uuid } from 'uuid'
+import { z } from 'zod'
 import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
+import { Keys, type DID } from '@bicycle-codes/keys'
 import {
     verifyParsed,
     parseHeader,
@@ -10,8 +12,26 @@ import {
 } from '@bicycle-codes/request'
 import { Client, fql, type AbortError } from 'fauna'
 
+const ZodDID = z.custom<DID>((val:string) => val.startsWith('did:key:z'))
+
+const Request = z.object({
+    user: z.object({
+        username: z.string(),
+        humanName: z.string(),
+        email: z.string(),
+    }),
+    machine: z.object({
+        humanName: z.string(),
+        did: ZodDID,
+    }),
+    code: z.string()
+})
+
 /**
  * Accept an invitation.
+ *
+ * __create a new user__
+ *
  * To become a member of the website, you must be invited by someone who
  * is already a member (the country-club rule).
  *   - POST method means create a new invitation
@@ -27,50 +47,57 @@ export const handler:Handler = async function handler (
 
     // redeem an invitation (create a new user)
     if (ev.httpMethod === 'PATCH') {
-        let data:{
-            user: {
-                username:string;
-                humanName:string;
-                email:string;
-            };
-            code:string;
-        }
+        let data:z.infer<typeof Request>
 
         try {
-            data = JSON.parse(ev.body)
+            const rawData = JSON.parse(ev.body)
+            data = Request.parse(rawData)
         } catch (_err) {
             return { body: 'Invalid JSON', statusCode: 415 }
         }
 
         const { username, email, humanName } = data.user
-        const { code } = data
+        const { code, machine } = data
+        const { did } = machine
+        const machineName = await Keys.deviceName(did)
 
         // query the DB
         // check that the given invitation is valid
-        let user
+        let newUserData:{ machine, user }
         try {
-            user = await client.query(fql`
-                let inv = Invitation.byCode(${code}).first()
-                if (inv == null) {
-                    abort('Bad invitation code')
-                } else {
-                    User.create({
-                        username: ${username},
-                        email: ${email},
-                        humanName: ${humanName}
-                    })
+            const res = await client.query<{ user, machine }>(fql`
+                RedeemInvitation(${code})
+
+                let user = User.create({
+                    username: ${username},
+                    email: ${email},
+                    humanName: ${humanName}
+                })
+
+                let machine = Machine.create({
+                    did: ${data.machine.did},
+                    machineName: ${machineName},
+                    humanName: ${data.machine.humanName}
+                    owner: user
+                })
+
+                {
+                    user { username, humanName },
+                    machine { id }
                 }
             `)
+            newUserData = res.data
 
-            console.log('the user...', JSON.stringify(user, null, 2))
+            console.log('the new user...', JSON.stringify(newUserData, null, 2))
         } catch (_err) {
             const err = _err as AbortError
             if (err.code === 'abort') {
                 return { body: 'Invalid invitation', statusCode: 403 }
             }
+            return { statusCode: 500, body: err.message }
         }
 
-        return { body: JSON.stringify(user), statusCode: 200 }
+        return { body: JSON.stringify(newUserData), statusCode: 200 }
     }
 
     // create a new invitation

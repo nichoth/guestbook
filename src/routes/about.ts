@@ -1,0 +1,114 @@
+import { html } from 'htm/preact'
+import { type FunctionComponent } from 'preact'
+import { NBSP, EM_DASH } from '@substrate-system/util/constants'
+import './about.css'
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
+
+/**
+ * Accept invitation route.
+ *   - check with the server if the invitation is valid.
+ *   - if we are passed a parameter, then call to redeem
+ *     else, show a text input for the invitation code
+ */
+export const AboutRoute:FunctionComponent = function () {
+    return html`<div class="route about">
+        <h1>The Colophon</h1>
+        
+        <p>How does it work?</p>
+
+        <p>
+            This site is a <a href="https://developer.mozilla.org/en-US/docs/Glossary/SPA">
+                single page application</a>.
+            The words you are reading were rendered by${NBSP}
+            <a href="https://preactjs.com/">preact</a>, using${NBSP}
+            <a href="https://preactjs.com/blog/introducing-signals/">signals</a>
+            ${NBSP}for state, and <a href="https://github.com/developit/htm">
+            <code>htm</code></a> as a template language. The site was created${NBSP}
+            <a href="https://github.com/nichoth/template-netlify-app">
+                from this template repo</a>.
+        </p>
+
+        <p>
+            The backend is <a href="https://www.netlify.com/platform/core/functions/">
+            lambda functions, hosted by netlify</a>, and a database from${NBSP}
+            <a href="https://faunadb.com/">Fauna DB</a>.
+        </p>
+
+        <p>
+            We do some input validation with <a href="https://zod.dev/">zod</a>.
+        </p>
+
+        <h2>Identity</h2>
+        <p>
+            This site has a concept of <em>who you are</em>, which we use
+            for access control. The content on this site is only visible to
+            other members of the site. To become a member, you need to be
+            invited by someone who is already a member.
+        </p>
+
+        <p>
+            That is the level of trust to keep in mind when you use this.
+            We have factored trust in such a way that we are trusting the other
+            people at <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://innovatebellingham.org/"
+            >Innovate Bellingham</a> not to give out memberships to spam
+            companies, etc.
+        </p>
+
+
+        <h2>Keys</h2>
+        <p>
+            Your identity is handled by${NBSP}
+            <a href="https://github.com/bicycle-codes/keys">
+                <code>@bicycle-codes/keys</code>
+            </a>, which is a library that saves a set of keys to <code>
+            indexedDB</code> in your browser.
+        </p>
+
+        <p>
+            The good news is that there are no passwords in this system.
+            You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
+            keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
+            "non extractable"</a> keypairs in <code>indexedDB</code>.
+        </p>
+
+        <p>
+            This is good because it is one less thing that my server needs to
+            remember about you ${EM_DASH} your password, and it eliminates
+            a security vector ${EM_DASH} there is no password to think about.
+            A drawback is that your web browser is the only place that has your
+            keys. So if you do something like delete your browser data, then
+            your keys disappear too.
+        </p>
+
+        <p>
+            I would recommend <a href="/link">linking a second device</a> to
+            your account, so that there is a backup if one browser deletes
+            your keys.
+        </p>
+
+        <h2>Membership</h2>
+        <p>
+            The way we avoid <em>spam</em> is by restricting access to only
+            members of the website. So you need to be a member in order to read
+            the contact list.
+        </p>
+
+        <p>
+            Who is a member? This follows the country
+            club system ${EM_DASH} you have to be invited by someone who is
+            already a member.
+        </p>
+
+        <p>
+            An invitation is a record in the database containing a${NBSP}
+            <a href="https://github.com/uuidjs/uuid">universllay unique ID</a>,
+            which is created by an existing member. The existing member
+            transmits the invitation code out-of-band from this website.
+        </p>
+
+    </div>`
+}

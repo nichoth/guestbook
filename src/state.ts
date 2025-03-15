@@ -13,10 +13,13 @@ let ky:KyInstance
  * Setup any state
  *   - routes
  *   - keys
+ *   - user data
  */
 export function State ():{
     route:Signal<string>;
-    user:Signal<null|User>;
+    // `null` means we haven't contacted the server yet
+    // `false` means we got a response, and this machine is not a user
+    user:Signal<null|false|User>;
     keys:Signal<Keys|null>;
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
@@ -33,6 +36,7 @@ export function State ():{
         state.keys.value = keys
         await keys.persist()
         ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
+        State.init(state)
     })
 
     // if (navigator.storage && navigator.storage.persist) {
@@ -66,6 +70,21 @@ export function State ():{
 }
 
 /**
+ * Get your user data from the server.
+ */
+State.init = async function (state:ReturnType<typeof State>) {
+    const data = await ky.post('/api/login').json<{ user:User|false }>()
+    debug('the user', data.user)
+
+    if (!data.user) {
+        state.user.value = false
+        return
+    }
+
+    state.user.value = data.user
+}
+
+/**
  * Add your contact info.
  */
 State.add = async function (state:ReturnType<typeof State>, data:{
@@ -94,7 +113,15 @@ State.acceptInvitation = async function (
     invitationCode:string
 ) {
     debug('accept an invitation in State', invitationCode)
-    await ky.post('')
+    try {
+        await ky.patch('/api/invitation', {
+            json: { code: invitationCode }
+        })
+        state._setRoute('/')
+    } catch (err) {
+        debug('error accepting the invitation', err)
+        throw err
+    }
 }
 
 State.Login = async function (
@@ -102,7 +129,7 @@ State.Login = async function (
 ) {
     const keys = state.keys
     if (!keys) throw new Error('not keys')
-    const userData = await ky.get('/login').json<{ user:User }>()
+    const userData = await ky.get('/api/login').json<{ user:User }>()
     debug('user data', userData)
     state.user.value = userData.user
 }

@@ -11,16 +11,44 @@ export const HomeRoute:FunctionComponent<{
 }> = function HomeRoute ({ state }) {
     debug('home route', state)
     return html`<div class="route home">
+        <p class="explanation">
+            A guestbook for <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://innovatebellingham.org/"
+            >
+                Innovate Bellingham
+            </a>
+        </p>
+
+        <hr />
+
         <p>
             Are you already a member? <a href="/link">
                 Link this device to an existing account.</a>
         </p>
         <p>
-            Or <a href="/accept">redeem an invitation.</a>
+            Or <a href="/accept">Accept an invitation.</a>
         </p>
 
         <p>
-            Lost your keys? <a href="lost">Reset my keys</a>
+            Lost your keys? <a href="lost">Reset your keys</a>.
+        </p>
+
+        <hr />
+
+        <p>
+            This is a contact list for the <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://innovatebellingham.org/"
+            >Innovate Bellingham</a> meeting.
+        </p>
+
+        <p>
+            <a href="/contact">The contact list</a> is only visible to other
+            members of the group. To join this group, you must be invited by
+            someone who is already a member.
         </p>
     </div>`
 }

@@ -8,8 +8,8 @@ import './style.css'
 // import { createDebug } from '@substrate-system/debug'
 // const debug = createDebug()
 
-const router = Router()
 const state = State()
+const router = Router(state)
 
 if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
     // @ts-expect-error DEV env
@@ -40,16 +40,6 @@ export const Guestbook:FunctionComponent = function Example () {
 
             <${Nav} state=${state} />
         </header>
-        <p class="explanation">
-            A guestbook for <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://innovatebellingham.org/"
-            >
-                Innovate Bellingham
-            </a>
-        </p>
-
         <${ChildNode} state=${state} params=${params} />
     </div>`
 }

@@ -1,6 +1,6 @@
 // import { TextInput } from '@nichoth/components/htm/text-input'
 import { html } from 'htm/preact'
-import { useCallback } from 'preact/hooks'
+import { useCallback, useEffect } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { TextInput } from '@nichoth/components/htm/text-input'
@@ -25,6 +25,17 @@ export const AcceptRoute:FunctionComponent<{
     params:Params
 }> = function ({ state, params }) {
     const isInvitationValid = useSignal<boolean>(false)
+    const isResolving = useSignal<boolean>(false)
+
+    useEffect(() => {
+        if (params.token) {
+            (async () => {
+                isResolving.value = true
+                await State.acceptInvitation(state, params.token!)
+                isResolving.value = false
+            })()
+        }
+    }, [params.token])
 
     const redeemInvitation = useCallback((ev:SubmitEvent) => {
         ev.preventDefault()

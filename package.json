@@ -25,13 +25,15 @@
     "@substrate-system/css-normalize": "^0.0.7",
     "@substrate-system/icons": "^0.1.11",
     "@substrate-system/routes": "^5.0.2",
+    "@substrate-system/util": "^0.1.23",
     "fauna": "^2.5.0",
     "htm": "^3.1.1",
     "ky": "^1.7.4",
     "preact": "^10.25.4",
     "route-event": "^6.0.9",
     "stylelint": "^16.13.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@netlify/functions": "^3.0.1",

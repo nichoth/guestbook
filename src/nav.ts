@@ -3,14 +3,15 @@ import type { FunctionComponent } from 'preact'
 import { type State } from './state'
 
 export const Nav:FunctionComponent<{
-    state:ReturnType<typeof State
->}> = function Nav ({ state }) {
+    state:ReturnType<typeof State>
+}> = function Nav ({ state }) {
     const route = state.route.value
 
     const links = [
         { href: '/', text: 'Index' },
         state.user.value ? { href: '/link', text: 'Add a device' } : null,
-        state.user.value ? { href: '/invitations', text: 'Invitations' } : null
+        state.user.value ? { href: '/invitations', text: 'Invitations' } : null,
+        { href: '/about', text: 'The Colophon' }
     ].filter(Boolean)
 
     return html`<nav class="nav">

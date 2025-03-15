@@ -9,12 +9,13 @@ import './link.css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
 
+/**
+ * Route for if you lost your keys.
+ */
 export const LostRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
-    debug('link route', state)
-
-    const isOk = useSignal<boolean>(false)
+    const inputHasValue = useSignal<boolean>(false)
     const isResolving = useSignal<boolean>(false)
 
     const submit = useCallback(async (ev:SubmitEvent) => {
@@ -31,7 +32,7 @@ export const LostRoute:FunctionComponent<{
 
     const input = useCallback((ev:InputEvent) => {
         const email = (ev.target as HTMLInputElement).value
-        if (isOk.value !== !!email) isOk.value = !!email
+        if (inputHasValue.value !== !!email) inputHasValue.value = !!email
     }, [])
 
     return html`<div class="route lost">
@@ -44,6 +45,7 @@ export const LostRoute:FunctionComponent<{
 
             <${BtnPrimary}
                 type="submit"
+                disabled=${!inputHasValue.value}
                 isSpinning=${isResolving.value}
             >
                 Reset my keys

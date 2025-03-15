@@ -2,6 +2,10 @@
     --mw: 30rem;
 }
 
+hr {
+    margin: 1rem 0;
+}
+
 body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     /* margin: 1rem; */
@@ -21,7 +25,6 @@ pre {
 
 .explanation {
     max-width: var(--mw);
-    margin: 0 auto;
 }
 
 .count-controls {
@@ -92,7 +95,7 @@ header {
 }
 
 h2 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     border-bottom: 2px solid;
 }
 
