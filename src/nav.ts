@@ -9,9 +9,10 @@ export const Nav:FunctionComponent<{
 
     const links = [
         { href: '/', text: 'Index' },
+        state.user.value ? { href: '/list', text: 'The List' } : null,
         state.user.value ? { href: '/link', text: 'Add a device' } : null,
         state.user.value ? { href: '/invitations', text: 'Invitations' } : null,
-        { href: '/about', text: 'The Colophon' }
+        { href: '/about', text: 'Colophon' }
     ].filter(Boolean)
 
     return html`<nav class="nav">

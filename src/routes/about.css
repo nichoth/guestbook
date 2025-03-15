@@ -12,4 +12,9 @@
         margin-top: 2rem;
         margin-bottom: 0.5rem;
     }
+
+    & ul {
+        list-style: none;
+        padding: 0;
+    }
 }

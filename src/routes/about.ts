@@ -110,5 +110,11 @@ export const AboutRoute:FunctionComponent = function () {
             transmits the invitation code out-of-band from this website.
         </p>
 
+        <h2>Contact</h2>
+        <ul>
+            <li>
+                <a href="mailto:nichoth@bicycle.codes">nichoth@bicycle.codes</a>
+            </li>
+        </ul>
     </div>`
 }
