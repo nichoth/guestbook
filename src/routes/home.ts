@@ -25,10 +25,10 @@ export const HomeRoute:FunctionComponent<{
 
         <p>
             Are you already a member? <a href="/link">
-                Link this device to an existing account.</a>
+                Link this device to your existing account.</a>
         </p>
         <p>
-            Or <a href="/accept">Accept an invitation.</a>
+            Or <a href="/accept">accept an invitation</a>.
         </p>
 
         <p>
