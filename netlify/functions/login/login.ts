@@ -49,7 +49,9 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
 
             user {
                 id,
+                email,
                 username,
+                body,
                 humanName,
                 machines: Machine.by_owner(user) { humanName, did, id }
             }

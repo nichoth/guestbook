@@ -1,24 +1,4 @@
 .route.accept {
-    & dd {
-        padding-left: 1rem;
-        padding-bottom: 4px;
-        margin-bottom: 0.5rem;
-        border-bottom: 1px dashed gray;
-
-        &:last-child {
-            border-bottom: none;
-        }
-    }
-
-    & dt {
-        margin-right: 1rem;
-        font-family: Menlo, Consolas, Monaco, "Liberation Mono", "Lucida Console", monospace;
-    }
-
-    & dl {
-        margin-bottom: 2rem;
-    }
-
     & form.newuser {
         border: 1px solid;
         padding: 1rem;

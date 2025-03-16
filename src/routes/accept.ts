@@ -9,6 +9,7 @@ import { useSignal, batch, useComputed } from '@preact/signals'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import type { Invitation } from '../types.js'
 import './accept.css'
+import '../components/dl.css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
 
