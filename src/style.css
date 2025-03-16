@@ -70,10 +70,16 @@ header {
         border-bottom: 1px solid;
 
         & li {
-            transition: all 0.2s;
+            & a {
+                transition: all 0.2s;
+                border-bottom: 2px solid transparent;
+                text-decoration: none;
+            }
 
             &.active {
-                font-weight: bold;
+                & a {
+                    border-bottom-color: black;
+                }
             }
         }
 
