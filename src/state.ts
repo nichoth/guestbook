@@ -209,14 +209,17 @@ State.Login = async function (
 ):Promise<{ user:User, machines:Machine[] }> {
     const keys = state.keys
     if (!keys) throw new Error('not keys')
-    const userData = await ky.get('/api/login').json<{
-        user:User,
-        machines:Machine[]
+    const userData = await ky.get('/api/login').json<User & {
+        machines: Machine[]
     }>()
     debug('user data', userData)
-    state.user.value = userData.user
+    const { machines, ...stateData } = userData
+    batch(() => {
+        state.user.value = stateData
+        state.machines.value = machines
+    })
 
-    return userData
+    return { user: stateData, machines }
 }
 
 function escapeHtml (html:string) {

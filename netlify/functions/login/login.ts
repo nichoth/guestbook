@@ -26,6 +26,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     const { seq, author } = parsedHeader
     const isOk = await verifyParsed(parsedHeader)   // check signature
     if (!isOk) {
+        console.log('**bad sig**', parsedHeader)
         return { statusCode: 403, body: 'Invalid signature' }
     }
 
@@ -41,7 +42,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
             if (machine == null) {
                 abort('Invalid key')
             }
-            if (machine?.seq <= ${seq}) {
+            if (machine?.seq >= ${seq}) {
                 abort('Invalid sequence number')
             }
             let user = machine?.owner
@@ -59,6 +60,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         const err = _err as AbortError
         if (err.code === 'abort') {
             if (err.abort?.toString().includes('sequence number')) {
+                console.log('**bad sequence**', err)
                 return { statusCode: 403, body: 'Bad signature' }
             }
 
