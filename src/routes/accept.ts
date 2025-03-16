@@ -30,8 +30,9 @@ export const AcceptRoute:FunctionComponent<{
     const isFetchResolving = useSignal<boolean>(false)
     const isCreateResolving = useSignal<boolean>(false)  // create user
     const invitationSignal = useSignal<Invitation|null>(null)
-    const invitationErr = useSignal<string|null>(null)
+    const fetchInvitationErr = useSignal<string|null>(null)
     const isUserInputOk = useSignal<boolean>(false)
+    const redeemInvitationError = useSignal<string|null>(null)
     const invitationTs = useComputed(() => {
         if (!invitationSignal.value) return
         return (DateTime.fromISO(invitationSignal.value.ts.isoString)
@@ -52,7 +53,7 @@ export const AcceptRoute:FunctionComponent<{
                     const err = _err as HTTPError
                     batch(async () => {
                         isFetchResolving.value = false
-                        invitationErr.value = await err.response.text()
+                        fetchInvitationErr.value = await err.response.text()
                     })
                 }
             })()
@@ -76,7 +77,7 @@ export const AcceptRoute:FunctionComponent<{
             const errMsg = await err.response.text()
             batch(() => {
                 isFetchResolving.value = false
-                invitationErr.value = errMsg
+                fetchInvitationErr.value = errMsg
             })
         }
     }, [])
@@ -95,7 +96,13 @@ export const AcceptRoute:FunctionComponent<{
             isCreateResolving.value = false
         } catch (_err) {
             debug('got an error', _err)
+            const err = _err as HTTPError
             isCreateResolving.value = false
+            if (err.response.status === 409) {
+                // conflicting email -- show the error
+                const text = await err.response.text()
+                redeemInvitationError.value = text
+            }
         }
     }, [])
 
@@ -194,6 +201,13 @@ export const AcceptRoute:FunctionComponent<{
                         Create contact info
                     <//>
                 </div>
+
+                ${redeemInvitationError.value ?
+                    html`<div class="error">
+                        ${redeemInvitationError.value}
+                    </div>` :
+                    null
+                }
             </form>
         </div>`
     }
@@ -219,9 +233,9 @@ export const AcceptRoute:FunctionComponent<{
             </div>
         </form>
 
-        ${invitationErr.value ?
+        ${fetchInvitationErr.value ?
             html`<div class="error invitation-error">
-                ${invitationErr.value}
+                ${fetchInvitationErr.value}
             </div>` :
             null
         }

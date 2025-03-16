@@ -168,13 +168,12 @@ export const handler:Handler = async function handler (
                 return { body: 'Invalid invitation', statusCode: 403 }
             }
 
-            if (err.code === 'contraint_failure') {
+            if (err.code === 'constraint_failure') {
                 if (err.queryInfo?.summary?.includes('unique constraint')) {
                     return { statusCode: 409, body: 'That email is taken.' }
                 }
             }
 
-            console.log('errrrrrrrrrrrrrrrrrrrrrrrr', err)
             return { statusCode: 500, body: err.message }
         }
 
