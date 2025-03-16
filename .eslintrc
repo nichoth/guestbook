@@ -23,6 +23,7 @@
     ],
     "operator-linebreak": ["off"],
     "multiline-ternary": "off",
+    "@typescript-eslint/no-unused-expressions": "off",
     "@typescript-eslint/consistent-type-imports": [
       "error",
       {

@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import preact from '@preact/preset-vite'
 import postcssNesting from 'postcss-nesting'
 import cssnanoPlugin from 'cssnano'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+
+const iconsPath = 'node_modules/@shoelace-style/shoelace/dist/assets/icons'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,7 +18,15 @@ export default defineConfig({
             babel: {
                 sourceMaps: 'both'
             }
-        })
+        }),
+        viteStaticCopy({
+            targets: [
+                {
+                    src: iconsPath,
+                    dest: 'assets',
+                },
+            ],
+        }),
     ],
     // https://github.com/vitejs/vite/issues/8644#issuecomment-1159308803
     esbuild: {

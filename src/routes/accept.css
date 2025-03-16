@@ -18,7 +18,7 @@
     }
 
     & .input-group {
-        &.username {
+        &.username, &.email {
             /* for the help text */
             margin-bottom: 0.5rem;
         }

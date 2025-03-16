@@ -22,6 +22,7 @@
     "@nichoth/components": "^0.16.17",
     "@octokit/core": "^6.1.4",
     "@preact/signals": "^2.0.0",
+    "@shoelace-style/shoelace": "^2.20.1",
     "@substrate-system/css-normalize": "^0.0.7",
     "@substrate-system/dom": "^0.1.7",
     "@substrate-system/icons": "^0.1.11",
@@ -34,6 +35,7 @@
     "route-event": "^6.0.9",
     "stylelint": "^16.13.0",
     "uuid": "^11.1.0",
+    "vite-plugin-static-copy": "^2.3.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

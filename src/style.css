@@ -113,3 +113,24 @@ button {
         background: seashell;
     }
 }
+
+/* ----------------------- shoelace overrides ----------------------------- */
+
+/*
+    see https://www.abeautifulsite.net/posts/flash-of-undefined-custom-elements/
+*/
+:not(:defined) {
+    visibility: hidden;
+}
+
+.sl-toast-stack {
+    width: 80vw;
+    left: 10vw;
+    top: 80vh;
+
+    & sl-alert {
+        font-size: 1rem;
+    }
+}
+
+/* ----------------------- /shoelace overrides ---------------------------- */

@@ -5,6 +5,11 @@ import Route from 'route-event'
 import { SignedRequest } from '@bicycle-codes/request'
 import type { User } from './types'
 import Debug from '@substrate-system/debug'
+import { type RefObject } from 'preact'
+// eslint-disable-next-line
+import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
+import '@shoelace-style/shoelace/dist/themes/light.css'
+import '@shoelace-style/shoelace/dist/components/icon/icon.js'
 const debug = Debug()
 
 let ky:KyInstance
@@ -16,6 +21,7 @@ let ky:KyInstance
  *   - user data
  */
 export function State ():{
+    _refs:Signal<{ success:RefObject<SlAlert> }|null>
     route:Signal<string>;
     // `null` means we haven't contacted the server yet
     // `false` means we got a response, and this machine is not a user
@@ -26,6 +32,7 @@ export function State ():{
     const onRoute = Route()
 
     const state = {
+        _refs: signal(null),
         _setRoute: onRoute.setRoute.bind(onRoute),
         keys: signal<Keys|null>(null),
         user: signal(null),
@@ -120,7 +127,44 @@ State.fetchInvitation = async function (
         searchParams: { code: invitationCode }
     }).json<{ code, ts, creator }>()
 
+    debug('got the invitation', res)
+
     return res
+}
+
+/**
+ * Global for toasts.
+ * If `duration` is not passed in, the default is 5000 ms.
+ */
+State.toast = async function (
+    state:ReturnType<typeof State>,
+    type:'success',
+    content:string,
+    opts:Partial<{
+        duration:number
+    }> = {}
+):Promise<void> {
+    const refs = state._refs.value!
+    const ref = refs[type]
+
+    ref.current?.setAttribute(
+        'duration',
+        '' + (opts.duration === undefined ? 5000 : null)
+    )
+
+    // <sl-icon slot="icon"
+    //     name="${type === 'success' ?
+    //         'check2-circle' :
+    //         'info-circle'
+    //     }"
+    // ></sl-icon>
+
+    ref.current!.innerHTML = `
+        <sl-icon slot="icon" name="check2-circle"></sl-icon>
+        ${escapeHtml(content)}
+    `
+
+    ref.current && await ref.current.toast()
 }
 
 State.acceptInvitation = async function (
@@ -151,4 +195,10 @@ State.Login = async function (
     const userData = await ky.get('/api/login').json<{ user:User }>()
     debug('user data', userData)
     state.user.value = userData.user
+}
+
+function escapeHtml (html:string) {
+    const div = document.createElement('div')
+    div.textContent = html
+    return div.innerHTML
 }

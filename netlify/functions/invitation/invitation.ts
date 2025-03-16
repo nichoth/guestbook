@@ -84,7 +84,11 @@ export const handler:Handler = async function handler (
                     if (inv == null) {
                         abort('Invalid invitation code')
                     } else {
-                        inv { code, creator { id, username, humanName } }
+                        inv { ts, note, code, creator {
+                            id,
+                            username,
+                            humanName
+                        } }
                     }
                 `)
 

@@ -27,7 +27,8 @@ export const AcceptRoute:FunctionComponent<{
     params:Params
 }> = function ({ state, params }) {
     const isInvitationValid = useSignal<boolean>(false)
-    const isResolving = useSignal<boolean>(false)
+    const isFetchResolving = useSignal<boolean>(false)
+    const isCreateResolving = useSignal<boolean>(false)
     const invitationSignal = useSignal<{ code, ts, creator }|null>(null)
     const invitationErr = useSignal<string|null>(null)
     const isUserInputOk = useSignal<boolean>(false)
@@ -35,17 +36,17 @@ export const AcceptRoute:FunctionComponent<{
     useEffect(() => {
         if (params.token) {
             (async () => {
-                isResolving.value = true
+                isFetchResolving.value = true
                 try {
                     const inv = await State.fetchInvitation(state, params.token!)
                     batch(() => {
-                        isResolving.value = false
+                        isFetchResolving.value = false
                         invitationSignal.value = inv
                     })
                 } catch (_err) {
                     const err = _err as HTTPError
                     batch(async () => {
-                        isResolving.value = false
+                        isFetchResolving.value = false
                         invitationErr.value = await err.response.text()
                     })
                 }
@@ -58,11 +59,11 @@ export const AcceptRoute:FunctionComponent<{
         const els = (ev.target as HTMLFormElement).elements
         try {
             const code = els['invcode'].value
-            isResolving.value = true
+            isFetchResolving.value = true
             const invitation = await State.fetchInvitation(state, code)
             batch(() => {
                 invitationSignal.value = invitation
-                isResolving.value = false
+                isFetchResolving.value = false
             })
             invitationSignal.value = invitation
             // buggy preact
@@ -72,7 +73,7 @@ export const AcceptRoute:FunctionComponent<{
             const err = _err as HTTPError
             const errMsg = await err.response.text()
             batch(() => {
-                isResolving.value = false
+                isFetchResolving.value = false
                 invitationErr.value = errMsg
             })
         }
@@ -82,13 +83,16 @@ export const AcceptRoute:FunctionComponent<{
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
         try {
+            isCreateResolving.value = true
             await State.acceptInvitation(state, invitationSignal.value!.code, {
                 username: els['username'].value,
                 email: els['email'].value,
                 body: els['body'].value
             })
+            isCreateResolving.value = false
         } catch (_err) {
             debug('got an error', _err)
+            isCreateResolving.value = false
         }
     }, [])
 
@@ -102,8 +106,7 @@ export const AcceptRoute:FunctionComponent<{
     }, [])
 
     if (params.token) {
-        return html`<div class="route add">
-            <p>Accepting your invitation...</p>
+        return html`<div class="route accept">
         </div>`
     }
 
@@ -140,7 +143,13 @@ export const AcceptRoute:FunctionComponent<{
                 <div class="help-text">
                     Your name, as you want it to appear on the site.
                 </div>
+
                 <${TextInput} type="email" name="email" displayName="email" />
+                <div class="help-text">
+                    This email address is used to reset your keys if you
+                    lose them.
+                </div>
+
                 <${TextInput}
                     type="text"
                     name="bluesky"
@@ -154,9 +163,9 @@ export const AcceptRoute:FunctionComponent<{
                     <${BtnPrimary}
                         type="submit"
                         disabled=${!isUserInputOk.value}
-                        isSpinning=${isResolving}
+                        isSpinning=${isCreateResolving}
                     >
-                        Create contact data
+                        Create contact info
                     <//>
                 </div>
             </form>
@@ -176,7 +185,7 @@ export const AcceptRoute:FunctionComponent<{
                 <${BtnPrimary}
                     type="submit"
                     disabled=${!isInvitationValid.value}
-                    isSpinning=${isResolving}
+                    isSpinning=${isFetchResolving}
                 >
                     Accept Invitation
                 <//>
