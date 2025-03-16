@@ -84,7 +84,7 @@ export const AcceptRoute:FunctionComponent<{
     const redeemInvitation = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
-        const machineName = els['machine-name']
+        const machineName = els['machine-name'].value
         try {
             isCreateResolving.value = true
             await State.acceptInvitation(state, invitationSignal.value!.code, {

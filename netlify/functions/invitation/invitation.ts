@@ -133,6 +133,7 @@ export const handler:Handler = async function handler (
 
         // query the DB
         // check that the given invitation is valid
+        console.log('**createing user & machine**********')
         let newUserData:{ machine, user }
         try {
             const res = await client.query<{ user, machine }>(fql`
@@ -140,23 +141,25 @@ export const handler:Handler = async function handler (
 
                 let user = User.create({
                     username: ${slugUsername},
-                    humanName: ${username}
+                    humanName: ${username},
                     email: ${email}
                 })
 
                 let machine = Machine.create({
                     did: ${data.machine.did},
                     machineName: ${machineName},
-                    humanName: ${data.machine.humanName}
+                    humanName: ${data.machine.humanName},
                     owner: user
                 })
 
                 {
-                    user { username, humanName },
+                    user { id, username, humanName }
                     machine { id }
                 }
             `)
             newUserData = res.data
+
+            console.log('the full response.....', res)
 
             console.log('the new user...', JSON.stringify(newUserData, null, 2))
         } catch (_err) {
@@ -164,6 +167,14 @@ export const handler:Handler = async function handler (
             if (err.code === 'abort') {
                 return { body: 'Invalid invitation', statusCode: 403 }
             }
+
+            if (err.code === 'contraint_failure') {
+                if (err.queryInfo?.summary?.includes('unique constraint')) {
+                    return { statusCode: 409, body: 'That email is taken.' }
+                }
+            }
+
+            console.log('errrrrrrrrrrrrrrrrrrrrrrrr', err)
             return { statusCode: 500, body: err.message }
         }
 

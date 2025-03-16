@@ -12,7 +12,8 @@ import '@shoelace-style/shoelace/dist/themes/light.css'
 import '@shoelace-style/shoelace/dist/components/icon/icon.js'
 const debug = Debug()
 
-let ky:KyInstance
+// set this incase they are not a user. We still try to login.
+let ky:KyInstance = Ky
 
 /**
  * Setup any state
@@ -40,23 +41,12 @@ export function State ():{
     }
 
     Keys.load().then(async keys => {
-        if (!keys.persisted) return  // is not yet a user, don't create keys yet
-        // we create & persist keys in the `acceptInvitation` function below
+        if (!keys.persisted) return  /* is not yet a user, don't create keys yet
+        we create & persist keys in the `acceptInvitation` function below */
         state.keys.value = keys
         ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
         State.init(state)
     })
-
-    // if (navigator.storage && navigator.storage.persist) {
-    //     navigator.storage.persist().then((persistent) => {
-    //         console.log('persistent', persistent)
-    //         if (persistent) {
-    //             console.log('Storage will not be cleared except by explicit user action')
-    //         } else {
-    //             console.log('Storage may be cleared by the UA under storage pressure.')
-    //         }
-    //     })
-    // }
 
     /**
      * set the app state to match the browser URL
@@ -174,7 +164,6 @@ State.acceptInvitation = async function (
     userData:User,
     machineName:string,
 ) {
-    debug('accept the invitation', invitationCode)
     const keys = await Keys.load()
 
     // ask for persistent storage
@@ -190,6 +179,9 @@ State.acceptInvitation = async function (
     }
 
     await keys.persist()
+    state.keys.value = keys
+    // set the ky instance too
+    ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
 
     try {
         await ky.patch('/api/invitation', {
@@ -197,7 +189,7 @@ State.acceptInvitation = async function (
                 code: invitationCode,
                 userData,
                 machine: {
-                    did: state.keys.value?.DID,
+                    did: keys.DID,
                     humanName: machineName
                 }
             }

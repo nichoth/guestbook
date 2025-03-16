@@ -31,7 +31,7 @@
     }
 
     & .input-group {
-        &.username, &.email {
+        &.username, &.email, &.machine-name {
             /* for the help text */
             margin-bottom: 0.5rem;
         }
@@ -44,7 +44,7 @@
             }
 
             &:not(:placeholder-shown)~label {
-                top: -10px;
+                top: -14px;
             }
         }
 
