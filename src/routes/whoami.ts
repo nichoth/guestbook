@@ -14,6 +14,8 @@ export const WhoamiRoute:FunctionComponent<{
     const user = state.user.value
     if (!user) return null
 
+    debug('state.user', state.user.value)
+
     return html`<div class="route whoami">
         <h2>Who am I?</h2>
     </div>`

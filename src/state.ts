@@ -212,7 +212,6 @@ State.Login = async function (
     const userData = await ky.get('/api/login').json<User & {
         machines: Machine[]
     }>()
-    debug('user data', userData)
     const { machines, ...stateData } = userData
     batch(() => {
         state.user.value = stateData

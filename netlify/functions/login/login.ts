@@ -34,10 +34,10 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     // check the the given keys are related to a user
     // check the the given `seq` number is ok
     // return the user and their machines
-    let user:(User & { machines: (Machine & { id })[] })
+    let user:(User & { machines: { data:(Machine & { id })[] } })
     try {
         const res = await client.query<
-            User & { machines:(Machine & { id })[] }>(fql`
+            User & { machines:{ data:(Machine & { id })[] } }>(fql`
             let machine = Machine.by_did(${author}).first()
             if (machine == null) {
                 abort('Invalid key')
@@ -73,6 +73,9 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
 
     return {
         statusCode: 200,
-        body: JSON.stringify(user)
+        body: JSON.stringify({
+            ...user,
+            machines: user.machines.data
+        })
     }
 }
