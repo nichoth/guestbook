@@ -1,6 +1,5 @@
 import Router from '@substrate-system/routes'
 import { HomeRoute } from './home.js'
-import { AddRoute } from './add.js'
 import { LinkRoute } from './link.js'
 import { AcceptRoute } from './accept.js'
 import { LostRoute } from './lost.js'
@@ -17,10 +16,6 @@ export default function _Router (state:ReturnType<typeof State>):Router {
 
     router.addRoute('/lost', () => {
         return LostRoute
-    })
-
-    router.addRoute('/add', () => {
-        return AddRoute
     })
 
     router.addRoute('/link', () => {

@@ -48,8 +48,8 @@ export const AboutRoute:FunctionComponent = function () {
         </p>
 
         <p>
-            That is the level of trust to keep in mind when you use this.
-            We have factored trust in such a way that we are trusting the other
+            That is the trust level to keep in mind when you use this.
+            You are trusting the other
             people at <a
                 target="_blank"
                 rel="noopener noreferrer"
@@ -57,7 +57,6 @@ export const AboutRoute:FunctionComponent = function () {
             >Innovate Bellingham</a> not to give out memberships to spam
             companies, etc.
         </p>
-
 
         <h2>Keys</h2>
         <p>
@@ -69,7 +68,7 @@ export const AboutRoute:FunctionComponent = function () {
         </p>
 
         <p>
-            The good news is that there are no passwords in this system.
+            Some good news is that there are no passwords in this system.
             You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
             "non extractable"</a> keypairs in <code>indexedDB</code>.
@@ -77,20 +76,27 @@ export const AboutRoute:FunctionComponent = function () {
 
         <p>
             This is good because it is one less thing that my server needs to
-            remember about you ${EM_DASH} your password, and it eliminates
+            remember about you ${EM_DASH} your password. It eliminates
             a security vector ${EM_DASH} there is no password to think about.
         </p>
 
         <p>
-            A drawback is that your web browser is the only place that has your
-            keys. So if you do something like delete your browser data, then
-            your keys disappear too.
+            Something to keep in mind is that your web browser is the only place
+            that has your keys. So if you do something like delete your browser
+            data, then your keys disappear too.
         </p>
 
         <p>
             I would recommend <a href="/link">linking a second device</a> to
             your account, so that there is a backup if one browser deletes
             your keys.
+        </p>
+
+        <p>
+            A good practice is to have a phone type device (portable device)
+            that is always logged in. That way, if you need to use a different
+            machine, like say a public library terminal, then you can authorize
+            the new machine for a limited time.
         </p>
 
         <h2>Membership</h2>
@@ -107,7 +113,7 @@ export const AboutRoute:FunctionComponent = function () {
         </p>
 
         <p>
-            An invitation is a record in the database containing a${NBSP}
+            An invitation is a record in a database containing a${NBSP}
             <a href="https://github.com/uuidjs/uuid">universllay unique ID</a>,
             which is created by an existing member. The existing member
             transmits the invitation code out-of-band from this website.
@@ -131,9 +137,8 @@ export const AboutRoute:FunctionComponent = function () {
                 <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href="https://innovatebellingham.org/"
                     href="https://bsky.app/profile/nichoth.com"
-                ></a>
+                >bsky.app/nichoth</a>
             </li>
         </ul>
     </div>`
