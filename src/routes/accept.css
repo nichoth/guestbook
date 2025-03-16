@@ -16,4 +16,16 @@
             top: 12px;
         }
     }
+
+    & div.error {
+        font-size: 1rem;
+        margin-top: 2rem;
+
+        &::before {
+            color: #960000;
+            border-bottom: 2px solid;
+            margin-right: 1rem;
+            content: "Error";
+        }
+    }
 }

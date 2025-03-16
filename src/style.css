@@ -1,9 +1,16 @@
 :root {
     --mw: 30rem;
+    --error-bgc: red;
 }
 
 hr {
     margin: 1rem 0;
+}
+
+div.error {
+    background-color: white;
+    border: 4px solid var(--error-bgc, red);
+    padding: 1rem;
 }
 
 body {
