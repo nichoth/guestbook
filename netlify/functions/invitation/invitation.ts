@@ -18,6 +18,7 @@ const Request = z.object({
     userData: z.object({
         username: z.string(),
         email: z.string(),
+        body: z.string()
     }),
     machine: z.object({
         humanName: z.string(),
@@ -125,7 +126,7 @@ export const handler:Handler = async function handler (
             return { body: 'Invalid JSON', statusCode: 415 }
         }
 
-        const { username, email } = data.userData
+        const { username, email, body } = data.userData
         const { code, machine } = data
         const { did } = machine
         const slugUsername = username.split(' ').filter(Boolean).join('_')
@@ -133,35 +134,50 @@ export const handler:Handler = async function handler (
 
         // query the DB
         // check that the given invitation is valid
-        console.log('**createing user & machine**********')
-        let newUserData:{ machine, user }
         try {
-            const res = await client.query<{ user, machine }>(fql`
+            const res = await client.query<{
+                id,
+                humanName,
+                owner: { id, humanName, username }
+            }>(fql`
                 RedeemInvitation(${code})
 
                 let user = User.create({
                     username: ${slugUsername},
                     humanName: ${username},
+                    body: ${body},
                     email: ${email}
                 })
 
                 let machine = Machine.create({
                     did: ${data.machine.did},
                     machineName: ${machineName},
+                    seq: 0,
                     humanName: ${data.machine.humanName},
                     owner: user
                 })
 
-                {
-                    user { id, username, humanName }
-                    machine { id }
-                }
+                machine { id, humanName, owner { id, humanName, username } }
             `)
-            newUserData = res.data
 
-            console.log('the full response.....', res)
+            const newUserData:{
+                id,
+                humanName
+                owner:{ id, humanName, username }
+            } = res.data
 
             console.log('the new user...', JSON.stringify(newUserData, null, 2))
+
+            return {
+                body: JSON.stringify({
+                    user: newUserData.owner,
+                    machine: {
+                        id: newUserData.id,
+                        humanName: newUserData.humanName
+                    }
+                }),
+                statusCode: 200
+            }
         } catch (_err) {
             const err = _err as AbortError
             if (err.code === 'abort') {
@@ -174,10 +190,9 @@ export const handler:Handler = async function handler (
                 }
             }
 
+            console.log('the errrrrrrrrrrrrrr', err)
             return { statusCode: 500, body: err.message }
         }
-
-        return { body: JSON.stringify(newUserData), statusCode: 200 }
     }
 
     // create a new invitation

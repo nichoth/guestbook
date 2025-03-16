@@ -1,9 +1,9 @@
-import { type Signal, signal } from '@preact/signals'
+import { type Signal, batch, signal } from '@preact/signals'
 import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance } from 'ky'
 import Route from 'route-event'
 import { SignedRequest } from '@bicycle-codes/request'
-import type { Invitation, User } from './types'
+import type { Invitation, User, Machine } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 // eslint-disable-next-line
@@ -27,6 +27,7 @@ export function State ():{
     // `null` means we haven't contacted the server yet
     // `false` means we got a response, and this machine is not a user
     user:Signal<null|false|User>;
+    machines:Signal<Machine[]|null>;
     keys:Signal<Keys|null>;
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
@@ -37,6 +38,7 @@ export function State ():{
         _setRoute: onRoute.setRoute.bind(onRoute),
         keys: signal<Keys|null>(null),
         user: signal(null),
+        machines: signal(null),
         route: signal<string>(location.pathname + location.search)
     }
 
@@ -68,18 +70,15 @@ export function State ():{
 }
 
 /**
- * Get your user data from the server.
+ * Get your user record from the server.
+ * This tells us if the current machine has an account.
  */
 State.init = async function (state:ReturnType<typeof State>) {
-    const data = await ky.post('/api/login').json<{ user:User|false }>()
-    debug('the user', data.user)
+    const data = await State.Login(state)
 
     if (!data.user) {
         state.user.value = false
-        return
     }
-
-    state.user.value = data.user
 }
 
 /**
@@ -143,13 +142,6 @@ State.toast = async function (
         '' + (opts.duration === undefined ? 5000 : null)
     )
 
-    // <sl-icon slot="icon"
-    //     name="${type === 'success' ?
-    //         'check2-circle' :
-    //         'info-circle'
-    //     }"
-    // ></sl-icon>
-
     ref.current!.innerHTML = `
         <sl-icon slot="icon" name="check2-circle"></sl-icon>
         ${escapeHtml(content)}
@@ -165,21 +157,6 @@ State.acceptInvitation = async function (
     machineName:string,
 ) {
     const keys = await Keys.load()
-
-    // ask for persistent storage
-    if (navigator.storage && navigator.storage.persist) {
-        // This asks the user for permission in Firefox.
-        // Chrome doesn't ask, automatically determines if it's allowed or not.
-        const persistent = await navigator.storage.persist()
-        if (persistent) {
-            debug('Storage will not be cleared except by explicit user action')
-        } else {
-            debug('Storage may be cleared by the UA under storage pressure.')
-        }
-    }
-
-    await keys.persist()
-    state.keys.value = keys
     // set the ky instance too
     ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
 
@@ -194,6 +171,32 @@ State.acceptInvitation = async function (
                 }
             }
         })
+
+        // created the user record, now save the keys locally
+        // ask for persistent storage
+        if (navigator.storage && navigator.storage.persist) {
+            // This asks the user for permission in Firefox.
+            // Chrome doesn't ask, automatically determines if it's allowed or not.
+            const persistent = await navigator.storage.persist()
+            if (persistent) {
+                debug('Storage will not be cleared except by explicit user action')
+            } else {
+                debug('Storage may be cleared by the UA under storage pressure.')
+            }
+        }
+
+        debug('__invitation accepted__', userData)
+
+        batch(() => {
+            state.keys.value = keys
+            state.user.value = userData
+            state.machines.value = (state.machines.value || []).concat([{
+                did: keys.DID,
+                humanName: machineName
+            }])
+        })
+
+        await keys.persist()
         state._setRoute('/')
     } catch (err) {
         debug('error accepting the invitation', err)
@@ -203,12 +206,17 @@ State.acceptInvitation = async function (
 
 State.Login = async function (
     state:ReturnType<typeof State>,
-) {
+):Promise<{ user:User, machines:Machine[] }> {
     const keys = state.keys
     if (!keys) throw new Error('not keys')
-    const userData = await ky.get('/api/login').json<{ user:User }>()
+    const userData = await ky.get('/api/login').json<{
+        user:User,
+        machines:Machine[]
+    }>()
     debug('user data', userData)
     state.user.value = userData.user
+
+    return userData
 }
 
 function escapeHtml (html:string) {

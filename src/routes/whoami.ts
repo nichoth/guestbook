@@ -6,11 +6,15 @@ import Debug from '@substrate-system/debug'
 const debug = Debug()
 
 /**
- * Route for if you lost your keys.
+ * Route that shows your identity.
  */
 export const WhoamiRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
+    const user = state.user.value
+    if (!user) return null
+
     return html`<div class="route whoami">
+        <h2>Who am I?</h2>
     </div>`
 }

@@ -39,8 +39,10 @@ export const AcceptRoute:FunctionComponent<{
             .toLocaleString(DateTime.DATETIME_MED))
     })
 
+    debug('state in here', state)
+
     useEffect(() => {
-        if (params.token) {
+        if (params && params.token) {
             (async () => {
                 isFetchResolving.value = true
                 try {
@@ -58,7 +60,7 @@ export const AcceptRoute:FunctionComponent<{
                 }
             })()
         }
-    }, [params.token])
+    }, [params && params.token])
 
     const fetchInvitation = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
@@ -85,7 +87,7 @@ export const AcceptRoute:FunctionComponent<{
     const redeemInvitation = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
-        const machineName = els['machine-name'].value
+        const machineName = els['machine-name'].value || 'Root device'
         try {
             isCreateResolving.value = true
             await State.acceptInvitation(state, invitationSignal.value!.code, {
@@ -115,7 +117,7 @@ export const AcceptRoute:FunctionComponent<{
         }
     }, [])
 
-    if (params.token) {
+    if (params && params.token) {
         return html`<div class="route accept">
         </div>`
     }

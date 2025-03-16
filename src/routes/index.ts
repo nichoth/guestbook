@@ -6,12 +6,17 @@ import { LostRoute } from './lost.js'
 import type { State } from '../state.js'
 import { AboutRoute } from './about.js'
 import { ListRoute } from './list.js'
+import { WhoamiRoute } from './whoami.js'
 
 export default function _Router (state:ReturnType<typeof State>):Router {
     const router:Router = new Router()
 
     router.addRoute('/', () => {
         return HomeRoute
+    })
+
+    router.addRoute('/whoami', () => {
+        return WhoamiRoute
     })
 
     router.addRoute('/lost', () => {

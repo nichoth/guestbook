@@ -12,6 +12,7 @@ export const Nav:FunctionComponent<{
         state.user.value ? { href: '/list', text: 'The List' } : null,
         state.user.value ? { href: '/link', text: 'Add a device' } : null,
         state.user.value ? { href: '/invitations', text: 'Invitations' } : null,
+        state.user.value ? { href: '/whoami', text: 'Who am I?' } : null,
         { href: '/about', text: 'Colophon' }
     ].filter(Boolean)
 

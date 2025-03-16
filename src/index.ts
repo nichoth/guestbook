@@ -23,7 +23,7 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
     window.State = State
 }
 
-export const Guestbook:FunctionComponent = function Example () {
+export const Guestbook:FunctionComponent = function () {
     const match = router.match(state.route.value)
     if (!match) {
         return html`<div class="404">

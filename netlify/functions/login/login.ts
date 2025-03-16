@@ -14,7 +14,7 @@ import type { User, Machine } from '../../../src/types.js'
  * Get a user record given a machine DID.
  */
 export const handler:Handler = async function handler (ev:HandlerEvent) {
-    if (ev.httpMethod !== 'POST') {
+    if (ev.httpMethod !== 'GET') {
         return { statusCode: 405 }
     }
     const secret = Netlify.env.get('FAUNA_SECRET')
