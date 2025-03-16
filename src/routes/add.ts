@@ -25,10 +25,6 @@ export const AddRoute:FunctionComponent<{
     return html`<div class="route add">
         <h2>Add your contact info</h2>
         <p>
-            This will update a database, adding the info you enter.
-        </p>
-
-        <p>
             The text box below accepts markdown.
         </p>
 

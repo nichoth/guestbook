@@ -5,8 +5,9 @@ import { useCallback, useEffect } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { TextInput } from '@nichoth/components/htm/text-input'
-import { useSignal } from '@preact/signals'
+import { useSignal, batch } from '@preact/signals'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
+import { waitFor } from '@substrate-system/dom'
 import './accept.css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
@@ -27,15 +28,27 @@ export const AcceptRoute:FunctionComponent<{
 }> = function ({ state, params }) {
     const isInvitationValid = useSignal<boolean>(false)
     const isResolving = useSignal<boolean>(false)
-    const invitation = useSignal<{ code, ts, creator }|null>(null)
+    const invitationSignal = useSignal<{ code, ts, creator }|null>(null)
     const invitationErr = useSignal<string|null>(null)
+    const isUserInputOk = useSignal<boolean>(false)
 
     useEffect(() => {
         if (params.token) {
             (async () => {
                 isResolving.value = true
-                await State.acceptInvitation(state, params.token!)
-                isResolving.value = false
+                try {
+                    const inv = await State.fetchInvitation(state, params.token!)
+                    batch(() => {
+                        isResolving.value = false
+                        invitationSignal.value = inv
+                    })
+                } catch (_err) {
+                    const err = _err as HTTPError
+                    batch(async () => {
+                        isResolving.value = false
+                        invitationErr.value = await err.response.text()
+                    })
+                }
             })()
         }
     }, [params.token])
@@ -45,14 +58,23 @@ export const AcceptRoute:FunctionComponent<{
         const els = (ev.target as HTMLFormElement).elements
         try {
             const code = els['invcode'].value
+            isResolving.value = true
             const invitation = await State.fetchInvitation(state, code)
-            debug('got this...', invitation)
+            batch(() => {
+                invitationSignal.value = invitation
+                isResolving.value = false
+            })
+            invitationSignal.value = invitation
+            // buggy preact
+            const el = await waitFor('#username') as HTMLInputElement
+            el.value = ''
         } catch (_err) {
             const err = _err as HTTPError
-            debug('error aaaaaaaaaaaaaaa', err)
             const errMsg = await err.response.text()
-            debug(errMsg)
-            invitationErr.value = errMsg
+            batch(() => {
+                isResolving.value = false
+                invitationErr.value = errMsg
+            })
         }
     }, [])
 
@@ -60,9 +82,13 @@ export const AcceptRoute:FunctionComponent<{
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
         try {
-            await State.acceptInvitation(state, els['invcode'].value)
+            await State.acceptInvitation(state, invitationSignal.value!.code, {
+                username: els['username'].value,
+                email: els['email'].value,
+                body: els['body'].value
+            })
         } catch (_err) {
-
+            debug('got an error', _err)
         }
     }, [])
 
@@ -81,17 +107,67 @@ export const AcceptRoute:FunctionComponent<{
         </div>`
     }
 
-    if (invitation.value) {
+    const userDataInput = useCallback((ev:InputEvent) => {
+        const els = (ev.target as HTMLInputElement).form?.elements
+        // const isOk
+        const username = els!['username']
+        const email = els!['email']
+        isUserInputOk.value = (username.value && email.value)
+    }, [])
+
+    if (invitationSignal.value) {
+        // we have fetched the invitation
+        // show a form to input your user data
         return html`<div class="route accept">
             <h2>Invitation</h2>
-            <pre>${invitation.value}</pre>
+            <pre>${JSON.stringify(invitationSignal.value, null, 2)}</pre>
+
+            <h2>Add your contact info</h2>
+            <p>
+                This information will be visible to other members of the
+                website. To become a member, you must be invited by an
+                existing member.
+            </p>
+
+            <hr />
+
+            <form
+                class="newuser"
+                onSubmit=${redeemInvitation}
+                onInput=${userDataInput}
+            >
+                <${TextInput} name="username" displayName="Your name" />
+                <div class="help-text">
+                    Your name, as you want it to appear on the site.
+                </div>
+                <${TextInput} type="email" name="email" displayName="email" />
+                <${TextInput}
+                    type="text"
+                    name="bluesky"
+                    displayName="Bluesky handle, eg @nichoth.com"
+                />
+
+                <label for="text">Any other info (markdown is ok)</label>
+                <textarea id="body" name="body"></textarea>
+
+                <div class="controls">
+                    <${BtnPrimary}
+                        type="submit"
+                        disabled=${!isUserInputOk.value}
+                        isSpinning=${isResolving}
+                    >
+                        Create contact data
+                    <//>
+                </div>
+            </form>
         </div>`
     }
 
     return html`<div class="route accept">
-        <form onSubmit=${fetchInvitation}>
+        <form onSubmit=${fetchInvitation} class="main-content">
             <${TextInput}
                 onInput=${handleInput}
+                id="invcode"
                 name="invcode"
                 displayName="Invitation code"
             />
@@ -100,6 +176,7 @@ export const AcceptRoute:FunctionComponent<{
                 <${BtnPrimary}
                     type="submit"
                     disabled=${!isInvitationValid.value}
+                    isSpinning=${isResolving}
                 >
                     Accept Invitation
                 <//>

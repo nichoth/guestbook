@@ -3,6 +3,7 @@ import { type DID } from '@bicycle-codes/keys'
 export type User = {
     email:string;
     username:string;
+    body:string;
 }
 
 export type Machine = {

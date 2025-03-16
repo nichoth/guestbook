@@ -125,12 +125,16 @@ State.fetchInvitation = async function (
 
 State.acceptInvitation = async function (
     state:ReturnType<typeof State>,
-    invitationCode:string
+    invitationCode:string,
+    userData:User
 ) {
-    debug('accept an invitation in State', invitationCode)
+    debug('accept the invitation', invitationCode)
     try {
         await ky.patch('/api/invitation', {
-            json: { code: invitationCode }
+            json: {
+                code: invitationCode,
+                userData
+            }
         })
         state._setRoute('/')
     } catch (err) {
