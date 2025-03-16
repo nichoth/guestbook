@@ -2,8 +2,10 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { type State } from '../state.js'
 import { marked } from 'marked'
-import './whoami.css'
+import { Keys } from '@bicycle-codes/keys'
+import { Dot } from '../components/dot.js'
 import '../components/dl.css'
+import './whoami.css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
 
@@ -37,10 +39,15 @@ export const WhoamiRoute:FunctionComponent<{
                 </dd>
             </dl>
 
-            ${user.body ?
-                html`<div></div>` :
-                null
-            }
+            <h2>Your Devices</h2>
+            <ul>
+                ${state.machines.value?.map(machine => {
+                    return html`<li key=${Keys.deviceName(machine.did)}>
+                        <${Dot} color="gray" />
+                        ${machine.humanName}
+                    </li>`
+                })}
+            </ul>
         </div>
     </div>`
 }
