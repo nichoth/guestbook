@@ -1,12 +1,14 @@
 // import { TextInput } from '@nichoth/components/htm/text-input'
 import { html } from 'htm/preact'
+import { DateTime } from 'luxon'
 import { type HTTPError } from 'ky'
 import { useCallback, useEffect } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { TextInput } from '@nichoth/components/htm/text-input'
-import { useSignal, batch } from '@preact/signals'
+import { useSignal, batch, useComputed } from '@preact/signals'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
+import type { Invitation } from '../types.js'
 import { waitFor } from '@substrate-system/dom'
 import './accept.css'
 import Debug from '@substrate-system/debug'
@@ -28,10 +30,15 @@ export const AcceptRoute:FunctionComponent<{
 }> = function ({ state, params }) {
     const isInvitationValid = useSignal<boolean>(false)
     const isFetchResolving = useSignal<boolean>(false)
-    const isCreateResolving = useSignal<boolean>(false)
-    const invitationSignal = useSignal<{ code, ts, creator }|null>(null)
+    const isCreateResolving = useSignal<boolean>(false)  // create user
+    const invitationSignal = useSignal<Invitation|null>(null)
     const invitationErr = useSignal<string|null>(null)
     const isUserInputOk = useSignal<boolean>(false)
+    const invitationTs = useComputed(() => {
+        if (!invitationSignal.value) return
+        return (DateTime.fromISO(invitationSignal.value.ts.isoString)
+            .toLocaleString(DateTime.DATETIME_MED))
+    })
 
     useEffect(() => {
         if (params.token) {
@@ -121,9 +128,30 @@ export const AcceptRoute:FunctionComponent<{
     if (invitationSignal.value) {
         // we have fetched the invitation
         // show a form to input your user data
+        // const invData = invitationSignal.value
+        // const createdString = DateTime.fromISO(invData.ts.)
         return html`<div class="route accept">
             <h2>Invitation</h2>
-            <pre>${JSON.stringify(invitationSignal.value, null, 2)}</pre>
+            <pre>
+                ${JSON.stringify({
+                    ...invitationSignal.value,
+                    ts: invitationTs.value
+                }, null, 2)}
+            </pre>
+
+            <dl>
+                <dt>Code</dt>
+                <dd>${invitationSignal.value.code}</dd>
+
+                <dt>Created on</dt>
+                <dd>${invitationTs.value}</dd>
+
+                <dt>Note</dt>
+                <dd>${invitationSignal.value.note}</dd>
+
+                <dt>Created by</dt>
+                <dd>${invitationSignal.value.creator?.humanName || 'null'}</dd>
+            </dl>
 
             <h2>Add your contact info</h2>
             <p>

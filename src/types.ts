@@ -7,6 +7,19 @@ export type User = {
 }
 
 export type Machine = {
-    did:DID,
-    humanName:string
+    did:DID;
+    humanName:string;
+}
+
+export type Invitation = {
+    note:string;
+    ts:{
+        isoString:string;
+    };
+    code:string;
+    creator:{
+        id:string;
+        username:string;
+        humanName:string;
+    }
 }

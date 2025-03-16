@@ -3,7 +3,7 @@ import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance } from 'ky'
 import Route from 'route-event'
 import { SignedRequest } from '@bicycle-codes/request'
-import type { User } from './types'
+import type { Invitation, User } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 // eslint-disable-next-line
@@ -121,11 +121,11 @@ State.forgot = async function (
 State.fetchInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string
-) {
+):Promise<Invitation> {
     debug('fetching invitation', invitationCode)
     const res = await ky.get('/api/invitation', {
         searchParams: { code: invitationCode }
-    }).json<{ code, ts, creator }>()
+    }).json<Invitation>()
 
     debug('got the invitation', res)
 
