@@ -127,6 +127,14 @@ export const AboutRoute:FunctionComponent = function () {
             <li>
                 <a href="mailto:nichoth@bicycle.codes">nichoth@bicycle.codes</a>
             </li>
+            <li>
+                <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://innovatebellingham.org/"
+                    href="https://bsky.app/profile/nichoth.com"
+                ></a>
+            </li>
         </ul>
     </div>`
 }

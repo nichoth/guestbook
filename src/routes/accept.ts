@@ -1,4 +1,3 @@
-// import { TextInput } from '@nichoth/components/htm/text-input'
 import { html } from 'htm/preact'
 import { DateTime } from 'luxon'
 import { type HTTPError } from 'ky'
@@ -9,7 +8,6 @@ import { TextInput } from '@nichoth/components/htm/text-input'
 import { useSignal, batch, useComputed } from '@preact/signals'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import type { Invitation } from '../types.js'
-import { waitFor } from '@substrate-system/dom'
 import './accept.css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
@@ -73,9 +71,6 @@ export const AcceptRoute:FunctionComponent<{
                 isFetchResolving.value = false
             })
             invitationSignal.value = invitation
-            // buggy preact
-            const el = await waitFor('#username') as HTMLInputElement
-            el.value = ''
         } catch (_err) {
             const err = _err as HTTPError
             const errMsg = await err.response.text()
@@ -132,13 +127,6 @@ export const AcceptRoute:FunctionComponent<{
         // const createdString = DateTime.fromISO(invData.ts.)
         return html`<div class="route accept">
             <h2>Invitation</h2>
-            <pre>
-                ${JSON.stringify({
-                    ...invitationSignal.value,
-                    ts: invitationTs.value
-                }, null, 2)}
-            </pre>
-
             <dl>
                 <dt>Code</dt>
                 <dd>${invitationSignal.value.code}</dd>
@@ -167,7 +155,11 @@ export const AcceptRoute:FunctionComponent<{
                 onSubmit=${redeemInvitation}
                 onInput=${userDataInput}
             >
-                <${TextInput} name="username" displayName="Your name" />
+                <${TextInput}
+                    name="username"
+                    key="new-username"
+                    displayName="Your name"
+                />
                 <div class="help-text">
                     Your name, as you want it to appear on the site.
                 </div>
@@ -203,6 +195,7 @@ export const AcceptRoute:FunctionComponent<{
     return html`<div class="route accept">
         <form onSubmit=${fetchInvitation} class="main-content">
             <${TextInput}
+                key="invitation-code"
                 onInput=${handleInput}
                 id="invcode"
                 name="invcode"

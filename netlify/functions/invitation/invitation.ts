@@ -70,7 +70,14 @@ export const handler:Handler = async function handler (
                 if (machine.seq <= ${seq}) {
                     abort('Invalid signature')
                 }
-                Invitation.by_creator(machine.owner) { code, ts, note, id }
+
+                Invitation.by_creator(machine.owner) {
+                    remainingUses,
+                    code,
+                    ts,
+                    note,
+                    id
+                }
             `)
 
             return { statusCode: 200, body: JSON.stringify(res.data) }
