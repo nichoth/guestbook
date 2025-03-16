@@ -84,13 +84,14 @@ export const AcceptRoute:FunctionComponent<{
     const redeemInvitation = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
+        const machineName = els['machine-name']
         try {
             isCreateResolving.value = true
             await State.acceptInvitation(state, invitationSignal.value!.code, {
                 username: els['username'].value,
                 email: els['email'].value,
                 body: els['body'].value
-            })
+            }, machineName)
             isCreateResolving.value = false
         } catch (_err) {
             debug('got an error', _err)
@@ -168,6 +169,11 @@ export const AcceptRoute:FunctionComponent<{
                 <div class="help-text">
                     This email address is used to reset your keys if you
                     lose them.
+                </div>
+
+                <${TextInput} name="machine-name" displayName="Device name" />
+                <div class="help-text">
+                    What do you want to call this device?
                 </div>
 
                 <${TextInput}

@@ -15,9 +15,8 @@ import { Client, fql, type AbortError } from 'fauna'
 const ZodDID = z.custom<DID>((val:string) => val.startsWith('did:key:z'))
 
 const Request = z.object({
-    user: z.object({
+    userData: z.object({
         username: z.string(),
-        humanName: z.string(),
         email: z.string(),
     }),
     machine: z.object({
@@ -126,7 +125,7 @@ export const handler:Handler = async function handler (
             return { body: 'Invalid JSON', statusCode: 415 }
         }
 
-        const { username, email, humanName } = data.user
+        const { username, email } = data.userData
         const { code, machine } = data
         const { did } = machine
         const slugUsername = username.split(' ').filter(Boolean).join('_')
@@ -141,8 +140,8 @@ export const handler:Handler = async function handler (
 
                 let user = User.create({
                     username: ${slugUsername},
-                    email: ${email},
-                    humanName: ${humanName}
+                    humanName: ${username}
+                    email: ${email}
                 })
 
                 let machine = Machine.create({

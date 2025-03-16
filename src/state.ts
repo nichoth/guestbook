@@ -40,8 +40,9 @@ export function State ():{
     }
 
     Keys.load().then(async keys => {
+        if (!keys.persisted) return  // is not yet a user, don't create keys yet
+        // we create & persist keys in the `acceptInvitation` function below
         state.keys.value = keys
-        await keys.persist()
         ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
         State.init(state)
     })
@@ -170,14 +171,35 @@ State.toast = async function (
 State.acceptInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string,
-    userData:User
+    userData:User,
+    machineName:string,
 ) {
     debug('accept the invitation', invitationCode)
+    const keys = await Keys.load()
+
+    // ask for persistent storage
+    if (navigator.storage && navigator.storage.persist) {
+        // This asks the user for permission in Firefox.
+        // Chrome doesn't ask, automatically determines if it's allowed or not.
+        const persistent = await navigator.storage.persist()
+        if (persistent) {
+            debug('Storage will not be cleared except by explicit user action')
+        } else {
+            debug('Storage may be cleared by the UA under storage pressure.')
+        }
+    }
+
+    await keys.persist()
+
     try {
         await ky.patch('/api/invitation', {
             json: {
                 code: invitationCode,
-                userData
+                userData,
+                machine: {
+                    did: state.keys.value?.DID,
+                    humanName: machineName
+                }
             }
         })
         state._setRoute('/')
