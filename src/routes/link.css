@@ -1,0 +1,14 @@
+.route.link {
+    & .add-device-info {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-height: 50vh;
+        border: 1px solid;
+
+        & .controls {
+            margin-right: 1rem;
+            margin-top: auto;
+        }
+    }
+}
