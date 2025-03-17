@@ -20,6 +20,8 @@
     "@bicycle-codes/one-webcrypto": "^1.1.2",
     "@bicycle-codes/request": "^0.6.20",
     "@nichoth/components": "^0.16.17",
+    "@nichoth/nanoid": "^5.0.8",
+    "@nichoth/nanoid-dictionary": "^5.0.7",
     "@octokit/core": "^6.1.4",
     "@preact/signals": "^2.0.0",
     "@shoelace-style/shoelace": "^2.20.1",
@@ -33,13 +35,13 @@
     "ky": "^1.7.4",
     "luxon": "^3.5.0",
     "marked": "^15.0.7",
+    "partysocket": "1.0.3",
     "preact": "^10.25.4",
     "route-event": "^6.0.9",
     "stylelint": "^16.13.0",
     "uuid": "^11.1.0",
     "vite-plugin-static-copy": "^2.3.0",
-    "zod": "^3.24.2",
-    "partysocket": "1.0.3"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@netlify/functions": "^3.0.1",
@@ -55,13 +57,13 @@
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "netlify-cli": "^19.0.2",
+    "partykit": "0.0.111",
     "postcss-nesting": "^13.0.1",
     "stylelint-config-standard": "^37.0.0",
     "tap-spec": "^5.0.0",
     "tape-run": "^11.0.0",
     "typescript": "^5.7.3",
-    "vite": "^6.2.1",
-    "partykit": "0.0.111"
+    "vite": "^6.2.1"
   },
   "author": "nichoth <nichoth@nichoth.com> (https://nichoth.com)"
 }

@@ -1,17 +1,18 @@
 import { type Signal, batch, signal } from '@preact/signals'
+import type PartySocket from 'partysocket'
 import { Keys } from '@bicycle-codes/keys'
-import Ky, { type KyInstance } from 'ky'
+import Ky, { type KyInstance, type HTTPError } from 'ky'
 import Route from 'route-event'
 import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
 import type { Invitation, User, Machine } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 import { Party } from '../party/client.js'
+import { code, getPartyUrl } from './util.js'
 // eslint-disable-next-line
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
 import '@shoelace-style/shoelace/dist/themes/light.css'
 import '@shoelace-style/shoelace/dist/components/icon/icon.js'
-import type PartySocket from 'partysocket'
 const debug = Debug()
 
 // set this incase they are not a user. We still try to login.
@@ -31,8 +32,9 @@ export function State ():{
     user:Signal<null|false|User>;
     machines:Signal<Machine[]|null>;
     keys:Signal<Keys|null>;
-    party:Signal<PartySocket|null>;
+    party:Signal<PartySocket|null>;  // for users
     _setRoute:(path:string)=>void;
+    newMachineParty:Signal<PartySocket|null>  // for adding a new machine
 } {  // eslint-disable-line indent
     const onRoute = Route()
 
@@ -43,6 +45,7 @@ export function State ():{
         user: signal(null),
         machines: signal(null),
         party: signal(null),
+        newMachineParty: signal(null),
         route: signal<string>(location.pathname + location.search)
     }
 
@@ -87,6 +90,21 @@ State.Party = async function (state:ReturnType<typeof State>, roomName:string) {
     const token = await createHeader()
     const party = Party(roomName, token)
     state.party.value = party
+}
+
+/**
+ * Called by the existing device, to add a new machine.
+ * First we make a POST call to the partykit server.
+ */
+State.initAddDevice = async function (
+    state:ReturnType<typeof State>,
+    note?:string,
+    opts:{ note?:string } = {}
+) {
+    const roomName = await collision(state)
+    await ky.post(getPartyUrl(roomName), {
+        json: { note, slug: (state.user.value as User).username },
+    })
 }
 
 // Delete a machine record
@@ -261,4 +279,31 @@ function escapeHtml (html:string) {
     const div = document.createElement('div')
     div.textContent = html
     return div.innerHTML
+}
+
+/**
+ * Get a room in partykit. Make sure it doesn't collide with
+ * any other room.
+ */
+async function collision (
+    state:ReturnType<typeof State>,
+    roomName?:string
+):Promise<string> {
+    if (!roomName) roomName = code()
+
+    try {
+        // 200 response means the room is available
+        await ky.head(getPartyUrl(roomName))
+        return roomName
+    } catch (_err) {
+        const err = _err as HTTPError
+        if (err.response.status === 409) {
+            // 409 response to a `HEAD` request means
+            // the room is taken, so try again
+            return collision(state, code())
+        } else {
+            // should not get any other errors
+            throw err
+        }
+    }
 }
