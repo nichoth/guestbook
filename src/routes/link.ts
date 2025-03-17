@@ -15,7 +15,7 @@ export const LinkRoute:FunctionComponent<{
     return html`<div class="route link">
         <h2>Add a device to your account</h2>
         <p>
-            The same person ${ELLIPSIS} Multiple machines${ELLIPSIS}
+            The same person ${ELLIPSIS} Multiple machines ${ELLIPSIS}
         </p>
 
         <p>
