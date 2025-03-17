@@ -1,5 +1,5 @@
 import { type Signal, batch, signal } from '@preact/signals'
-import type PartySocket from 'partysocket'
+import PartySocket from 'partysocket'
 import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance, type HTTPError } from 'ky'
 import Route from 'route-event'
@@ -7,12 +7,10 @@ import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
 import type { Invitation, User, Machine } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
-import { Party } from '../party/client.js'
+import { PARTYKIT_HOST } from '../party/client.js'
 import { code, getPartyUrl } from './util.js'
 // eslint-disable-next-line
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
-import '@shoelace-style/shoelace/dist/themes/light.css'
-import '@shoelace-style/shoelace/dist/components/icon/icon.js'
 const debug = Debug()
 
 // set this incase they are not a user. We still try to login.
@@ -33,8 +31,10 @@ export function State ():{
     machines:Signal<Machine[]|null>;
     keys:Signal<Keys|null>;
     party:Signal<PartySocket|null>;  // for users
+    newMachineParty:Signal<PartySocket|null>;  // for adding a new machine
+    newMachineWords:Signal<null|string[]>;  // words from new machine
+    newMachineConfirmed:Signal<boolean>;
     _setRoute:(path:string)=>void;
-    newMachineParty:Signal<PartySocket|null>  // for adding a new machine
 } {  // eslint-disable-line indent
     const onRoute = Route()
 
@@ -46,12 +46,14 @@ export function State ():{
         machines: signal(null),
         party: signal(null),
         newMachineParty: signal(null),
+        newMachineWords: signal(null),
+        newMachineConfirmed: signal(false),
         route: signal<string>(location.pathname + location.search)
     }
 
     Keys.load().then(async keys => {
-        if (!keys.persisted) return  /* is not yet a user, don't create keys yet
-        we create & persist keys in the `acceptInvitation` function below */
+        if (!keys.persisted) return  /* not yet a user, don't create keys yet.
+        We create & persist keys in the `acceptInvitation` function below */
         state.keys.value = keys
         ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
         State.init(state)
@@ -88,22 +90,87 @@ State.Party = async function (state:ReturnType<typeof State>, roomName:string) {
         window.localStorage
     )
     const token = await createHeader()
-    const party = Party(roomName, token)
+    const party = new PartySocket({
+        host: PARTYKIT_HOST,
+        room: roomName,
+        query: { token }
+    })
     state.party.value = party
 }
 
 /**
  * Called by the existing device, to add a new machine.
- * First we make a POST call to the partykit server.
+ * First we make a POST call to the partykit server, then we listen
+ * on the room name.
  */
 State.initAddDevice = async function (
     state:ReturnType<typeof State>,
     note?:string,
-    opts:{ note?:string } = {}
-) {
+):Promise<string> {
     const roomName = await collision(state)
+    // first a POST call
+    // we authenticate as an existing machine
     await ky.post(getPartyUrl(roomName), {
-        json: { note, slug: (state.user.value as User).username },
+        json: { note },
+    })
+
+    const party = new PartySocket({
+        host: PARTYKIT_HOST,
+        room: roomName
+    })
+
+    // room should be "open" now
+    // create the ws connection
+    state.newMachineParty.value = party
+
+    party.addEventListener('message', ev => {
+        // we should get two words from the new machine
+        const { words }:{ words:string[] } = JSON.parse(ev.data)
+        state.newMachineWords.value = words
+        // then you need to confirm in the GUI that the words are ok
+    })
+
+    return roomName
+}
+
+State.confirmNewMachine = function (state:ReturnType<typeof State>) {
+    state.newMachineParty.value?.send(JSON.stringify({ status: 'all done' }))
+    state.newMachineParty.value?.close()
+}
+
+/**
+ * Called by the new machine
+ */
+State.newMachine = async function (
+    state:ReturnType<typeof State>,
+    roomCode:string
+) {
+    const party = new PartySocket({
+        host: PARTYKIT_HOST,
+        room: roomCode
+    })
+
+    state.newMachineParty.value = party
+
+    /**
+     * The existing machine will tell us when it
+     * confirms the new machine.
+     */
+    party.addEventListener('message', ev => {
+        const msg = JSON.parse(ev.data)
+        // we should get just one message that confirms the status
+        const { status } = msg
+        if (status === 'all done') {
+            state.newMachineConfirmed.value = true
+            party.close()
+
+            // and open the room for the user only
+            if (!state.user.value) return
+            state.party.value = new PartySocket({
+                host: PARTYKIT_HOST,
+                room: state.user.value.username
+            })
+        }
     })
 }
 
@@ -112,9 +179,15 @@ State.removeMachine = async function (
     state:ReturnType<typeof State>,
     machine:Machine
 ) {
-    return await ky.delete('/api/machine', {
+    const res = await ky.delete('/api/machine', {
         json: machine
     })
+
+    state.machines.value = state.machines.value!.filter(m => {
+        return m.did !== machine.did
+    })
+
+    return res
 }
 
 /**

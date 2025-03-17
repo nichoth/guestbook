@@ -66,13 +66,14 @@ export default class Server implements Party.Server {
      */
     static async onBeforeConnect (req:Party.Request, lobby:Party.Lobby) {
         const url = new URL(req.url)
-        const token = req.headers.get('authorization')!
+        const token = url.searchParams.get('token')!
         const givenSlug = url.pathname.split('/').pop()
         if (!givenSlug) return new Response('Missing slug', { status: 400 })
 
         if ((codeRegex.test(givenSlug))) {  // 6 digit code
             // if this is the code route, not the slug route,
             // then don't do auth here
+            // handle auth via POST request
             return req
         }
 
@@ -92,8 +93,7 @@ export default class Server implements Party.Server {
         }
 
         const { env } = lobby
-        // @TODO -- check the seq number
-        const { _seq, author } = header
+        const { seq, author } = header
         const client = new Client({
             secret: env.FAUNA_SECRET as string
         })
@@ -104,6 +104,9 @@ export default class Server implements Party.Server {
             await client.query(fql`
                 // get the machine by DID
                 let machine = Machine.by_did(${author}).first()
+                if (machine.seq >= ${seq}) {
+                    abort('Invalid sequence')
+                }
                 let user = machine.owner
                 if (user?.username != ${givenSlug}) {
                     abort("Slug doesn't match")
@@ -114,6 +117,14 @@ export default class Server implements Party.Server {
             if (err.abort?.toString().includes('Slug')) {
                 console.log('***bad slug***', givenSlug)
                 return new Response(null, { status: 403, headers: CORS })
+            }
+
+            if (err.abort?.toString().includes('sequence')) {
+                console.log('**bad sequence**', seq)
+                return new Response('Invalid sequence', {
+                    status: 403,
+                    headers: CORS
+                })
             }
 
             console.log('**err**', err)
@@ -132,6 +143,12 @@ export default class Server implements Party.Server {
      * Each room has the concept of being "open" or "closed"
      * to open a room, you need to make a POST request
      * with a valid key + signature.
+     *
+     * The new machine makes a `PATCH` reuqest. It sends the server two random
+     * words, which we show to the existing machine.
+     *
+     * If the existing machine approves the new machine, then we add the new
+     * machine to the DB.
      */
     async onRequest (req:Party.Request):Promise<Response> {
         if (req.method === 'OPTIONS') {
@@ -150,16 +167,18 @@ export default class Server implements Party.Server {
         }
 
         /**
-         * The new device does a GET request, which returns
-         * the note.
+         * The new device does a PATCH request, which returns
+         * the note, and uploads two random words.
          */
-        if (req.method === 'GET') {
+        if (req.method === 'PATCH') {
             if (!this.isOpen) {
                 return new Response(null, { status: 409, headers: CORS })
             }
 
             // is open
             // this is the new machine
+            // const { words } = await req.json<{ words }>()
+
             return Response.json({ note: this.note }, {
                 status: 200,
                 headers: CORS
@@ -173,7 +192,7 @@ export default class Server implements Party.Server {
         if (req.method === 'POST') {
             // check the signature of the request,
             // make sure it is valid for the DID &
-            // is authorized for the given account slug
+            // is authorized for the given username
             if (this.isOpen) {
                 // this should not happen
                 // this means this is not the first connection
@@ -296,7 +315,7 @@ export default class Server implements Party.Server {
             // notify all the other connections
             return this.room.broadcast(JSON.stringify({
                 connections: Object.values(this.machines)
-            }))
+            }), [conn.id])
         }
 
         // else, is "code" room
@@ -304,15 +323,30 @@ export default class Server implements Party.Server {
             // must call with a POST request to "open" the room, handle auth
             return conn.close(1002, 'Room is not open')
         }
+
+        // room is open
+        // is a "code" type room
     }
 
     async onMessage (message:string, sender:Party.Connection) {
         // should not happen
         if (!this.isOpen) throw new Error('Not open')
 
+        // new machine sends two random words
+        // existing machine listens for the words, then
+        // approves the new machine
+
         console.log('**got a message**', message)
 
-        this.room.broadcast(message, [sender.id])
+        const msg = JSON.parse(message)
+        if (msg.type === 'approve') {
+            // then check the signature, update the DB
+        }
+
+        if (msg.type === 'words') {
+            // tell the other machine
+            this.room.broadcast(message, [sender.id])
+        }
     }
 }
 

@@ -1,0 +1,131 @@
+.hamburger-wrapper {
+    display: none;
+    position: absolute;
+    margin-left: auto;
+    width: 10%;
+    float: right;
+    justify-self: right;
+    right: 0;
+    top: 12px;
+    text-align: right;
+    padding-right: 1rem;
+
+    &.open {
+        top: 0;
+        right: -4px;
+
+        & .burger {
+            & .line {
+                background-color: white;
+            }
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .hamburger-wrapper {
+        display: block;
+    }
+}
+
+.hamburger {
+    display: inline-block;
+
+    & .line {
+        height: 2px;
+        border-radius: 3px;
+        background: var(--hamburger-color, black);
+        width: 25px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    & .container {
+        transition: transform 0.2s ease-in-out 0.1s;
+        position: absolute;
+        left: 5px;
+
+        &.top {
+            transform: translateY(-6px) scaleX(.88);
+        }
+
+        &.middle {
+            transform: scaleX(.88);
+        }
+
+        &.bottom {
+            transform: translateY(6px) scaleX(.88);
+        }
+    }
+
+    & .burger {
+        z-index: 200;
+        height: 31px;
+        width: 31px;
+        display: block;
+        position: relative;
+        right: 5px;
+
+        & button {
+            position: relative;
+            top: 10px;
+        }
+    }
+
+    &.open {
+        & .burger {
+            right: 0;
+        }
+
+        & .line {
+            &.bottom {
+                transition-delay: 0.1s;
+            }
+
+            &.middle {
+                display: none;
+            }
+
+            &.top {
+                transition-delay: 0.1s;
+            }
+        }
+
+        & .container {
+            transition-delay: 0s;
+
+            &.bottom {
+                transform: none;
+                z-index: 99;
+            }
+
+            &.top {
+                transform: none;
+                z-index: 99;
+            }
+
+            & .line {
+                &.bottom {
+                    transform: rotateZ(45deg);
+                }
+
+                &.top {
+                    transform: rotateZ(-45deg);
+                }
+            }
+        }
+    }
+    
+    & button {
+        all: unset;
+        cursor: pointer;
+        display: block;
+    }
+    
+    & button * {
+        pointer-events: none;
+    }
+    
+    & input {
+        display: none;
+    }
+}

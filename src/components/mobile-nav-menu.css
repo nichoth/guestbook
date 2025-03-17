@@ -1,0 +1,71 @@
+@keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 0.8; }
+}
+
+.mobile-nav-menu {
+    display: none;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    animation: fade-in var(--fade-in-time, 0.2s);
+
+    & ul {
+        list-style: none;
+        align-items: center;
+        margin-bottom: 20vh;
+        padding: 0;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+
+        & a {
+            color: white;
+        }
+        
+        & li {
+            margin: 1.2rem 0;
+        }
+    }
+
+    & button {
+        background: none;
+        border: 1px solid white;
+        color: white;
+        padding: 0.5rem 1rem;
+    }
+
+    /* & ul {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin: 0;
+        margin-bottom: 30vh;
+
+        & li {
+            margin-bottom: 2rem;
+
+            & a {
+                color: white;
+            }
+        }
+    } */
+
+    &.open {
+        z-index: 97;
+        opacity: 0.85;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        position: fixed;
+
+        & .burger {
+            & .line {
+                background-color: white;
+            }
+        }
+    }
+}

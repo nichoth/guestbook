@@ -1,9 +1,12 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
-import { useEffect, useRef } from 'preact/hooks'
+import { useCallback, useEffect, useRef } from 'preact/hooks'
+import { useSignal } from '@preact/signals'
 import { Nav } from './nav.js'
 import { State } from './state.js'
 import Router from './routes/index.js'
+import { HamburgerWrapper } from './components/hamburger.js'
+import { MobileNav } from './components/mobile-nav-menu.js'
 import '@substrate-system/css-normalize'
 import './style.css'
 import type { SlAlert } from '@shoelace-style/shoelace'
@@ -24,6 +27,7 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
 }
 
 export const Guestbook:FunctionComponent = function () {
+    const isHamburgerOpen = useSignal<boolean>(false)
     const match = router.match(state.route.value)
     if (!match) {
         return html`<div class="404">
@@ -41,11 +45,27 @@ export const Guestbook:FunctionComponent = function () {
         }
     }, [])
 
+    const hamburgler = useCallback((ev:MouseEvent) => {
+        ev.preventDefault()
+        isHamburgerOpen.value = !(isHamburgerOpen.value)
+    }, [])
+
     // how to tell if someone is "logged in"?
     // need to right away get their keys, then call the server to get
     // a user record
 
     return html`<div>
+        <${HamburgerWrapper}
+            onClick=${hamburgler}
+            isOpen=${isHamburgerOpen}
+        ><//>
+
+        <${MobileNav} isOpen=${isHamburgerOpen}>
+            <a className="app-nav" href="/example">Example</a>
+            <a className="app-nav" href="/example2">Example2</a>
+            <a className="app-nav" href="/example3">Example3</a>
+        <//>
+
         <header>
             <h1>
                 <a href="/">
