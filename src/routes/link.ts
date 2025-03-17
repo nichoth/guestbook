@@ -1,6 +1,6 @@
 import { html } from 'htm/preact'
 import type { State } from '../state.js'
-import { ELLIPSIS } from '@substrate-system/util/constants'
+import { ELLIPSIS, NBSP } from '@substrate-system/util/constants'
 import { type FunctionComponent } from 'preact'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import './link.css'
@@ -15,7 +15,8 @@ export const LinkRoute:FunctionComponent<{
     return html`<div class="route link">
         <h2>Add a device to your account</h2>
         <p>
-            The same person ${ELLIPSIS} Multiple machines ${ELLIPSIS}
+            The same person ${ELLIPSIS} Multiple machines ${ELLIPSIS}${NBSP}
+            No passwords ${ELLIPSIS}
         </p>
 
         <p>

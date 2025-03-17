@@ -9,7 +9,7 @@
     "test": "npm run lint && npm run build && npm run build-tests && npm run test-tape-run",
     "test-tape-run": "cat test/index.html | tape-run --input=html --static=test | tap-spec",
     "build": "mkdir -p ./public && rm -rf ./public/* && vite build",
-    "start": "concurrently --kill-others \"npx ntl functions:serve --port=9999 --debug\" \"npx vite\"",
+    "start": "concurrently --kill-others \"npx ntl functions:serve --port=9999 --debug\" \"npx partykit dev\" \"npx vite\"",
     "preversion": "npm run lint",
     "version": "auto-changelog --template keepachangelog --breaking-pattern 'BREAKING CHANGE' && git add CHANGELOG.md",
     "postversion": "git push --follow-tags",
@@ -38,7 +38,8 @@
     "stylelint": "^16.13.0",
     "uuid": "^11.1.0",
     "vite-plugin-static-copy": "^2.3.0",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "partysocket": "1.0.3"
   },
   "devDependencies": {
     "@netlify/functions": "^3.0.1",
@@ -59,7 +60,8 @@
     "tap-spec": "^5.0.0",
     "tape-run": "^11.0.0",
     "typescript": "^5.7.3",
-    "vite": "^6.2.1"
+    "vite": "^6.2.1",
+    "partykit": "0.0.111"
   },
   "author": "nichoth <nichoth@nichoth.com> (https://nichoth.com)"
 }

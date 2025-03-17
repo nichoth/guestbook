@@ -26,6 +26,7 @@
   },
   "include": [
     "example",
+    "party/client.ts",
     "src/**/*",
     "test",
     "lib.es5.d.ts"

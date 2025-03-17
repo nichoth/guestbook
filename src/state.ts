@@ -2,14 +2,16 @@ import { type Signal, batch, signal } from '@preact/signals'
 import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance } from 'ky'
 import Route from 'route-event'
-import { SignedRequest } from '@bicycle-codes/request'
+import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
 import type { Invitation, User, Machine } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
+import { Party } from '../party/client.js'
 // eslint-disable-next-line
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
 import '@shoelace-style/shoelace/dist/themes/light.css'
 import '@shoelace-style/shoelace/dist/components/icon/icon.js'
+import type PartySocket from 'partysocket'
 const debug = Debug()
 
 // set this incase they are not a user. We still try to login.
@@ -29,6 +31,7 @@ export function State ():{
     user:Signal<null|false|User>;
     machines:Signal<Machine[]|null>;
     keys:Signal<Keys|null>;
+    party:Signal<PartySocket|null>;
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
     const onRoute = Route()
@@ -39,6 +42,7 @@ export function State ():{
         keys: signal<Keys|null>(null),
         user: signal(null),
         machines: signal(null),
+        party: signal(null),
         route: signal<string>(location.pathname + location.search)
     }
 
@@ -67,6 +71,22 @@ export function State ():{
     })
 
     return state
+}
+
+/**
+ * Open a connection for your username.
+ * You must be "logged in" to do this; must have a keypair.
+ */
+State.Party = async function (state:ReturnType<typeof State>, roomName:string) {
+    const keys = state.keys.value!
+    const createHeader = HeaderFactory(
+        keys.signKeypair,
+        { deviceName: await keys.deviceName },
+        window.localStorage
+    )
+    const token = await createHeader()
+    const party = Party(roomName, token)
+    state.party.value = party
 }
 
 // Delete a machine record

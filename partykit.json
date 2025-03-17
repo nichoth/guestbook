@@ -1,0 +1,13 @@
+{
+  "$schema": "https://www.partykit.io/schema.json",
+  "name": "guestbook",
+  "main": "party/index.ts",
+  "compatibilityDate": "2025-03-16",
+  "serve": {
+    "path": "public-party",
+    "build": {
+      "outdir": "public-party",
+      "entry": "party/client.ts"
+    }
+  }
+}
