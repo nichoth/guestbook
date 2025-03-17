@@ -50,10 +50,6 @@ export const Guestbook:FunctionComponent = function () {
         isHamburgerOpen.value = !(isHamburgerOpen.value)
     }, [])
 
-    // how to tell if someone is "logged in"?
-    // need to right away get their keys, then call the server to get
-    // a user record
-
     return html`<div>
         <${HamburgerWrapper}
             onClick=${hamburgler}

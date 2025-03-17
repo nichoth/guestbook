@@ -93,6 +93,7 @@ header {
         list-style: none;
         padding: 0;
         display: flex;
+        flex-wrap: wrap;
         justify-content: space-around;
         gap: 1rem
     }
@@ -143,3 +144,11 @@ button {
 }
 
 /* ----------------------- /shoelace overrides ---------------------------- */
+
+@media (max-width: 600px) {
+    nav {
+        & ul {
+            gap: 1.5rem;
+        }
+    }
+}
