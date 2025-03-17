@@ -69,6 +69,16 @@ export function State ():{
     return state
 }
 
+// Delete a machine record
+State.removeMachine = async function (
+    state:ReturnType<typeof State>,
+    machine:Machine
+) {
+    return await ky.delete('/api/machine', {
+        json: machine
+    })
+}
+
 /**
  * Get your user record from the server.
  * This tells us if the current machine has an account.
@@ -154,11 +164,13 @@ State.acceptInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string,
     userData:User,
-    machineName:string,
+    humanName:string,
 ) {
     const keys = await Keys.load()
     // set the ky instance too
     ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
+
+    const machineName = await keys.deviceName
 
     try {
         await ky.patch('/api/invitation', {
@@ -167,7 +179,7 @@ State.acceptInvitation = async function (
                 userData,
                 machine: {
                     did: keys.DID,
-                    humanName: machineName
+                    humanName
                 }
             }
         })
@@ -192,7 +204,8 @@ State.acceptInvitation = async function (
             state.user.value = userData
             state.machines.value = (state.machines.value || []).concat([{
                 did: keys.DID,
-                humanName: machineName
+                humanName,
+                machineName
             }])
         })
 
@@ -213,9 +226,12 @@ State.Login = async function (
         machines: Machine[]
     }>()
     const { machines, ...stateData } = userData
-    batch(() => {
+    batch(async () => {
         state.user.value = stateData
-        state.machines.value = machines
+        state.machines.value = await Promise.all(machines.map(async machine => {
+            const machineName = await Keys.deviceName(machine.did)
+            return { ...machine, machineName }
+        }))
     })
 
     return { user: stateData, machines }

@@ -8,6 +8,7 @@ export type User = {
 
 export type Machine = {
     did:DID;
+    machineName:string;
     humanName:string;
 }
 

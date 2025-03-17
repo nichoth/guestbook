@@ -1,4 +1,12 @@
 .route.whoami {
+    & sl-icon-button {
+        font-size: 1.6rem;
+    }
+
+    & span.current-machine {
+        font-weight: lighter;
+    }
+
     & ul {
         list-style: none;
         padding: 0;
@@ -6,7 +14,14 @@
         & li {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: space-between;
+
+            & div {
+                margin-bottom: 0;
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+            }
 
             & .dot {
                 width: 10px;
