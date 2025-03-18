@@ -71,12 +71,12 @@ export const AboutRoute:FunctionComponent = function () {
             Some good news is that there are no passwords in this system.
             You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
-            "non extractable"</a> keypairs in <code>indexedDB</code>.
+            "non-extractable"</a> keypairs in your browser.
         </p>
 
         <p>
             This is good because it is one less thing that my server needs to
-            remember about you ${EM_DASH} your password. It eliminates
+            remember about you. It eliminates
             a security vector ${EM_DASH} there is no password to think about.
         </p>
 
@@ -93,10 +93,10 @@ export const AboutRoute:FunctionComponent = function () {
         </p>
 
         <p>
-            A good practice is to have a phone type device (portable device)
+            A good practice is to have a phone type device (something portable)
             that is always logged in. That way, if you need to use a different
-            machine, like say a public library terminal, then you can authorize
-            the new machine for a limited time.
+            machine, like say a public library terminal, you can use your phone
+            to authorize the new machine for a limited time.
         </p>
 
         <h2>Membership</h2>

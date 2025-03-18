@@ -51,6 +51,10 @@ h1, h2, p {
     margin-bottom: 1rem;
 }
 
+p {
+    line-height: calc(3ex + 4px);
+}
+
 h1 {
     font-size: 1.4rem;
     border-bottom: 2px solid;
@@ -77,6 +81,10 @@ header {
                 transition: all 0.2s;
                 border-bottom: 2px solid transparent;
                 text-decoration: none;
+
+                &:hover {
+                    border-bottom-color: #a5a5a5;
+                }
             }
 
             &.active {

@@ -24,7 +24,17 @@ export const HomeRoute:FunctionComponent<{
         <hr />
 
         <p>
-            Are you already a member? <a href="/link">
+            This is a contact list for the <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://innovatebellingham.org/"
+            >Innovate Bellingham</a> meeting. It is only visible to other
+            members of the group. To join, you must be invited by
+            someone who is already a member.
+        </p>
+
+        <p>
+            Are you a member? <a href="/link">
                 Link this device to your existing account.</a>
         </p>
         <p>
@@ -37,18 +47,5 @@ export const HomeRoute:FunctionComponent<{
 
         <hr />
 
-        <p>
-            This is a contact list for the <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://innovatebellingham.org/"
-            >Innovate Bellingham</a> meeting.
-        </p>
-
-        <p>
-            The contact list is only visible to other
-            members of the group. To join this group, you must be invited by
-            someone who is already a member.
-        </p>
     </div>`
 }

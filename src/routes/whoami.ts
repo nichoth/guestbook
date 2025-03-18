@@ -81,7 +81,7 @@ export const WhoamiRoute:FunctionComponent<{
                             <span>${machine.humanName}</span>
                                 ${currentMachine.value === machine.machineName ?
                                     html`<span class="current-machine">
-                                        (the one your using right now)
+                                        (the one you're using right now)
                                     </span>` :
                                     null
                                 }
