@@ -2,16 +2,17 @@ import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
+import { Client } from 'pg'
 import {
     verifyParsed,
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
-import { Client, fql } from 'fauna'
 
 /**
  * PUT call means add or update the contact info for the given user.
  *   - Must authenticate using the machine key.
+ * (PUT is idempotent)
  *
  */
 export const handler:Handler = async function handler (
@@ -21,12 +22,59 @@ export const handler:Handler = async function handler (
         return { statusCode: 405 }
     }
 
+    // check the auth/header
+    // const headerString = ev.headers.authorization
+    // if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
+    // const parsedHeader:ParsedHeader = parseHeader(headerString)
+    // const { seq, author } = parsedHeader
+
+    // check signature
+    // const isOk = await verifyParsed(parsedHeader)   // check signature
+    // if (!isOk) {
+    //     return { body: 'Invalid signature', statusCode: 403 }
+    // }
+
+    const client = new Client(process.env.DATABASE_URL)
+
+    // sql test
+    // const statements = [
+    //     // Clear any existing data
+    //     'DROP TABLE IF EXISTS messages',
+    //     // CREATE the messages table
+    //     'CREATE TABLE IF NOT EXISTS messages (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), message STRING)',
+    //     // INSERT a row into the messages table
+    //     "INSERT INTO messages (message) VALUES ('Hello world!')",
+    //     // SELECT a row from the messages table
+    //     'SELECT message FROM messages',
+    // ]
+
+    const statements = [
+        'SELECT message FROM messages',
+    ]
+
     if (ev.httpMethod === 'GET') {
         // get the guestbook
+        // check the seq # in request
+        await client.connect()
+        let res:(undefined|Record<string, string>)[]
+        try {
+            // const results = await client.query('SELECT NOW()')
+            res = await Promise.all(statements.map(async sql => {
+                const res = await client.query(sql)
+                return (res.rows && res.rows[0])
+            }))
+        } catch (err) {
+            console.error('error executing query:', err)
+            res = []
+        } finally {
+            client.end()
+        }
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ hello: 'hello' })
+            body: JSON.stringify({
+                result: (res).filter(r => Boolean(r))
+            })
         }
     }
 
@@ -53,18 +101,6 @@ export const handler:Handler = async function handler (
         return { statusCode: 413 }
     }
 
-    // check the auth/header
-    const headerString = ev.headers.authorization
-    if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
-    const parsedHeader:ParsedHeader = parseHeader(headerString)
-    const { seq, author } = parsedHeader
-
-    // check signature
-    const isOk = await verifyParsed(parsedHeader)   // check signature
-    if (!isOk) {
-        return { body: 'Invalid signature', statusCode: 403 }
-    }
-
     // no spaces
     const slugUsername = username.split(' ').filter(Boolean).join('_')
 
@@ -73,18 +109,6 @@ export const handler:Handler = async function handler (
     }
 
     // update the DB
-    const client = new Client({
-        secret: Netlify.env.get('FAUNA_SECRET')
-    })
-    client.query(fql`
-        let machine = Machine.by_did(${author})
-        if (machine.seq <= ${seq}) {
-            abort('Bad signature')
-        }
-        let user = machine.owner
-
-        user.update(${data})
-    `)
 
     return {
         statusCode: 200,

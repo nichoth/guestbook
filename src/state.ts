@@ -61,6 +61,11 @@ export function State ():{
         State.init(state)
     })
 
+    // (async () => {
+    //     const res = await Ky.get('/api/guestbook').json()
+    //     debug('the response', res)
+    // })()
+
     /**
      * set the app state to match the browser URL
      */
