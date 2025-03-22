@@ -4,7 +4,7 @@ import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance, type HTTPError } from 'ky'
 import Route from 'route-event'
 import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
-import type { Invitation, User, Machine } from './types'
+import type { Invitation, User, Machine, Contact } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 import { PARTYKIT_HOST } from '../party/client.js'
@@ -28,6 +28,7 @@ export function State ():{
     // `null` means we haven't contacted the server yet
     // `false` means we got a response, and this machine is not a user
     user:Signal<null|false|User>;
+    list:Signal<null|Contact[]>
     machines:Signal<Machine[]|null>;
     keys:Signal<Keys|null>;
     party:Signal<PartySocket|null>;  // for users
@@ -43,6 +44,7 @@ export function State ():{
         _setRoute: onRoute.setRoute.bind(onRoute),
         keys: signal<Keys|null>(null),
         user: signal(null),
+        list: signal(null),
         machines: signal(null),
         party: signal(null),
         newMachineParty: signal(null),
@@ -193,13 +195,21 @@ State.removeMachine = async function (
 /**
  * Get your user record from the server.
  * This tells us if the current machine has an account.
+ * If you have an account, then get the guestlist also.
  */
 State.init = async function (state:ReturnType<typeof State>) {
     const data = await State.Login(state)
 
     if (!data.user) {
+        // `false` means this machine is not a member
         state.user.value = false
     }
+
+    if (data.machines) {
+        state.machines.value = data.machines
+    }
+
+    // also should return the contact list
 }
 
 /**

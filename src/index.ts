@@ -29,14 +29,17 @@ if (import.meta.env.DEV || import.meta.env.MODE === 'staging') {
 export const Guestbook:FunctionComponent = function () {
     const isHamburgerOpen = useSignal<boolean>(false)
     const match = router.match(state.route.value)
-    if (!match) {
-        return html`<div class="404">
+    let ChildNode
+    let params = {}
+    if (!match || !match.action) {
+        ChildNode = () => html`<div class="fourzerofour">
             <h1>404</h1>
+            <p>Path not found.</p>
         </div>`
+    } else {
+        ChildNode = match.action(match, state.route)
+        params = match.params
     }
-
-    const ChildNode = match.action!(match, state.route)
-    const { params } = match
 
     const successToast = useRef<SlAlert>(null)
     useEffect(() => {

@@ -47,7 +47,7 @@
   "devDependencies": {
     "@netlify/functions": "^3.0.1",
     "@preact/preset-vite": "^2.9.4",
-    "@substrate-system/debug": "^0.7.18",
+    "@substrate-system/debug": "^0.7.22",
     "@substrate-system/tapzero": "^0.10.13",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.8.1",

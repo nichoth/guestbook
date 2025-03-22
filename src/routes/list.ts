@@ -8,7 +8,7 @@ const debug = Debug()
 export const ListRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
-    debug('link route', state)
+    debug('list route', state)
 
     return html`<div class="route list">
         <p>List here</p>

@@ -60,7 +60,7 @@ export default class Server implements Party.Server {
 
     /**
      * This is auth for existing machines, so you can connect and get the
-     * presense indicator.
+     * presence indicator.
      *
      * `slug` here is the username or 6 digit code
      */

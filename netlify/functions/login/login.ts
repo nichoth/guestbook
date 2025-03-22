@@ -12,6 +12,7 @@ import type { User, Machine } from '../../../src/types.js'
 
 /**
  * Get a user record given a machine DID.
+ * Also, return the contact list here, b/c it saves a round-trip.
  */
 export const handler:Handler = async function handler (ev:HandlerEvent) {
     if (ev.httpMethod !== 'GET') {
@@ -36,8 +37,10 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     // return the user and their machines
     let user:(User & { machines: { data:(Machine & { id })[] } })
     try {
-        const res = await client.query<
-            User & { machines:{ data:(Machine & { id })[] } }>(fql`
+        const res = await client.query<User & {
+            machines:{ data:(Machine & { id })[] }
+            // eslint-disable-next-line indent
+        }>(fql`
             let machine = Machine.by_did(${author}).first()
             if (machine == null) {
                 abort('Invalid key')
@@ -46,6 +49,8 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
                 abort('Invalid sequence number')
             }
             let user = machine?.owner
+
+            // also get the contact list
 
             user {
                 id,
@@ -73,11 +78,13 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         return { statusCode: 500, body: err.message }
     }
 
+    const { machines, ...userData } = user
+
     return {
         statusCode: 200,
         body: JSON.stringify({
-            ...user,
-            machines: user.machines.data
+            user: userData,
+            machines: machines.data
         })
     }
 }

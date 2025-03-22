@@ -1,8 +1,14 @@
 import { type DID } from '@bicycle-codes/keys'
 
 export type User = {
-    email:string;
     username:string;
+    email:string;
+    body:string;
+}
+
+export type Contact = {
+    humanName:string;
+    email:string;
     body:string;
 }
 

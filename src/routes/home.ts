@@ -44,8 +44,5 @@ export const HomeRoute:FunctionComponent<{
         <p>
             Lost your keys? <a href="lost">Reset your keys</a>.
         </p>
-
-        <hr />
-
     </div>`
 }
