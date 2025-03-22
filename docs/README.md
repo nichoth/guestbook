@@ -1,3 +1,20 @@
 # notes
 
-`PUT` is defined to assume idempotency.
+## envs
+
+4 possible `NODE_ENV`s -- `staging`, `test`, `development`, `production`.
+
+This corresponds to vars for the DB url
+
+1. `DATABASE_URL_TEST`
+2. `DATABASE_URL_DEVELOPMENT`
+3. `DATABASE_URL_PRODUCTION`
+4. `DATABASE_URL_STAGING`
+
+We get the URL for the DB by combining `NODE_ENV` and the DB url param.
+
+```js
+const client = new Client(
+    process.env[`DATABASE_URL_${process.env.NODE_ENV?.toUpperCase()}`]
+)
+```
