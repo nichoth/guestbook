@@ -52,8 +52,8 @@ export const handler:Handler = async function handler (
         // no auth in that case
         const params = ev.queryStringParameters
         if (!params || !params.code) {
-            // if there is not a query param
-            // then get all invitations that the user has created
+            // if there is not a query param,
+            // then get all invitations that the given user has created
             const headerString = ev.headers.authorization
             if (!headerString) {
                 return { body: 'Need to authenticate', statusCode: 401 }
@@ -85,28 +85,16 @@ export const handler:Handler = async function handler (
             const code = params.code!
 
             try {
-                const res = await client.query<{ code, creator }>(fql`
-                    let inv = Invitation.by_code(${code}).first()
-                    if (inv == null) {
-                        abort('Invalid invitation code')
-                    } else {
-                        inv { ts, note, code, creator {
-                            id,
-                            username,
-                            humanName
-                        } }
-                    }
-                `)
-
-                return { statusCode: 200, body: JSON.stringify(res.data) }
+                // get the invitation from DB
             } catch (_err) {
-                const err = _err as AbortError
-                if (err.code === 'abort') {
-                    return { statusCode: 404, body: 'Invalid invitation code' }
-                } else {
-                    console.log('**unexpected error**', err)
-                    return { statusCode: 500, body: err.message }
-                }
+                // query error
+                // const err = _err as AbortError
+                // if (err.code === 'abort') {
+                //     return { statusCode: 404, body: 'Invalid invitation code' }
+                // } else {
+                //     console.log('**unexpected error**', err)
+                //     return { statusCode: 500, body: err.message }
+                // }
             }
         }
     }
@@ -114,8 +102,8 @@ export const handler:Handler = async function handler (
     // is either PATCH or POST
     if (!ev.body) return { statusCode: 400 }
 
-    // redeem an invitation (create a new user)
     if (ev.httpMethod === 'PATCH') {
+        // redeem an invitation (create a new user)
         let data:z.infer<typeof Request>
 
         try {
@@ -131,72 +119,50 @@ export const handler:Handler = async function handler (
         const slugUsername = username.split(' ').filter(Boolean).join('_')
         const machineName = await Keys.deviceName(did)
 
-        // query the DB
         // check that the given invitation is valid
         try {
-            const res = await client.query<{
-                id,
-                humanName,
-                owner: { id, humanName, username }
-            }>(fql`
-                RedeemInvitation(${code})
+            // query DB (check invitation)
+            // call the accept function in DB
 
-                let user = User.create({
-                    username: ${slugUsername},
-                    humanName: ${username},
-                    body: ${body},
-                    email: ${email}
-                })
+            // const newUserData:{
+            //     id,
+            //     humanName
+            //     owner:{ id, humanName, username }
+            // } = res.data
 
-                let machine = Machine.create({
-                    did: ${data.machine.did},
-                    machineName: ${machineName},
-                    seq: 0,
-                    humanName: ${data.machine.humanName},
-                    owner: user
-                })
+            // console.log('the new user...', JSON.stringify(newUserData, null, 2))
 
-                machine { id, humanName, owner { id, humanName, username } }
-            `)
-
-            const newUserData:{
-                id,
-                humanName
-                owner:{ id, humanName, username }
-            } = res.data
-
-            console.log('the new user...', JSON.stringify(newUserData, null, 2))
-
-            return {
-                body: JSON.stringify({
-                    user: newUserData.owner,
-                    machine: {
-                        id: newUserData.id,
-                        humanName: newUserData.humanName
-                    }
-                }),
-                statusCode: 200
-            }
+            // return {
+            //     body: JSON.stringify({
+            //         user: newUserData.owner,
+            //         machine: {
+            //             id: newUserData.id,
+            //             humanName: newUserData.humanName
+            //         }
+            //     }),
+            //     statusCode: 200
+            // }
         } catch (_err) {
-            const err = _err as AbortError
-            if (err.code === 'abort') {
-                return { body: 'Invalid invitation', statusCode: 403 }
-            }
+            // query error
+            // const err = _err as AbortError
+            // if (err.code === 'abort') {
+            //     return { body: 'Invalid invitation', statusCode: 403 }
+            // }
 
-            if (err.code === 'constraint_failure') {
-                if (err.queryInfo?.summary?.includes('unique constraint')) {
-                    return { statusCode: 409, body: 'That email is taken.' }
-                }
-            }
+            // if (err.code === 'constraint_failure') {
+            //     if (err.queryInfo?.summary?.includes('unique constraint')) {
+            //         return { statusCode: 409, body: 'That email is taken.' }
+            //     }
+            // }
 
-            console.log('the errrrrrrrrrrrrrr', err)
-            return { statusCode: 500, body: err.message }
+            // console.log('the errrrrrrrrrrrrrr', err)
+            // return { statusCode: 500, body: err.message }
         }
     }
 
-    // create a new invitation
     const code = uuid()
     if (ev.httpMethod === 'POST') {
+        // create a new invitation
         let data:{
             note:string;
             remainingUses:number;
@@ -222,38 +188,17 @@ export const handler:Handler = async function handler (
 
         const { note, remainingUses } = data
 
-        let invitation:{ note:string; code:string }
+        let invitation:{ note:string; code:string, remainingUses }
         try {
-            const res = await client.query<{ note, code }>(fql`
-                // check sequence has changed
-                let machine = Machine.by_did(${author})
-                let user = machine?.owner
-                if (user == null) {
-                    abort('Bad author')
-                }
-                if (${seq} <= machine?.seq)  {
-                    abort('Bad auth')
-                }
-
-                Invitation.create({
-                    note: ${note},
-                    code: ${code},
-                    remainingUses: ${remainingUses}
-                    creator: user
-                })
-            `)
-
-            invitation = res.data
+            // check the user status in query
+            // the given machine 'author' must be a current user
+            // use `seq` and `author` here
+            invitation = { note, code, remainingUses }
         } catch (_err) {
-            const err = _err as AbortError
-            if (err.code === 'abort') {
-                return { body: 'bad auth', statusCode: 403 }
-            }
-
-            return { body: _err, statusCode: 500 }
+            // query error TODO
+            return { body: _err.toString(), statusCode: 500 }
         }
 
-        // we create a new invitation
         return { body: JSON.stringify({ invitation }), statusCode: 200 }
     }
 

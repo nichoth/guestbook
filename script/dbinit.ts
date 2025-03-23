@@ -122,7 +122,13 @@ const statements = [
     `
         DELIMITER $$
 
-        CREATE FUNCTION process_invitation(invitation_id INT, new_user_name VARCHAR(255), new_machine_name VARCHAR(255))
+        CREATE FUNCTION process_invitation(
+            invitation_id INT,
+            new_user_name VARCHAR(255),
+            new_machine_name VARCHAR(255),
+            new_machine_did (VARCHAR255),
+            new_machine_human_name (VARCHAR255)
+        )
         RETURNS VARCHAR(255)
         BEGIN
             DECLARE remaining_count INT;
@@ -142,7 +148,8 @@ const statements = [
             SET remaining = remaining - 1
             WHERE id = invitation_id;
 
-            -- Step 4: Check if the remaining count is now 0 or less, and delete the invitation if so
+            -- Step 4: Check if the remaining count is now 0 or less, and
+            -- delete the invitation if so
             SELECT remaining INTO remaining_count
             FROM invitations
             WHERE id = invitation_id;
@@ -158,12 +165,22 @@ const statements = [
             SET new_user_id = LAST_INSERT_ID();
 
             -- Step 6: Create a new machine with the new user as its owner
-            INSERT INTO machines (name, user_id) VALUES (new_machine_name, new_user_id);
+            INSERT INTO machines (
+                machine_name,
+                owner,
+                did
+            ) VALUES (
+                new_machine_name,
+                new_user_id,
+                new_machine_did,
+                0,
+                new_machine_human_name
+            );
 
             RETURN 'Success: User and machine created, and invitation updated.';
         END$$
 
-        DELIMITER ;
+        DELIMITER;
     `,
 
     // indexes

@@ -2,6 +2,7 @@ import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
+import Knex from 'knex'
 import { getDeviceName } from '@bicycle-codes/keys'
 import { Client } from 'pg'
 import {
@@ -24,6 +25,10 @@ export const handler:Handler = async function handler (
         return { statusCode: 405 }
     }
 
+    const knex = Knex({
+        client: 'pg',
+        connection: getDbString(process.env)
+    })
     // check the auth/header
     const headerString = ev.headers.authorization
     if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
