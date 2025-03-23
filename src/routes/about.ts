@@ -32,7 +32,7 @@ export const AboutRoute:FunctionComponent = function () {
         <p>
             The backend is <a href="https://www.netlify.com/platform/core/functions/">
             lambda functions, hosted by netlify</a>, and a database from${NBSP}
-            <a href="https://faunadb.com/">Fauna DB</a>.
+            <a href="https://www.cockroachlabs.com/">Cockroach DB</a>.
         </p>
 
         <p>
