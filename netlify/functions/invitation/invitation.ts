@@ -4,13 +4,14 @@ import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
-import { Keys, type DID } from '@bicycle-codes/keys'
+import { Keys, type DID, getDeviceName } from '@bicycle-codes/keys'
 import {
     verifyParsed,
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
-import { Client, fql, type AbortError } from 'fauna'
+import { Client } from 'pg'
+import { getDbString } from '../util.js'
 
 const ZodDID = z.custom<DID>((val:string) => val.startsWith('did:key:z'))
 
@@ -44,19 +45,22 @@ const Request = z.object({
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
-    const secret = Netlify.env.get('FAUNA_SECRET')
-    const client = new Client({ secret })
+    const client = new Client(getDbString(process.env))
 
     if (ev.httpMethod === 'GET') {
+        // if theres a query param, then get that one invitation.
+        // no auth in that case
         const params = ev.queryStringParameters
         if (!params || !params.code) {
-            // an existing user, getting the invitations they have created
+            // if there is not a query param
+            // then get all invitations that the user has created
             const headerString = ev.headers.authorization
             if (!headerString) {
                 return { body: 'Need to authenticate', statusCode: 401 }
             }
             const parsedHeader:ParsedHeader = parseHeader(headerString)
             const { seq, author } = parsedHeader
+            const machineName = getDeviceName(author)
 
             // check signature
             const isOk = await verifyParsed(parsedHeader)   // check signature
@@ -65,22 +69,17 @@ export const handler:Handler = async function handler (
             }
 
             // check the author & seq in the query
-            const res = await client.query(fql`
-                let machine = Machine.by_did(${author})
-                if (machine.seq <= ${seq}) {
-                    abort('Invalid signature')
-                }
+            const sql = `
+                SELECT i.id AS code
+                FROM invitation i
+                JOIN usr u ON i.creator = u.user_id
+                JOIN machine m ON m.owner = u.user_id
+                WHERE m.did = '${author}';
+            `
 
-                Invitation.by_creator(machine.owner) {
-                    remainingUses,
-                    code,
-                    ts,
-                    note,
-                    id
-                }
-            `)
+            await client.query(sql)
 
-            return { statusCode: 200, body: JSON.stringify(res.data) }
+            // return { statusCode: 200, body: JSON.stringify(res.data) }
         } else {
             // a new person checking an invitation code
             const code = params.code!

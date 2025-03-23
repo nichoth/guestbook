@@ -10,25 +10,51 @@ if (env !== 'staging' && env !== 'development' && env !== 'test') {
     throw new Error('Bad environment')
 }
 
+async function dropTables (client:InstanceType<typeof Client>) {
+    const statements = [
+        'DROP TABLE IF EXISTS machine CASCADE;',
+        'DROP TABLE IF EXISTS usr CASCADE;',
+        'DROP TABLE IF EXISTS invitation CASCADE;',
+    ]
+
+    const res = await Promise.all(statements.map(sql => {
+        return client.query(sql)
+    }))
+
+    return res
+}
+
 // the env var determines which DB we are targeting
 const statements = [
-    'DROP TABLE IF EXISTS machine;',
-    'DROP TABLE IF EXISTS usr;',
+    // user
     `CREATE TABLE IF NOT EXISTS usr (
-        user_id  UUID   PRIMARY KEY DEFAULT gen_random_uuid(),
-        email    STRING NOT NULL UNIQUE,
-        username STRING NOT NULL,
-        human_name STRING NOT NULL,
-        body STRING NOT NULL
+        user_id     UUID   PRIMARY KEY DEFAULT gen_random_uuid(),
+        email       STRING NOT NULL UNIQUE,
+        username    STRING NOT NULL,
+        human_name  STRING NOT NULL,
+        body        STRING NOT NULL
     );`,
+
+    // invitation
+    `CREATE TABLE IF NOT EXISTS invitation (
+        id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        remaining   INT         NOT NULL,
+        creator     UUID,
+        note        STRING,
+        FOREIGN KEY (creator)   REFERENCES usr(user_id)
+    );`,
+
+    // machine
     `CREATE TABLE IF NOT EXISTS machine (
-        machine_name STRING PRIMARY KEY,
-        owner UUID,
-        did STRING NOT NULL,
-        seq INT DEFAULT 0,
-        human_name STRING NOT NULL,
+        machine_name        STRING PRIMARY KEY,
+        owner               UUID,
+        did                 STRING NOT NULL,
+        seq                 INT DEFAULT 0,
+        human_name          STRING NOT NULL,
         FOREIGN KEY (owner) REFERENCES usr(user_id)
     );`,
+
+    // test data
     `INSERT INTO usr (
         username,
         email,
@@ -53,6 +79,18 @@ const statements = [
         0,
         'Phone'
     );`,
+    `INSERT INTO invitation (
+        remaining,
+        creator,
+        note
+    ) VALUES (
+        10,
+        (SELECT user_id from usr WHERE email = 'test@beef.com'),
+        'this is a test invitation'
+    )
+    `,
+
+    // function to check & update the `seq` number
     `
     CREATE OR REPLACE FUNCTION check_seq(machinename STRING, new_seq INT)
     RETURNS BOOLEAN AS
@@ -78,21 +116,79 @@ const statements = [
     END;
     $$ LANGUAGE plpgsql;
     `,
+
+    // function to accept an invitation
+    // (create a new user)
+    `
+        DELIMITER $$
+
+        CREATE FUNCTION process_invitation(invitation_id INT, new_user_name VARCHAR(255), new_machine_name VARCHAR(255))
+        RETURNS VARCHAR(255)
+        BEGIN
+            DECLARE remaining_count INT;
+
+            -- Step 1: Get the current remaining count for the invitation
+            SELECT remaining INTO remaining_count
+            FROM invitations
+            WHERE id = invitation_id;
+
+            -- Step 2: Check if the invitation has remaining uses
+            IF remaining_count <= 0 THEN
+                RETURN 'Error: No remaining uses for this invitation.';
+            END IF;
+
+            -- Step 3: Decrement the remaining count
+            UPDATE invitations
+            SET remaining = remaining - 1
+            WHERE id = invitation_id;
+
+            -- Step 4: Check if the remaining count is now 0 or less, and delete the invitation if so
+            SELECT remaining INTO remaining_count
+            FROM invitations
+            WHERE id = invitation_id;
+
+            IF remaining_count <= 0 THEN
+                DELETE FROM invitations
+                WHERE id = invitation_id;
+            END IF;
+
+            -- Step 5: Create a new user
+            INSERT INTO users (name) VALUES (new_user_name);
+            DECLARE new_user_id INT;
+            SET new_user_id = LAST_INSERT_ID();
+
+            -- Step 6: Create a new machine with the new user as its owner
+            INSERT INTO machines (name, user_id) VALUES (new_machine_name, new_user_id);
+
+            RETURN 'Success: User and machine created, and invitation updated.';
+        END$$
+
+        DELIMITER ;
+    `,
+
+    // indexes
     `
         CREATE INDEX user_by_email
         ON usr (email);
+    `,
+    `
+        CREATE INDEX invitation_by_creator
+        ON invitation (creator);
+    `,
+    `
+        CREATE INDEX machine_by_did
+        ON machine (did);
     `
 ]
 
-// TODO
-// replace `statements` with real seed data.
-
 try {
     await client.connect()
+    await dropTables(client)
     const res = await Promise.all(statements.map(sql => {
         return client.query(sql)
     }))
 
+    console.log('success dropping')
     console.log('success', res.filter(r => Boolean(r)).map(r => r.rows))
 } catch (err) {
     console.log('**error**', err)

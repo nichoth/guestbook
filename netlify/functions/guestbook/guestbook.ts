@@ -42,7 +42,7 @@ export const handler:Handler = async function handler (
     if (ev.httpMethod === 'GET') {
         // get the guestbook
         const sql = `
-            -- check seq and return data if seq is ok
+            -- check seq and return data iff seq is ok
             SELECT email, human_name, body, username
             FROM usr
             WHERE check_seq('${machineName}', ${seq}) = TRUE;
