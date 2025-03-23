@@ -28,8 +28,7 @@ async function dropTables (client:InstanceType<typeof Client>) {
 const statements = [
     // user
     `CREATE TABLE IF NOT EXISTS usr (
-        user_id     UUID   PRIMARY KEY DEFAULT gen_random_uuid(),
-        email       STRING NOT NULL UNIQUE,
+        email       STRING PRIMARY KEY NOT NULL UNIQUE,
         username    STRING NOT NULL,
         human_name  STRING NOT NULL,
         body        STRING NOT NULL
@@ -39,19 +38,19 @@ const statements = [
     `CREATE TABLE IF NOT EXISTS invitation (
         id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         remaining   INT         NOT NULL,
-        creator     UUID,
+        creator     STRING      NOT NULL,
         note        STRING,
-        FOREIGN KEY (creator)   REFERENCES usr(user_id)
+        FOREIGN KEY (creator)   REFERENCES usr(email)
     );`,
 
     // machine
     `CREATE TABLE IF NOT EXISTS machine (
         machine_name        STRING PRIMARY KEY,
-        owner               UUID,
+        owner               STRING,
         did                 STRING NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          STRING NOT NULL,
-        FOREIGN KEY (owner) REFERENCES usr(user_id)
+        FOREIGN KEY (owner) REFERENCES usr(email)
     );`,
 
     // test data
@@ -66,6 +65,7 @@ const statements = [
         'Abc 123 tester',
         'hello, i am a test user'
     );`,
+
     `INSERT INTO machine (
         machine_name,
         owner,
@@ -73,19 +73,20 @@ const statements = [
         seq,
         human_name
     ) VALUES (
-        'abc123machinename',
-        (SELECT user_id FROM usr WHERE email = 'test@beef.com'),
+        'abc123_machinename_here',
+        (SELECT email FROM usr WHERE usr.email = 'test@beef.com'),
         'did:key:zstring',
         0,
         'Phone'
     );`,
+
     `INSERT INTO invitation (
         remaining,
         creator,
         note
     ) VALUES (
         10,
-        (SELECT user_id from usr WHERE email = 'test@beef.com'),
+        (SELECT email from usr WHERE usr.email = 'test@beef.com'),
         'this is a test invitation'
     )
     `,
@@ -118,24 +119,24 @@ const statements = [
     `,
 
     // function to accept an invitation
-    // (create a new user)
+    // (create a new user & machine)
     `
-        DELIMITER $$
-
-        CREATE FUNCTION process_invitation(
-            invitation_id INT,
-            new_user_name VARCHAR(255),
+        CREATE FUNCTION accept_invitation(
+            invitation_id UUID,
             new_machine_name VARCHAR(255),
-            new_machine_did (VARCHAR255),
-            new_machine_human_name (VARCHAR255)
+            new_machine_human_name VARCHAR(255),
+            new_machine_did VARCHAR(255),
+            new_username VARCHAR(255),
+            new_user_human_name VARCHAR(255),
+            new_user_email VARCHAR(255)
         )
-        RETURNS VARCHAR(255)
-        BEGIN
-            DECLARE remaining_count INT;
+        RETURNS VARCHAR(255) AS $$
 
+        DECLARE remaining_count INT;
+        BEGIN
             -- Step 1: Get the current remaining count for the invitation
             SELECT remaining INTO remaining_count
-            FROM invitations
+            FROM invitation
             WHERE id = invitation_id;
 
             -- Step 2: Check if the invitation has remaining uses
@@ -144,43 +145,50 @@ const statements = [
             END IF;
 
             -- Step 3: Decrement the remaining count
-            UPDATE invitations
+            UPDATE invitation
             SET remaining = remaining - 1
             WHERE id = invitation_id;
 
             -- Step 4: Check if the remaining count is now 0 or less, and
             -- delete the invitation if so
             SELECT remaining INTO remaining_count
-            FROM invitations
+            FROM invitation
             WHERE id = invitation_id;
 
             IF remaining_count <= 0 THEN
-                DELETE FROM invitations
+                DELETE FROM invitation
                 WHERE id = invitation_id;
             END IF;
 
             -- Step 5: Create a new user
-            INSERT INTO users (name) VALUES (new_user_name);
-            DECLARE new_user_id INT;
-            SET new_user_id = LAST_INSERT_ID();
+            INSERT INTO usr (
+                username,
+                email,
+                human_name
+            ) VALUES (
+                new_username,
+                new_user_email,
+                new_user_human_name
+            );
 
             -- Step 6: Create a new machine with the new user as its owner
-            INSERT INTO machines (
+            INSERT INTO machine (
                 machine_name,
                 owner,
-                did
+                did,
+                seq,
+                human_name
             ) VALUES (
                 new_machine_name,
-                new_user_id,
+                new_user_email,
                 new_machine_did,
                 0,
                 new_machine_human_name
             );
 
             RETURN 'Success: User and machine created, and invitation updated.';
-        END$$
-
-        DELIMITER;
+        END;
+        $$ LANGUAGE plpgsql;
     `,
 
     // indexes

@@ -13,19 +13,22 @@ import {
 import { Client } from 'pg'
 import { getDbString } from '../util.js'
 
-const ZodDID = z.custom<DID>((val:string) => val.startsWith('did:key:z'))
+const ZodDID = z.custom<DID>((val:string) => {
+    return (val.startsWith('did:key:z') && val.length < 450)
+})
 
 const Request = z.object({
     userData: z.object({
-        username: z.string(),
-        email: z.string(),
-        body: z.string()
+        humanName: z.string().max(100),
+        username: z.string().max(36),
+        email: z.string().max(100),
+        body: z.string().max(6000)
     }),
     machine: z.object({
-        humanName: z.string(),
+        humanName: z.string().max(100),
         did: ZodDID,
     }),
-    code: z.string()
+    code: z.string().length(36)
 })
 
 /**
@@ -74,27 +77,33 @@ export const handler:Handler = async function handler (
                 FROM invitation i
                 JOIN usr u ON i.creator = u.user_id
                 JOIN machine m ON m.owner = u.user_id
-                WHERE m.did = '${author}';
+                WHERE m.machine_name = '${machineName}'
+                    AND check_seq(${machineName}, ${seq});
             `
 
-            await client.query(sql)
-
-            // return { statusCode: 200, body: JSON.stringify(res.data) }
+            const res = await client.query(sql)
+            return { statusCode: 200, body: JSON.stringify(res.rows) }
         } else {
             // a new person checking an invitation code
             const code = params.code!
+            if (code.length !== 36) {
+                return { body: 'Bad code', statusCode: 403 }
+            }
 
             try {
                 // get the invitation from DB
+                const sql = `
+                    SELECT * FROM invitation
+                    WHERE invitation.id = ${code}
+                `
+                const res = await client.query(sql)
+                return { body: JSON.stringify(res.rows[0]), statusCode: 200 }
             } catch (_err) {
                 // query error
-                // const err = _err as AbortError
-                // if (err.code === 'abort') {
-                //     return { statusCode: 404, body: 'Invalid invitation code' }
-                // } else {
-                //     console.log('**unexpected error**', err)
-                //     return { statusCode: 500, body: err.message }
-                // }
+                console.log('**error**', _err)
+                // TODO
+                // better error handling
+                return { body: _err.toString(), statusCode: 500 }
             }
         }
     }
@@ -103,7 +112,7 @@ export const handler:Handler = async function handler (
     if (!ev.body) return { statusCode: 400 }
 
     if (ev.httpMethod === 'PATCH') {
-        // redeem an invitation (create a new user)
+        // accept an invitation (create a new user and new machine)
         let data:z.infer<typeof Request>
 
         try {
@@ -113,10 +122,10 @@ export const handler:Handler = async function handler (
             return { body: 'Invalid JSON', statusCode: 415 }
         }
 
-        const { username, email, body } = data.userData
+        const { username, humanName: userHumanName, email, body } = data.userData
         const { code, machine } = data
-        const { did } = machine
-        const slugUsername = username.split(' ').filter(Boolean).join('_')
+        const { did, humanName: machineHumanName } = machine
+        const slugUsername = userHumanName.split(' ').filter(Boolean).join('_')
         const machineName = await Keys.deviceName(did)
 
         // check that the given invitation is valid
