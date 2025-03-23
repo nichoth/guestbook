@@ -75,8 +75,8 @@ export const handler:Handler = async function handler (
             const sql = `
                 SELECT i.id AS code
                 FROM invitation i
-                JOIN usr u ON i.creator = u.user_id
-                JOIN machine m ON m.owner = u.user_id
+                JOIN usr u ON i.creator = u.email
+                JOIN machine m ON m.owner = u.email
                 WHERE m.machine_name = '${machineName}'
                     AND check_seq(${machineName}, ${seq});
             `
@@ -125,13 +125,27 @@ export const handler:Handler = async function handler (
         const { username, humanName: userHumanName, email, body } = data.userData
         const { code, machine } = data
         const { did, humanName: machineHumanName } = machine
-        const slugUsername = userHumanName.split(' ').filter(Boolean).join('_')
+        const slugUsername = username.split(' ').filter(Boolean).join('_')
         const machineName = await Keys.deviceName(did)
 
         // check that the given invitation is valid
         try {
             // query DB (check invitation)
             // call the accept function in DB
+            const sql = `
+                SELECT accept_invitation(
+                    ${code},
+                    ${machineName},
+                    ${machineHumanName},
+                    ${did},
+                    ${slugUsername},
+                    ${userHumanName},
+                    ${email},
+                    ${body}
+                )
+            `
+
+            await client.query(sql)
 
             // const newUserData:{
             //     id,

@@ -25,6 +25,7 @@ async function dropTables (client:InstanceType<typeof Client>) {
 }
 
 // the env var determines which DB we are targeting
+
 const statements = [
     // user
     `CREATE TABLE IF NOT EXISTS usr (
@@ -128,11 +129,15 @@ const statements = [
             new_machine_did VARCHAR(255),
             new_username VARCHAR(255),
             new_user_human_name VARCHAR(255),
-            new_user_email VARCHAR(255)
+            new_user_email VARCHAR(255),
+            new_body STRING
         )
-        RETURNS VARCHAR(255) AS $$
+        RETURNS JSONB AS $$
 
-        DECLARE remaining_count INT;
+        DECLARE
+            remaining_count INT;
+            user_record JSONB;
+            machine_record JSONB;
         BEGIN
             -- Step 1: Get the current remaining count for the invitation
             SELECT remaining INTO remaining_count
@@ -141,7 +146,9 @@ const statements = [
 
             -- Step 2: Check if the invitation has remaining uses
             IF remaining_count <= 0 THEN
-                RETURN 'Error: No remaining uses for this invitation.';
+                RETURN jsonb_build_object(
+                    'error', 'No remaining uses for this invitation.'
+                );
             END IF;
 
             -- Step 3: Decrement the remaining count
@@ -164,12 +171,24 @@ const statements = [
             INSERT INTO usr (
                 username,
                 email,
-                human_name
+                human_name,
+                body
             ) VALUES (
                 new_username,
                 new_user_email,
-                new_user_human_name
+                new_user_human_name,
+                new_body
             );
+            
+            -- Retrieve the newly created user record as JSON
+            SELECT jsonb_build_object(
+                'username', username,
+                'email', email,
+                'human_name', human_name,
+                'body', body
+            ) INTO user_record
+            FROM usr
+            WHERE email = new_user_email;
 
             -- Step 6: Create a new machine with the new user as its owner
             INSERT INTO machine (
@@ -186,16 +205,27 @@ const statements = [
                 new_machine_human_name
             );
 
-            RETURN 'Success: User and machine created, and invitation updated.';
+            -- Retrieve the newly created machine record as JSON
+            SELECT jsonb_build_object(
+                'machine_name', machine_name,
+                'owner', owner,
+                'did', did,
+                'seq', seq,
+                'human_name', human_name
+            ) INTO machine_record
+            FROM machine
+            WHERE machine_name = new_machine_name;
+
+            -- Combine the user and machine records into a single JSON object
+            RETURN jsonb_build_object(
+                'user', user_record,
+                'machine', machine_record
+            );
         END;
         $$ LANGUAGE plpgsql;
     `,
 
     // indexes
-    `
-        CREATE INDEX user_by_email
-        ON usr (email);
-    `,
     `
         CREATE INDEX invitation_by_creator
         ON invitation (creator);
