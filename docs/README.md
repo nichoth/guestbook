@@ -18,3 +18,17 @@ const client = new Client(
     process.env[`DATABASE_URL_${process.env.NODE_ENV?.toUpperCase()}`]
 )
 ```
+
+## scratch
+
+```sql
+CREATE OR REPLACE FUNCTION update_code(
+    code_name VARCHAR,
+    new_rules JSONB
+  ) 
+  RETURNS promo_codes AS $$
+    UPDATE promo_codes SET rules = new_rules
+    WHERE code = code_name
+    RETURNING *;
+  $$ LANGUAGE SQL;
+```

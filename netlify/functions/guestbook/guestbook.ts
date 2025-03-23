@@ -2,12 +2,14 @@ import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
+import { getDeviceName } from '@bicycle-codes/keys'
 import { Client } from 'pg'
 import {
     verifyParsed,
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
+import { getDbString } from '../util.js'
 
 /**
  * PUT call means add or update the contact info for the given user.
@@ -23,49 +25,39 @@ export const handler:Handler = async function handler (
     }
 
     // check the auth/header
-    // const headerString = ev.headers.authorization
-    // if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
-    // const parsedHeader:ParsedHeader = parseHeader(headerString)
-    // const { seq, author } = parsedHeader
+    const headerString = ev.headers.authorization
+    if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
+    const parsedHeader:ParsedHeader = parseHeader(headerString)
+    const { seq, author } = parsedHeader
 
     // check signature
-    // const isOk = await verifyParsed(parsedHeader)   // check signature
-    // if (!isOk) {
-    //     return { body: 'Invalid signature', statusCode: 403 }
-    // }
+    const isOk = await verifyParsed(parsedHeader)   // check signature
+    if (!isOk) {
+        return { body: 'Invalid signature', statusCode: 403 }
+    }
 
-    const client = new Client(process.env.DATABASE_URL)
-
-    // sql test
-    // const statements = [
-    //     // Clear any existing data
-    //     'DROP TABLE IF EXISTS messages',
-    //     // CREATE the messages table
-    //     'CREATE TABLE IF NOT EXISTS messages (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), message STRING)',
-    //     // INSERT a row into the messages table
-    //     "INSERT INTO messages (message) VALUES ('Hello world!')",
-    //     // SELECT a row from the messages table
-    //     'SELECT message FROM messages',
-    // ]
-
-    const statements = [
-        'SELECT message FROM messages',
-    ]
+    const client = new Client(getDbString(process.env))
+    const machineName = getDeviceName(author)
 
     if (ev.httpMethod === 'GET') {
         // get the guestbook
-        // check the seq # in request
+        const sql = `
+            -- check seq and return data if seq is ok
+            SELECT email, human_name, body, username
+            FROM usr
+            WHERE check_seq('${machineName}', ${seq}) = TRUE;
+        `
         await client.connect()
         let res:(undefined|Record<string, string>)[]
+
         try {
-            // const results = await client.query('SELECT NOW()')
-            res = await Promise.all(statements.map(async sql => {
-                const res = await client.query(sql)
-                return (res.rows && res.rows[0])
-            }))
+            const response = (await client.query(sql))
+            console.log('**results**', response)
+            res = response.rows
         } catch (err) {
             console.error('error executing query:', err)
-            res = []
+            console.log('error to string', err.toString())
+            return { body: 'query issue', statusCode: 500 }
         } finally {
             client.end()
         }

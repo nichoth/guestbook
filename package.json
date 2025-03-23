@@ -12,6 +12,8 @@
     "start": "concurrently --kill-others \"npx ntl functions:serve --port=9999 --debug\" \"npx partykit dev\" \"npx vite\"",
     "preversion": "npm run lint",
     "version": "auto-changelog --template keepachangelog --breaking-pattern 'BREAKING CHANGE' && git add CHANGELOG.md",
+    "setup-db": "esbuild ./script/dbinit.ts --platform=node --format=esm | node --input-type=module",
+    "script": "esbuild ./script/testing.ts --platform=node --format=esm | node --input-type=module",
     "postversion": "git push --follow-tags",
     "prepublishOnly": "npm run build"
   },
