@@ -295,6 +295,11 @@ State.acceptInvitation = async function (
     // set the ky instance too
     ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
 
+    const persisted = await navigator.storage.persist()
+    if (persisted) {
+        localStorage.setItem('persisted', '' + true)
+    }
+
     const machineName = await keys.deviceName
 
     try {

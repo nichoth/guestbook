@@ -79,7 +79,7 @@ export const AcceptRoute:FunctionComponent<{
         }
     }, [])
 
-    const redeemInvitation = useCallback(async (ev:SubmitEvent) => {
+    const acceptInvitation = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
         const machineName = els['machine-name'].value || 'Root device'
@@ -146,15 +146,14 @@ export const AcceptRoute:FunctionComponent<{
             <h2>Add your contact info</h2>
             <p>
                 This information will be visible to other members of the
-                website. To become a member, you must be invited by an
-                existing member.
+                website. To become a member, you must be invited by a member.
             </p>
 
             <hr />
 
             <form
                 class="newuser"
-                onSubmit=${redeemInvitation}
+                onSubmit=${acceptInvitation}
                 onInput=${userDataInput}
             >
                 <${TextInput}

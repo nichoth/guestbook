@@ -10,6 +10,10 @@
         }
     }
 
+    & hr {
+        border-top: 2px solid;
+    }
+
     & .input-group {
         &.username, &.email, &.machine-name {
             /* for the help text */
