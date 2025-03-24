@@ -248,7 +248,6 @@ State.fetchInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string
 ):Promise<Invitation> {
-    debug('fetching invitation', invitationCode)
     const res = await ky.get('/api/invitation', {
         searchParams: { code: invitationCode }
     }).json<Invitation>()

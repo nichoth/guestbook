@@ -1,11 +1,10 @@
 import { html } from 'htm/preact'
-import { DateTime } from 'luxon'
 import { type HTTPError } from 'ky'
 import { useCallback, useEffect } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { TextInput } from '@nichoth/components/htm/text-input'
-import { useSignal, batch, useComputed } from '@preact/signals'
+import { useSignal, batch } from '@preact/signals'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import type { Invitation } from '../types.js'
 import './accept.css'
@@ -34,11 +33,6 @@ export const AcceptRoute:FunctionComponent<{
     const fetchInvitationErr = useSignal<string|null>(null)
     const isUserInputOk = useSignal<boolean>(false)
     const redeemInvitationError = useSignal<string|null>(null)
-    const invitationTs = useComputed(() => {
-        if (!invitationSignal.value) return
-        return (DateTime.fromISO(invitationSignal.value.ts.isoString)
-            .toLocaleString(DateTime.DATETIME_MED))
-    })
 
     debug('state in here', state)
 
@@ -74,9 +68,9 @@ export const AcceptRoute:FunctionComponent<{
                 invitationSignal.value = invitation
                 isFetchResolving.value = false
             })
-            invitationSignal.value = invitation
         } catch (_err) {
             const err = _err as HTTPError
+            debug('error accepting invitation', err)
             const errMsg = await err.response.text()
             batch(() => {
                 isFetchResolving.value = false
@@ -142,9 +136,6 @@ export const AcceptRoute:FunctionComponent<{
                 <dt>Code</dt>
                 <dd>${invitationSignal.value.code}</dd>
 
-                <dt>Created on</dt>
-                <dd>${invitationTs.value}</dd>
-
                 <dt>Note</dt>
                 <dd>${invitationSignal.value.note}</dd>
 
@@ -184,6 +175,10 @@ export const AcceptRoute:FunctionComponent<{
                 <${TextInput} name="machine-name" displayName="Device name" />
                 <div class="help-text">
                     What do you want to call this device?
+                </div>
+                <div class="help-text">
+                    The device name is only visible to you. It is used to
+                    distinguish your different devices in the UI.
                 </div>
 
                 <${TextInput}
@@ -231,7 +226,7 @@ export const AcceptRoute:FunctionComponent<{
                     disabled=${!isInvitationValid.value}
                     isSpinning=${isFetchResolving}
                 >
-                    Accept Invitation
+                    Fetch Invitation
                 <//>
             </div>
         </form>

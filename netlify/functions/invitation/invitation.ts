@@ -1,17 +1,16 @@
-import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
 import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
-import { Keys, type DID, getDeviceName } from '@bicycle-codes/keys'
+import { type DID, getDeviceName } from '@bicycle-codes/keys'
 import {
     verifyParsed,
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
 import { Client } from 'pg'
-import { getDbString } from '../util.js'
+import { getDbString, sanitizeHeader } from '../util.js'
 
 const ZodDID = z.custom<DID>((val:string) => {
     return (val.startsWith('did:key:z') && val.length < 450)
@@ -71,6 +70,8 @@ export const handler:Handler = async function handler (
                 return { body: 'Invalid signature', statusCode: 403 }
             }
 
+            await client.connect()
+
             // check the author & seq in the query
             const sql = `
                 SELECT i.id AS code
@@ -89,15 +90,47 @@ export const handler:Handler = async function handler (
             if (code.length !== 36) {
                 return { body: 'Bad code', statusCode: 403 }
             }
+            await client.connect()
 
             try {
                 // get the invitation from DB
                 const sql = `
-                    SELECT * FROM invitation
-                    WHERE invitation.id = ${code}
+                    SELECT 
+                        i.id AS code,
+                        i.remaining,
+                        i.note,
+                        i.creator AS creator_email,
+                        u.username AS creator_username,
+                        u.human_name AS creator_human_name,
+                        u.body AS creator_body
+                    FROM 
+                        invitation i
+                    JOIN 
+                        usr u
+                    ON 
+                        i.creator = u.email
+                    WHERE 
+                        i.id = '${code}';
                 `
                 const res = await client.query(sql)
-                return { body: JSON.stringify(res.rows[0]), statusCode: 200 }
+                const {
+                    creator_email: creatorEmail,
+                    creator_username: creatorUsername,
+                    creator_human_name: creatorHumanName,
+                    ...inv
+                } = res.rows[0]
+                return {
+                    // rename id to code
+                    body: JSON.stringify({
+                        ...inv,
+                        creator: {
+                            email: creatorEmail,
+                            username: creatorUsername,
+                            humanName: creatorHumanName
+                        }
+                    }),
+                    statusCode: 200
+                }
             } catch (_err) {
                 // query error
                 console.log('**error**', _err)
@@ -126,7 +159,8 @@ export const handler:Handler = async function handler (
         const { code, machine } = data
         const { did, humanName: machineHumanName } = machine
         const slugUsername = username.split(' ').filter(Boolean).join('_')
-        const machineName = await Keys.deviceName(did)
+        const machineName = await getDeviceName(did)
+        await client.connect()
 
         // check that the given invitation is valid
         try {
@@ -145,63 +179,48 @@ export const handler:Handler = async function handler (
                 )
             `
 
-            await client.query(sql)
-
-            // const newUserData:{
-            //     id,
-            //     humanName
-            //     owner:{ id, humanName, username }
-            // } = res.data
-
-            // console.log('the new user...', JSON.stringify(newUserData, null, 2))
-
-            // return {
-            //     body: JSON.stringify({
-            //         user: newUserData.owner,
-            //         machine: {
-            //             id: newUserData.id,
-            //             humanName: newUserData.humanName
-            //         }
-            //     }),
-            //     statusCode: 200
-            // }
+            const res = await client.query(sql)
+            console.log(
+                '**result from accepting invitation**',
+                JSON.stringify(res, null, 2)
+            )
+            return { body: JSON.stringify(res.rows), statusCode: 200 }
         } catch (_err) {
             // query error
-            // const err = _err as AbortError
-            // if (err.code === 'abort') {
-            //     return { body: 'Invalid invitation', statusCode: 403 }
-            // }
-
-            // if (err.code === 'constraint_failure') {
-            //     if (err.queryInfo?.summary?.includes('unique constraint')) {
-            //         return { statusCode: 409, body: 'That email is taken.' }
-            //     }
-            // }
-
-            // console.log('the errrrrrrrrrrrrrr', err)
-            // return { statusCode: 500, body: err.message }
+            console.log('**query error**', _err.toString())
+            return { body: _err.toString(), statusCode: 500 }
         }
     }
 
-    const code = uuid()
     if (ev.httpMethod === 'POST') {
         // create a new invitation
-        let data:{
-            note:string;
-            remainingUses:number;
-        }
+
+        const Req = z.object({
+            note: z.string().max(6000),
+            remainingUses: z.number().max(500, 'Max 100 uses per invitation')
+        })
+
+        let data:z.infer<typeof Req>
 
         try {
-            data = JSON.parse(ev.body)
+            const rawData = JSON.parse(ev.body)
+            data = Req.parse(rawData)
         } catch (_err) {
             return { body: 'Invalid JSON', statusCode: 415 }
         }
 
         // check that they are a user
         const headerString = ev.headers.authorization
-        if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
+        if (!headerString) {
+            return { body: 'Need to authenticate', statusCode: 401 }
+        }
+
         const parsedHeader:ParsedHeader = parseHeader(headerString)
         const { seq, author } = parsedHeader
+
+        if (!sanitizeHeader(seq, author)) {
+            return { body: 'Invalid header', statusCode: 403 }
+        }
 
         // check signature
         const isOk = await verifyParsed(parsedHeader)   // check signature
@@ -210,20 +229,41 @@ export const handler:Handler = async function handler (
         }
 
         const { note, remainingUses } = data
+        const machineName = getDeviceName(author)
+        // note & remainingUses are ok now b/c we validated with zod
+        await client.connect()
 
-        let invitation:{ note:string; code:string, remainingUses }
+        let invitation
         try {
             // check the user status in query
             // the given machine 'author' must be a current user
-            // use `seq` and `author` here
-            invitation = { note, code, remainingUses }
+
+            const sql = `
+                INSERT INTO invitation (
+                    remaining,
+                    creator,
+                    note
+                ) VALUES (
+                    ${remainingUses},
+                    (SELECT owner
+                    FROM machine
+                    WHERE machine_name = ${machineName}),
+                    ${note}
+                )
+            `
+
+            invitation = await client.query(sql)
+            console.log('**created an invitation**', invitation)
         } catch (_err) {
-            // query error TODO
+            console.log('**query error**', _err)
             return { body: _err.toString(), statusCode: 500 }
         }
 
-        return { body: JSON.stringify({ invitation }), statusCode: 200 }
+        return {
+            body: JSON.stringify({ invitation: invitation.rows }),
+            statusCode: 200
+        }
     }
 
-    return { statusCode: 405 }
+    return { body: null, statusCode: 405 }
 }
