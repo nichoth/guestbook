@@ -289,30 +289,30 @@ State.acceptInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string,
     userData:User,
-    humanName:string,
-) {
+    machineHumanName:string,
+):Promise<void> {
     const keys = await Keys.load()
     // set the ky instance too
     ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
 
-    const persisted = await navigator.storage.persist()
-    if (persisted) {
-        localStorage.setItem('persisted', '' + true)
-    }
-
     const machineName = await keys.deviceName
+    const { username: _, ...reqData } = userData
 
     try {
         await ky.patch('/api/invitation', {
             json: {
                 code: invitationCode,
-                userData,
+                userData: {
+                    ...reqData,
+                },
                 machine: {
                     did: keys.DID,
-                    humanName
+                    humanName: machineHumanName
                 }
             }
         })
+
+        debug('__invitation accepted__', userData)
 
         // created the user record, now save the keys locally
         // ask for persistent storage
@@ -321,20 +321,26 @@ State.acceptInvitation = async function (
             // Chrome doesn't ask, automatically determines if it's allowed or not.
             const persistent = await navigator.storage.persist()
             if (persistent) {
+                debug('persistence success')
                 debug('Storage will not be cleared except by explicit user action')
+                localStorage.setItem('persisted', '' + true)
             } else {
+                debug('persistence failed')
                 debug('Storage may be cleared by the UA under storage pressure.')
             }
         }
 
-        debug('__invitation accepted__', userData)
+        debug('all the things')
+        debug('keys', keys.deviceName)
+        debug('user data', JSON.stringify(userData, null, 2))
+        debug('machine human name', machineHumanName, machineName)
 
         batch(() => {
             state.keys.value = keys
             state.user.value = userData
             state.machines.value = (state.machines.value || []).concat([{
                 did: keys.DID,
-                humanName,
+                humanName: machineHumanName,
                 machineName
             }])
         })

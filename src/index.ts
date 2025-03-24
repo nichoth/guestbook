@@ -13,8 +13,8 @@ import type { SlAlert } from '@shoelace-style/shoelace'
 import '@shoelace-style/shoelace/dist/components/alert/alert.js'
 import '@shoelace-style/shoelace/dist/themes/light.css'
 import '@shoelace-style/shoelace/dist/components/icon/icon.js'
-// import { createDebug } from '@substrate-system/debug'
-// const debug = createDebug()
+import { createDebug } from '@substrate-system/debug'
+const debug = createDebug()
 
 const state = State()
 const router = Router(state)
@@ -37,9 +37,14 @@ export const Guestbook:FunctionComponent = function () {
             <p>Path not found.</p>
         </div>`
     } else {
-        ChildNode = match.action(match, state.route)
+        ChildNode = match.action(match, state.route.value)
         params = match.params
     }
+
+    debug('the match', match)
+    console.log('match', match)
+    debug('the child', ChildNode)
+    debug('the path', state.route.value)
 
     const successToast = useRef<SlAlert>(null)
     useEffect(() => {

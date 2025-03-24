@@ -87,6 +87,7 @@ export const AcceptRoute:FunctionComponent<{
             isCreateResolving.value = true
             await State.acceptInvitation(state, invitationSignal.value!.code, {
                 username: els['username'].value,
+                humanName: els['username'].value,
                 email: els['email'].value,
                 body: els['body'].value
             }, machineName)
@@ -195,7 +196,7 @@ export const AcceptRoute:FunctionComponent<{
                         disabled=${!isUserInputOk.value}
                         isSpinning=${isCreateResolving}
                     >
-                        Create contact info
+                        Accept invitation
                     <//>
                 </div>
 

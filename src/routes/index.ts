@@ -33,7 +33,7 @@ export default function _Router (state:ReturnType<typeof State>):Router {
     })
 
     router.addRoute('/accept', () => {
-        if (state.user.value) return state._setRoute('/')
+        // if (state.user.value) return state._setRoute('/')
         return AcceptRoute
     })
 

@@ -19,7 +19,6 @@ const ZodDID = z.custom<DID>((val:string) => {
 const Request = z.object({
     userData: z.object({
         humanName: z.string().max(100),
-        username: z.string().max(36),
         email: z.string().max(100),
         body: z.string().max(6000)
     }),
@@ -152,43 +151,54 @@ export const handler:Handler = async function handler (
             const rawData = JSON.parse(ev.body)
             data = Request.parse(rawData)
         } catch (_err) {
+            console.log('**error parsing**', _err)
             return { body: 'Invalid JSON', statusCode: 415 }
         }
 
-        const { username, humanName: userHumanName, email, body } = data.userData
+        // parsed with zod, so it is ok
+        const { humanName: userHumanName, email, body } = data.userData
         const { code, machine } = data
         const { did, humanName: machineHumanName } = machine
-        const slugUsername = username.split(' ').filter(Boolean).join('_')
+        const slugUsername = userHumanName.split(' ').filter(Boolean).join('_')
         const machineName = await getDeviceName(did)
         await client.connect()
 
         // check that the given invitation is valid
         try {
-            // query DB (check invitation)
+            // check invitation
             // call the accept function in DB
             const sql = `
                 SELECT accept_invitation(
-                    ${code},
-                    ${machineName},
-                    ${machineHumanName},
-                    ${did},
-                    ${slugUsername},
-                    ${userHumanName},
-                    ${email},
-                    ${body}
+                    '${code}',
+                    '${machineName}',
+                    '${machineHumanName}',
+                    '${did}',
+                    '${slugUsername}',
+                    '${userHumanName}',
+                    '${email}',
+                    '${body}'
                 )
             `
 
             const res = await client.query(sql)
             console.log(
                 '**result from accepting invitation**',
-                JSON.stringify(res, null, 2)
+                JSON.stringify(res.rows[0].accept_invitation, null, 2)
             )
-            return { body: JSON.stringify(res.rows), statusCode: 200 }
+
+            return {
+                body: JSON.stringify(res.rows[0].accept_invitation),
+                statusCode: 200
+            }
         } catch (_err) {
             // query error
             console.log('**query error**', _err.toString())
-            return { body: _err.toString(), statusCode: 500 }
+            const err = _err.toString()
+            if (err.includes('usr_pkey')) {
+                return { body: 'That email is taken', statusCode: 409 }
+            }
+
+            return { body: err, statusCode: 500 }
         }
     }
 

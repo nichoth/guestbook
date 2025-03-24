@@ -41,7 +41,7 @@ const statements = [
         remaining   INT         NOT NULL,
         creator     STRING      NOT NULL,
         note        STRING,
-        FOREIGN KEY (creator)   REFERENCES usr(email)
+        FOREIGN KEY (creator)   REFERENCES usr(email) ON DELETE CASCADE
     );`,
 
     // machine
@@ -51,7 +51,7 @@ const statements = [
         did                 STRING NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          STRING NOT NULL,
-        FOREIGN KEY (owner) REFERENCES usr(email)
+        FOREIGN KEY (owner) REFERENCES usr(email) ON DELETE CASCADE
     );`,
 
     // test data
