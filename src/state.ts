@@ -1,4 +1,4 @@
-import { type Signal, batch, effect, signal } from '@preact/signals'
+import { type Signal, batch, signal } from '@preact/signals'
 import PartySocket from 'partysocket'
 import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance, type HTTPError } from 'ky'
@@ -8,7 +8,7 @@ import type { Invitation, User, Machine, Contact } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 import { PARTYKIT_HOST } from '../party/client.js'
-import { code, getPartyUrl } from './util.js'
+import { code, getPartyUrl, when } from './util.js'
 // eslint-disable-next-line
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
 const debug = Debug()
@@ -27,6 +27,7 @@ export function State ():{
         success:RefObject<SlAlert>;
         error:RefObject<SlAlert>;
     }|null>;
+    myInvitations:Signal<null|false|Invitation[]>;  // false means none
     route:Signal<string>;
     // `null` means we haven't contacted the server yet
     // `false` means we got a response, and this machine is not a user
@@ -45,6 +46,7 @@ export function State ():{
     const state = {
         _refs: signal(null),
         _setRoute: onRoute.setRoute.bind(onRoute),
+        myInvitations: signal<null|Invitation[]>(null),
         keys: signal<Keys|null>(null),
         user: signal<User|null|false>(null),
         list: signal(null),
@@ -263,20 +265,25 @@ State.fetchInvitation = async function (
     return res
 }
 
+State.fetchMyInvitations = async function (
+    state:ReturnType<typeof State>
+) {
+    when(state.user, async () => {
+        if (state.myInvitations.value) return  // only fetch once
+        debug('**fetching invitations**')
+        const invs = await ky.get('/api/invitation').json<Invitation[]>()
+        debug('**got my invitations**', invs)
+        state.myInvitations.value = invs && invs.length ? invs : false
+    })
+}
+
 State.fetchList = async function (
     state:ReturnType<typeof State>
 ) {
-    // wait for the user to resolve,
-    // then fetch the list
-    // only fetch once per app load
-    const dispose = effect(() => {
-        if (!state.user.value) return
-        (async () => {
-            if (state.list.value) return
-            state.list.value = await ky.get('/api/guestbook').json()
-            debug('**got the list**', state.list.value)
-            dispose()
-        })()
+    when(state.user, async () => {
+        if (state.list.value) return  // only fetch once
+        state.list.value = await ky.get('/api/guestbook').json()
+        debug('**got the list**')
     })
 }
 

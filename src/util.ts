@@ -1,3 +1,4 @@
+import { type Signal, effect } from '@preact/signals'
 import { customAlphabet } from '@nichoth/nanoid'
 import { PARTYKIT_HOST } from '../party/client.js'
 import { numbers } from '@nichoth/nanoid-dictionary'
@@ -9,4 +10,19 @@ export const code = customAlphabet(numbers, 6)
 
 export function getPartyUrl (code:string) {
     return PARTYKIT_HOST + `/parties/main/${code}`
+}
+
+/**
+ * Execute the given function once, after the given signal is truthy.
+ */
+export function when (sig:Signal<any>, then:()=>Promise<any>) {
+    if (!sig.value) return
+
+    const dispose = effect(() => {
+        if (!sig.value) return
+        (async () => {
+            await then()
+            dispose()
+        })()
+    })
 }

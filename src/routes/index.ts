@@ -7,8 +7,9 @@ import { State } from '../state.js'
 import { AboutRoute } from './about.js'
 import { ListRoute } from './list.js'
 import { WhoamiRoute } from './whoami.js'
-// import Debug from '@substrate-system/debug'
-// const debug = Debug()
+import { InvitationRoute } from './invitations.js'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 /**
  * We call router.match every time the index view re-renders.
@@ -52,6 +53,12 @@ export default function _Router (state:ReturnType<typeof State>):Router {
         State.fetchList(state)
 
         return ListRoute
+    })
+
+    router.addRoute('/invitations', () => {
+        debug('matched invitation route')
+        State.fetchMyInvitations(state)
+        return InvitationRoute
     })
 
     return router

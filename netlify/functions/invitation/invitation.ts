@@ -78,10 +78,11 @@ export const handler:Handler = async function handler (
                 JOIN usr u ON i.creator = u.email
                 JOIN machine m ON m.owner = u.email
                 WHERE m.machine_name = '${machineName}'
-                    AND check_seq(${machineName}, ${seq});
+                    AND check_seq('${machineName}', '${seq}');
             `
 
             const res = await client.query(sql)
+            console.log('**invitations**', JSON.stringify(res.rows, null, 2))
             return { statusCode: 200, body: JSON.stringify(res.rows) }
         } else {
             // if there is a query param, then get the specific invitation
