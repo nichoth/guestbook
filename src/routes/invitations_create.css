@@ -1,0 +1,28 @@
+.route.invitations.create {
+    & .input-group {
+        &.note {
+            /* for the help text */
+            margin-bottom: 0.5rem;
+        }
+
+        & input {
+            padding-bottom: 4px;
+
+            &:focus~label {
+                top: -10px
+            }
+
+            &:not(:placeholder-shown)~label {
+                top: -14px;
+            }
+        }
+
+        label {
+            top: 12px;
+        }
+    }
+
+    & .controls {
+        margin-top: 3rem;
+    }
+}

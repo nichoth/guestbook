@@ -163,6 +163,31 @@ button {
     }
 }
 
+/* ----------------------- overrides ----------------------------- */
+
+.route {  /* stylelint-disable-line */
+    & .input-group {
+        & input {
+            padding-bottom: 2px;
+
+            &:focus~label {
+                top: -10px
+            }
+
+            &:not(:placeholder-shown)~label {
+                top: -14px;
+            }
+        }
+
+        label {
+            top: 12px;
+        }
+    }
+}
+
+/* ----------------------- /overrides ----------------------------- */
+
+
 /* ----------------------- shoelace overrides ----------------------------- */
 
 /*
