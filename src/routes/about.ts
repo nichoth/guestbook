@@ -101,7 +101,7 @@ export const AboutRoute:FunctionComponent = function () {
 
         <h2>Membership</h2>
         <p>
-            The way we avoid <em>spam</em> is by restricting access to only
+            We avoid <em>spam</em> by restricting access to only
             members of the website. So you need to be a member in order to read
             the contact list.
         </p>
@@ -116,7 +116,7 @@ export const AboutRoute:FunctionComponent = function () {
             An invitation is a record in a database containing a${NBSP}
             <a href="https://github.com/uuidjs/uuid">universllay unique ID</a>,
             which is created by an existing member. The existing member
-            must transmit the invitation code out-of-band from this website.
+            must give you the invitation code out-of-band from this website.
         </p>
 
         <h2>Contact</h2>

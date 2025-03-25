@@ -20,7 +20,8 @@ const Request = z.object({
     userData: z.object({
         humanName: z.string().max(100),
         email: z.string().max(100),
-        body: z.string().max(6000)
+        body: z.string().max(6000),
+        bluesky: z.string().max(100)
     }),
     machine: z.object({
         humanName: z.string().max(100),
@@ -161,7 +162,7 @@ export const handler:Handler = async function handler (
         }
 
         // parsed with zod, so it is ok
-        const { humanName: userHumanName, email, body } = data.userData
+        const { bluesky, humanName: userHumanName, email, body } = data.userData
         const { code, machine } = data
         const { did, humanName: machineHumanName } = machine
         const slugUsername = userHumanName.split(' ').filter(Boolean).join('_')
@@ -181,7 +182,8 @@ export const handler:Handler = async function handler (
                     '${slugUsername}',
                     '${userHumanName}',
                     '${email}',
-                    '${body}'
+                    '${body}',
+                    '${bluesky}'
                 )
             `
 

@@ -50,17 +50,23 @@ export const handler:Handler = async function handler (
         // get the guestbook
         // get all usr records from DB iff their signature is ok
         const sql = `
-            -- check seq and return data iff seq is ok
-            SELECT email, human_name, body, username
-            FROM usr
-            WHERE check_seq('${machineName}', ${seq}) = TRUE;
+        -- First, check if check_seq is TRUE for your user
+        WITH check_result AS (
+            SELECT check_seq('${machineName}', ${seq}) AS is_valid
+        )
+        -- Then, return all users only if the check is valid
+        SELECT *
+        FROM usr
+        WHERE (SELECT is_valid FROM check_result) = TRUE;
         `
+
         await client.connect()
         let res:(undefined|Record<string, string>)[]
 
         try {
             const response = (await client.query(sql))
             res = response.rows
+            console.log('**all the users**', JSON.stringify(res, null, 2))
         } catch (err) {
             console.error('error executing query:', err)
             return { body: 'query issue', statusCode: 500 }

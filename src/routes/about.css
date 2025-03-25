@@ -1,4 +1,8 @@
 .route.about {
+    & code {
+        font-size: 0.8rem;
+    }
+
     & p {
         line-height: 1.4rem;
     }

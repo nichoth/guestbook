@@ -32,6 +32,7 @@ const statements = [
         email       STRING PRIMARY KEY NOT NULL UNIQUE,
         username    STRING NOT NULL,
         human_name  STRING NOT NULL,
+        bluesky     STRING,
         body        STRING NOT NULL
     );`,
 
@@ -183,7 +184,8 @@ const statements = [
             new_username VARCHAR(255),
             new_user_human_name VARCHAR(255),
             new_user_email VARCHAR(255),
-            new_body STRING
+            new_body STRING,
+            new_bluesky STRING
         )
         RETURNS JSONB AS $$
 
@@ -225,12 +227,14 @@ const statements = [
                 username,
                 email,
                 human_name,
-                body
+                body,
+                bluesky
             ) VALUES (
                 new_username,
                 new_user_email,
                 new_user_human_name,
-                new_body
+                new_body,
+                new_bluesky
             );
             
             -- Retrieve the newly created user record as JSON
