@@ -356,13 +356,12 @@ State.Login = async function (
     const res = await ky.get('/api/login').json<User & {
         machines: Machine[]
     }>()
-    debug('got the user', res)
+    debug('got the user and machines', res)
     const { machines, ...stateData } = res
     batch(async () => {
         state.user.value = stateData
         state.machines.value = await Promise.all(machines.map(async machine => {
-            const machineName = await Keys.deviceName(machine.did)
-            return { ...machine, machineName }
+            return { ...machine, machineName: machine.machineName }
         }))
     })
 
