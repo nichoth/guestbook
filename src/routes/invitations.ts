@@ -10,7 +10,7 @@ import './invitations.css'
 export const InvitationRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
-    return html`<div class="route invitation">
+    return html`<div class="route invitations">
         <h2>Your Invitations</h2>
 
         <${Conntent} invs=${state.myInvitations.value} />
@@ -29,11 +29,11 @@ export const InvitationRoute:FunctionComponent<{
 
 function Conntent ({ invs }:{ invs:false|null|Invitation[] }) {
     if (invs === null) {
-        return null
+        return html`<div class="content"></div>`
     }
 
     if (invs === false) {
-        return html`<em>none</em>`
+        return html`<div class="content"><em>none</em></div>`
     }
 
     return html`<ul class="invitations">

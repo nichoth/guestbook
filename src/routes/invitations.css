@@ -1,0 +1,5 @@
+.route.invitations {
+    & .content {
+        min-height: 1.2rem;
+    }
+}
