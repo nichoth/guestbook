@@ -330,11 +330,6 @@ State.acceptInvitation = async function (
             }
         }
 
-        debug('all the things')
-        debug('keys', keys.deviceName)
-        debug('user data', JSON.stringify(userData, null, 2))
-        debug('machine human name', machineHumanName, machineName)
-
         batch(() => {
             state.keys.value = keys
             state.user.value = userData
@@ -358,10 +353,11 @@ State.Login = async function (
 ):Promise<{ user:User, machines:Machine[] }> {
     const keys = state.keys
     if (!keys) throw new Error('not keys')
-    const userData = await ky.get('/api/login').json<User & {
+    const res = await ky.get('/api/login').json<User & {
         machines: Machine[]
     }>()
-    const { machines, ...stateData } = userData
+    debug('got the user', res)
+    const { machines, ...stateData } = res
     batch(async () => {
         state.user.value = stateData
         state.machines.value = await Promise.all(machines.map(async machine => {

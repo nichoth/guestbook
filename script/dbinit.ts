@@ -119,6 +119,59 @@ const statements = [
     $$ LANGUAGE plpgsql;
     `,
 
+    // function to "login"
+    // return a user record & all machine records
+    `CREATE OR REPLACE FUNCTION check_seq_and_get_user(
+        machinename VARCHAR,
+        new_seq INT
+    )
+    RETURNS JSONB AS $$
+    DECLARE
+        is_valid BOOLEAN;
+        user_record JSONB;
+        machines JSONB;
+        email STRING;
+    BEGIN
+        -- Step 1: Check if the sequence number is valid
+        SELECT check_seq(machinename, new_seq) INTO is_valid;
+
+        -- Step 2: Abort early if the sequence number is not valid
+        IF NOT is_valid THEN
+            RAISE EXCEPTION 'Invalid sequence number for machine: %', machinename;
+        END IF;
+
+        -- Step 3: If valid, retrieve the user who owns the machine
+        SELECT owner INTO email
+        FROM machine
+        WHERE machine_name = machinename
+        LIMIT 1;
+
+        -- Step 4: Retrieve the user who owns the machine
+        SELECT jsonb_build_object(
+            'email', u.email,
+            'username', u.username,
+            'human_name', u.human_name,
+            'body', u.body
+        ) INTO user_record
+        FROM usr u
+        WHERE u.email = email;
+
+        -- Step 5: get their machines
+        SELECT COALESCE(json_agg(json_build_object(
+            'machine_name', m.machine_name,
+            'human_name', m.human_name
+        )), '[]') INTO machines
+        FROM machine m
+        WHERE m.owner = email;
+
+        -- Step 6: Return the user and machines as JSON
+        RETURN jsonb_build_object(
+            'user', user_record,
+            'machines', machines
+        );
+    END;
+    $$ LANGUAGE plpgsql;`,
+
     // function to accept an invitation
     // (create a new user & machine)
     `
@@ -250,3 +303,13 @@ try {
 }
 
 client.end()
+
+// -- Step 4: Retrieve all machines belonging to the user
+// SELECT COALESCE(json_agg(json_build_object(
+//     'machine_name', m.machine_name,
+//     'did', m.did,
+//     'seq', m.seq,
+//     'human_name', m.human_name
+// )), '[]') INTO machines
+// FROM machine m
+// WHERE m.owner = (SELECT owner FROM machine AS mac WHERE mac.machine_name = machine_name LIMIT 1);
