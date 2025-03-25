@@ -66,7 +66,6 @@ export const handler:Handler = async function handler (
         try {
             const response = (await client.query(sql))
             res = response.rows
-            console.log('**all the users**', JSON.stringify(res, null, 2))
         } catch (err) {
             console.error('error executing query:', err)
             return { body: 'query issue', statusCode: 500 }

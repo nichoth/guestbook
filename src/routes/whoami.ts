@@ -5,8 +5,8 @@ import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { useComputed, useSignal, useSignalEffect } from '@preact/signals'
 import type { Machine } from '../types.js'
-import { Markdown } from '../components/markdown.js'
 import { Dot } from '../components/dot.js'
+import { Profile } from '../components/profile.js'
 import '../components/dl.css'
 import './whoami.css'
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js'
@@ -52,56 +52,57 @@ export const WhoamiRoute:FunctionComponent<{
         }
     }, [])
 
+    // <div class="profile">
+    //     <dl>
+    //         <dt>name</dt>
+    //         <dd>${user.username}</dd>
+    //         <dt>email</dt>
+    //         <dd>${user.email}</dd>
+    //         <dt>note</dt>
+    //         <dd class="note">
+    //             ${user.body ?
+    //                 html`<div class="markdown">
+    //                     <${Markdown} markdown=${user.body} />
+    //                 </div>` :
+    //                 html`<em class="none">none</em>`
+    //             }
+    //         </dd>
+    //     </dl>
+
     return html`<div class="route whoami">
         <h2>Who am I?</h2>
-        <div class="profile">
-            <dl>
-                <dt>name</dt>
-                <dd>${user.username}</dd>
-                <dt>email</dt>
-                <dd>${user.email}</dd>
-                <dt>note</dt>
-                <dd class="note">
-                    ${user.body ?
-                        html`<div class="markdown">
-                            <${Markdown} markdown=${user.body} />
-                        </div>` :
-                        html`<em class="none">none</em>`
-                    }
-                </dd>
-            </dl>
+        <${Profile} user=${state.user.value} />
 
-            <h2>Your Devices</h2>
-            <ul>
-                ${state.machines.value?.map(machine => {
-                    const machineid = machine.machineName
-                    const isCurrent = (currentMachine.value === machine.machineName)
-                    return html`<li key=${machineid}>
-                        <div>
-                            <${Dot} color=${isCurrent ? 'green' : 'gray'} />
-                            <span>${machine.humanName}</span>
-                            ${isCurrent ?
-                                html`<span class="current-machine">
-                                    (the one you're using right now)
-                                </span>` :
-                                null
-                            }
-                        </div>
-                        ${currentMachine.value === machine.machineName ?
-                            null :
-                            html`<div>
-                                <sl-icon-button
-                                    onClick=${removeMachine}
-                                    name="x-circle"
-                                    label="Remove"
-                                    data-machineid=${machineid}
-                                >
-                                </sl-icon-button>
-                            </div>`
+        <h2>Your Devices</h2>
+        <ul>
+            ${state.machines.value?.map(machine => {
+                const machineid = machine.machineName
+                const isCurrent = (currentMachine.value === machine.machineName)
+                return html`<li key=${machineid}>
+                    <div>
+                        <${Dot} color=${isCurrent ? 'green' : 'gray'} />
+                        <span>${machine.humanName}</span>
+                        ${isCurrent ?
+                            html`<span class="current-machine">
+                                (the one you're using right now)
+                            </span>` :
+                            null
                         }
-                    </li>`
-                })}
-            </ul>
-        </div>
+                    </div>
+                    ${currentMachine.value === machine.machineName ?
+                        null :
+                        html`<div>
+                            <sl-icon-button
+                                onClick=${removeMachine}
+                                name="x-circle"
+                                label="Remove"
+                                data-machineid=${machineid}
+                            >
+                            </sl-icon-button>
+                        </div>`
+                    }
+                </li>`
+            })}
+        </ul>
     </div>`
 }

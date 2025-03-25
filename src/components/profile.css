@@ -1,0 +1,5 @@
+.component.profile {
+    & dd {
+        font-size: 1.2rem;
+    }
+}
