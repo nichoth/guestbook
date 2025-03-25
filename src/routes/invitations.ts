@@ -2,7 +2,9 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import type { State } from '../state.js'
 import type { Invitation } from '../types.js'
-import { Primary as BtnPrimary } from '../components/button-outline.js'
+import {
+    LinkButtonPrimary as LinkPrimary
+} from '../components/button-outline.js'
 import './invitations.css'
 // import Debug from '@substrate-system/debug'
 // const debug = Debug()
@@ -17,13 +19,11 @@ export const InvitationRoute:FunctionComponent<{
 
         <hr />
 
-        <form class="create-invitation">
-            <div class="controls">
-                <${BtnPrimary} type="submit">
-                    Create an invitation
-                <//>
-            </div>
-        </form>
+        <div class="controls">
+            <${LinkPrimary} href="/invitations/create">
+                Create an invitation
+            <//>
+        </div>
     </div>`
 }
 

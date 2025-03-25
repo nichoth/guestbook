@@ -10,7 +10,14 @@
     to { transform: rotate(360deg); }
 }
 
-.btn-outline {
+.link-btn-outline {
+    text-decoration: none;
+    cursor: pointer;
+    background-color: #efefef;
+    color: black;
+}
+
+.link-btn-outline, .btn-outline {
     position: relative;
     border: 2px solid black;
     outline: 2px solid transparent;

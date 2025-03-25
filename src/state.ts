@@ -269,7 +269,6 @@ State.fetchMyInvitations = async function (
     state:ReturnType<typeof State>
 ) {
     when(state.user, async () => {
-        if (state.myInvitations.value) return  // only fetch once
         debug('**fetching invitations**')
         const invs = await ky.get('/api/invitation').json<Invitation[]>()
         debug('**got my invitations**', invs)

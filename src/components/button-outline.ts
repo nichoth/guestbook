@@ -90,3 +90,27 @@ export const Danger:FunctionComponent<BtnProps> = function (props) {
         ${props.children}
     <//>`
 }
+
+/**
+ * A link with the style of a button.
+ */
+export const LinkButton:FunctionComponent<{
+    href:string;
+    class?:string;
+    onClick?:(ev:MouseEvent)=>any;
+}> = function (props) {
+    const classes = new Set(props.class ? props.class.split(' ') : [])
+    classes.add('link-btn-outline')
+
+    const className = Array.from(classes).join(' ')
+
+    return html`<a ...${props} class="${className}" href=${props.href}>
+        ${props.children}
+    </a>`
+}
+
+export const LinkButtonPrimary:FunctionComponent = function (props) {
+    return html`<${LinkButton} ...${props} class=${'primary'}>
+        ${props.children}
+    <//>`
+}
