@@ -53,7 +53,14 @@ export const Guestbook:FunctionComponent = function () {
         isHamburgerOpen.value = !(isHamburgerOpen.value)
     }, [])
 
-    return html`<div>
+    const classes = ([
+        'index',
+        state.user.value === null ? 'loading' : null
+    ])
+        .filter(Boolean)
+        .join(' ')
+
+    return html`<div class="${classes}">
         <${HamburgerWrapper}
             onClick=${hamburgler}
             isOpen=${isHamburgerOpen}

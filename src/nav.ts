@@ -7,6 +7,10 @@ export const Nav:FunctionComponent<{
 }> = function Nav ({ state }) {
     const route = state.route.value
 
+    if (state.user.value === null) {
+        return html`<nav class="nav"><ul></ul></nav>`
+    }
+
     const links = [
         { href: '/', text: 'Index' },
         state.user.value ? { href: '/list', text: 'The List' } : null,

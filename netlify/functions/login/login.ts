@@ -10,7 +10,6 @@ import type {
 } from '@netlify/functions'
 import { type DID, getDeviceName } from '@bicycle-codes/keys'
 import { getDbString, sanitizeHeader } from '../util.js'
-import type { User } from '../../../src/types.js'
 
 /**
  * Get a user record given a machine DID.
@@ -42,7 +41,12 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     const client = new Client(getDbString(process.env))
     await client.connect()
     let data:({
-        user:User,
+        user:{
+            body:string;
+            email:string;
+            human_name:string;
+            username:string;
+        },
         machines: ({
             machine_name:string;
             human_name:string;
@@ -77,7 +81,10 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     return {
         statusCode: 200,
         body: JSON.stringify({
-            user,
+            user: {
+                ...user,
+                humanName: user.human_name
+            },
             machines: machines.map(machine => {
                 return {
                     machineName: machine.machine_name,

@@ -7,6 +7,10 @@ hr {
     margin: 1rem 0;
 }
 
+code {
+    font-size: 1rem;
+}
+
 .fourzerofour {
     & h1 {
         border-bottom: none;
@@ -19,6 +23,12 @@ div.error {
     background-color: white;
     border: 4px solid var(--error-bgc, red);
     padding: 1rem;
+}
+
+.index {
+    &.loading {
+        opacity: 0.4;
+    }
 }
 
 body {
@@ -83,6 +93,7 @@ header {
         padding: 4px 0;
         margin-bottom: 2rem;
         border-bottom: 1px solid;
+        min-height: 1.8rem;
 
         & li {
             & a {
