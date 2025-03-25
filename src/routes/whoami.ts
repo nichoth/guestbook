@@ -75,16 +75,17 @@ export const WhoamiRoute:FunctionComponent<{
             <ul>
                 ${state.machines.value?.map(machine => {
                     const machineid = machine.machineName
+                    const isCurrent = (currentMachine.value === machine.machineName)
                     return html`<li key=${machineid}>
                         <div>
-                            <${Dot} color="gray" />
+                            <${Dot} color=${isCurrent ? 'green' : 'gray'} />
                             <span>${machine.humanName}</span>
-                                ${currentMachine.value === machine.machineName ?
-                                    html`<span class="current-machine">
-                                        (the one you're using right now)
-                                    </span>` :
-                                    null
-                                }
+                            ${isCurrent ?
+                                html`<span class="current-machine">
+                                    (the one you're using right now)
+                                </span>` :
+                                null
+                            }
                         </div>
                         ${currentMachine.value === machine.machineName ?
                             null :

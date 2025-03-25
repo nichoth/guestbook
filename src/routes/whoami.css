@@ -7,6 +7,12 @@
         font-weight: lighter;
     }
 
+    & .profile {
+        & dd {
+            font-size: 1.2rem;
+        }
+    }
+
     & ul {
         list-style: none;
         padding: 0;
