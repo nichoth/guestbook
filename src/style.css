@@ -26,6 +26,8 @@ div.error {
 }
 
 .index {
+    transition: opacity 0.4s;
+
     &.loading {
         opacity: 0.4;
     }

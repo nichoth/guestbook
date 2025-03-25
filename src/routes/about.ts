@@ -87,7 +87,7 @@ export const AboutRoute:FunctionComponent = function () {
         </p>
 
         <p>
-            I would recommend <a href="/link">linking a second device</a> to
+            I recommend <a href="/link">linking a second device</a> to
             your account, so that there is a backup if one browser deletes
             your keys.
         </p>
@@ -116,7 +116,7 @@ export const AboutRoute:FunctionComponent = function () {
             An invitation is a record in a database containing a${NBSP}
             <a href="https://github.com/uuidjs/uuid">universllay unique ID</a>,
             which is created by an existing member. The existing member
-            transmits the invitation code out-of-band from this website.
+            must transmit the invitation code out-of-band from this website.
         </p>
 
         <h2>Contact</h2>
