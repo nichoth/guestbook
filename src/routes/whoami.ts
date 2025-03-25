@@ -3,9 +3,9 @@ import type { HTTPError } from 'ky'
 import { useCallback } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
-import { marked } from 'marked'
 import { useComputed, useSignal, useSignalEffect } from '@preact/signals'
 import type { Machine } from '../types.js'
+import { Markdown } from '../components/markdown.js'
 import { Dot } from '../components/dot.js'
 import '../components/dl.css'
 import './whoami.css'
@@ -64,7 +64,7 @@ export const WhoamiRoute:FunctionComponent<{
                 <dd class="note">
                     ${user.body ?
                         html`<div class="markdown">
-                            ${marked.parse(user.body)}
+                            <${Markdown} markdown=${user.body} />
                         </div>` :
                         html`<em class="none">none</em>`
                     }

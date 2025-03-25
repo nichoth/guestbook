@@ -42,6 +42,7 @@
     "partysocket": "1.0.3",
     "pg": "^8.14.1",
     "preact": "^10.25.4",
+    "preact-markup": "^2.1.1",
     "route-event": "^6.0.9",
     "stylelint": "^16.13.0",
     "uuid": "^11.1.0",
