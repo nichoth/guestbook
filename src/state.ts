@@ -389,6 +389,20 @@ State.acceptInvitation = async function (
     }
 }
 
+State.createInvitation = async function (state:ReturnType<typeof State>, {
+    note
+}:{ note?:string }) {
+    const inv = await ky.post('/api/invitation', {
+        json: {
+            note
+        }
+    }).json<Invitation>()
+
+    debug('called the api, invitation', inv)
+
+    state.myInvitations.value = (state.myInvitations.value || []).concat([inv])
+}
+
 State.Login = async function (
     state:ReturnType<typeof State>,
 ):Promise<{ user:User, machines:Machine[] }> {
