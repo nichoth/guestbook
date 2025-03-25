@@ -38,6 +38,16 @@ body {
     /* margin: 1rem; */
     margin: 1rem;
 
+    & .sl-toast-stack {
+        width: 80vw;
+        left: 10vw;
+        top: 80vh;
+
+        & sl-alert {
+            font-size: 1rem;
+        }
+    }
+
     & div {
         margin-bottom: 1rem;
     }
@@ -160,16 +170,6 @@ button {
 */
 :not(:defined) {
     visibility: hidden;
-}
-
-.sl-toast-stack {
-    width: 80vw;
-    left: 10vw;
-    top: 80vh;
-
-    & sl-alert {
-        font-size: 1rem;
-    }
 }
 
 /* ----------------------- /shoelace overrides ---------------------------- */

@@ -1,15 +1,14 @@
 import { html } from 'htm/preact'
 import { type State } from '../state.js'
 import { type FunctionComponent } from 'preact'
-import Debug from '@substrate-system/debug'
 import '@nichoth/components/text-input.css'
 import './home.css'
-const debug = Debug()
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 export const HomeRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function HomeRoute ({ state }) {
-    debug('home route', state)
     return html`<div class="route home">
         <p class="explanation">
             A guestbook for <a
@@ -39,6 +38,7 @@ export const HomeRoute:FunctionComponent<{
 
 function MainPart ({ state }:{ state:ReturnType<typeof State> }) {
     if (state.user.value === null) {
+        // null means the login request is resolving
         return null
     }
 

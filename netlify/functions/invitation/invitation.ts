@@ -185,10 +185,6 @@ export const handler:Handler = async function handler (
             `
 
             const res = await client.query(sql)
-            console.log(
-                '**result from accepting invitation**',
-                JSON.stringify(res.rows[0].accept_invitation, null, 2)
-            )
 
             return {
                 body: JSON.stringify(res.rows[0].accept_invitation),

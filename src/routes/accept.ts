@@ -34,8 +34,6 @@ export const AcceptRoute:FunctionComponent<{
     const isUserInputOk = useSignal<boolean>(false)
     const redeemInvitationError = useSignal<string|null>(null)
 
-    debug('state in here', state)
-
     useEffect(() => {
         if (params && params.token) {
             (async () => {
@@ -88,6 +86,7 @@ export const AcceptRoute:FunctionComponent<{
             await State.acceptInvitation(state, invitationSignal.value!.code, {
                 username: els['username'].value,
                 humanName: els['username'].value,
+                bluesky: els['bluesky'].value,
                 email: els['email'].value,
                 body: els['body'].value
             }, machineName)

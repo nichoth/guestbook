@@ -1,4 +1,4 @@
-import { type Signal, batch, signal } from '@preact/signals'
+import { type Signal, batch, effect, signal } from '@preact/signals'
 import PartySocket from 'partysocket'
 import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance, type HTTPError } from 'ky'
@@ -23,12 +23,15 @@ let ky:KyInstance = Ky
  *   - user data
  */
 export function State ():{
-    _refs:Signal<{ success:RefObject<SlAlert> }|null>
+    _refs:Signal<{
+        success:RefObject<SlAlert>;
+        error:RefObject<SlAlert>;
+    }|null>;
     route:Signal<string>;
     // `null` means we haven't contacted the server yet
     // `false` means we got a response, and this machine is not a user
     user:Signal<null|false|User>;
-    list:Signal<null|Contact[]>
+    list:Signal<null|Contact[]>;
     machines:Signal<Machine[]|null>;
     keys:Signal<Keys|null>;
     party:Signal<PartySocket|null>;  // for users
@@ -43,7 +46,7 @@ export function State ():{
         _refs: signal(null),
         _setRoute: onRoute.setRoute.bind(onRoute),
         keys: signal<Keys|null>(null),
-        user: signal(null),
+        user: signal<User|null|false>(null),
         list: signal(null),
         machines: signal(null),
         party: signal(null),
@@ -54,8 +57,13 @@ export function State ():{
     }
 
     Keys.load().then(async keys => {
-        if (!keys.persisted) return  /* not yet a user, don't create keys yet.
-        We create & persist keys in the `acceptInvitation` function below */
+        if (!keys.persisted) {
+            state.user.value = false
+            // not yet a user, don't create keys yet.
+            // We create & persist keys in the `acceptInvitation` function below
+            return
+        }
+
         state.keys.value = keys
         ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
         State.init(state)
@@ -213,8 +221,6 @@ State.init = async function (state:ReturnType<typeof State>) {
     if (data.machines) {
         state.machines.value = data.machines
     }
-
-    // also should return the contact list
 }
 
 /**
@@ -257,13 +263,30 @@ State.fetchInvitation = async function (
     return res
 }
 
+State.fetchList = async function (
+    state:ReturnType<typeof State>
+) {
+    // wait for the user to resolve,
+    // then fetch the list
+    // only fetch once per app load
+    const dispose = effect(() => {
+        if (!state.user.value) return
+        (async () => {
+            if (state.list.value) return
+            state.list.value = await ky.get('/api/guestbook').json()
+            debug('**got the list**', state.list.value)
+            dispose()
+        })()
+    })
+}
+
 /**
  * Global for toasts.
  * If `duration` is not passed in, the default is 5000 ms.
  */
 State.toast = async function (
     state:ReturnType<typeof State>,
-    type:'success',
+    type:'success'|'error',
     content:string,
     opts:Partial<{
         duration:number
@@ -277,10 +300,19 @@ State.toast = async function (
         '' + (opts.duration === undefined ? 5000 : null)
     )
 
-    ref.current!.innerHTML = `
-        <sl-icon slot="icon" name="check2-circle"></sl-icon>
-        ${escapeHtml(content)}
-    `
+    if (type === 'success') {
+        ref.current!.innerHTML = `
+            <sl-icon slot="icon" name="check2-circle"></sl-icon>
+            ${escapeHtml(content)}
+        `
+    }
+
+    if (type === 'error') {
+        ref.current!.innerHTML = `
+            <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
+            ${escapeHtml(content)}
+        `
+    }
 
     ref.current && await ref.current.toast()
 }
@@ -340,6 +372,8 @@ State.acceptInvitation = async function (
             }])
         })
 
+        State.toast(state, 'success', 'Invitation accepted.')
+
         await keys.persist()
         state._setRoute('/')
     } catch (err) {
@@ -353,11 +387,19 @@ State.Login = async function (
 ):Promise<{ user:User, machines:Machine[] }> {
     const keys = state.keys
     if (!keys) throw new Error('not keys')
-    const res = await ky.get('/api/login').json<{
-        user:User;
-        machines: Machine[];
-    }>()
-    debug('got the user and machines', res)
+    let res
+    try {
+        res = await ky.get('/api/login').json<{
+            user:User;
+            machines:Machine[];
+        }>()
+    } catch (_err) {
+        const err = _err as HTTPError
+        if (err.response?.status !== 401) {
+            // 401 means they are not a member of the site
+            State.toast(state, 'error', err.toString())
+        }
+    }
     const { machines, user } = res
     batch(async () => {
         state.user.value = user

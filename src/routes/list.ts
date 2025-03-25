@@ -2,15 +2,38 @@ import { html } from 'htm/preact'
 import type { State } from '../state.js'
 import { type FunctionComponent } from 'preact'
 import './link.css'
-import Debug from '@substrate-system/debug'
-const debug = Debug()
+import './list.css'
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 export const ListRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
-    debug('list route', state)
-
     return html`<div class="route list">
-        <p>List here</p>
+        <h2>The List</h2>
+
+        ${state.list.value ?
+            html`<ul class="contacts">
+                ${state.list.value?.map(contact => {
+                    return html`<li class="contact">
+                        <div class="email">
+                            <span>${contact.humanName}</span>
+                            <span>
+                                <a href="mailto:${contact.email}">
+                                    ${contact.email}
+                                </a>
+                            </span>
+                        </div>
+                        ${contact.body ?
+                            html`<div class="body">
+                                ${contact.body}
+                            </div>` :
+                            null
+                        }
+                    </li>`
+                })}
+            </ul>` :
+            null
+        }
     </div>`
 }

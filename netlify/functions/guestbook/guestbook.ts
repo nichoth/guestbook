@@ -44,7 +44,7 @@ export const handler:Handler = async function handler (
     }
 
     const client = new Client(getDbString(process.env))
-    const machineName = getDeviceName(author)
+    const machineName = await getDeviceName(author)
 
     if (ev.httpMethod === 'GET') {
         // get the guestbook
@@ -60,7 +60,6 @@ export const handler:Handler = async function handler (
 
         try {
             const response = (await client.query(sql))
-            console.log('**results**', response)
             res = response.rows
         } catch (err) {
             console.error('error executing query:', err)
@@ -71,9 +70,15 @@ export const handler:Handler = async function handler (
 
         return {
             statusCode: 200,
-            body: JSON.stringify({
-                result: (res).filter(r => Boolean(r))
-            })
+            body: JSON.stringify((res)
+                .filter(r => Boolean(r))
+                .map(r => {
+                    return {
+                        ...r,
+                        humanName: r!.human_name
+                    }
+                })
+            )
         }
     }
 

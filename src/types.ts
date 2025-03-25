@@ -5,6 +5,7 @@ export type User = {
     humanName:string;
     email:string;
     body:string;
+    bluesky:string;
 }
 
 export type Contact = {

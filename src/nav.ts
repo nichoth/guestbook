@@ -8,6 +8,7 @@ export const Nav:FunctionComponent<{
     const route = state.route.value
 
     if (state.user.value === null) {
+        // null means the login request is resolving
         return html`<nav class="nav"><ul></ul></nav>`
     }
 

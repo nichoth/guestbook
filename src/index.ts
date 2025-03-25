@@ -42,9 +42,11 @@ export const Guestbook:FunctionComponent = function () {
     }
 
     const successToast = useRef<SlAlert>(null)
+    const errorToast = useRef<SlAlert>(null)
     useEffect(() => {
         state._refs.value = {
-            success: successToast
+            success: successToast,
+            error: errorToast
         }
     }, [])
 
@@ -85,6 +87,12 @@ export const Guestbook:FunctionComponent = function () {
         <${ChildNode} state=${state} params=${params} />
 
         <sl-alert variant="success" ref=${successToast} closable=${true}><//>
+        <sl-alert
+            variant="danger"
+            ref=${errorToast}
+            closable=${true}
+            duration=${Infinity}
+        ><//>
     </div>`
 }
 
