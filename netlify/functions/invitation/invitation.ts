@@ -49,8 +49,8 @@ export const handler:Handler = async function handler (
     const client = new Client(getDbString(process.env))
 
     if (ev.httpMethod === 'GET') {
-        // if theres a query param, then get that one invitation.
-        // no auth in that case
+        // if theres not a query param,
+        // then get all invitations created by the user
         const params = ev.queryStringParameters
         if (!params || !params.code) {
             // if there is not a query param,
@@ -84,7 +84,8 @@ export const handler:Handler = async function handler (
             const res = await client.query(sql)
             return { statusCode: 200, body: JSON.stringify(res.rows) }
         } else {
-            // a new person checking an invitation code
+            // if there is a query param, then get the specific invitation
+            // no auth
             const code = params.code!
             if (code.length !== 36) {
                 return { body: 'Bad code', statusCode: 403 }
@@ -118,6 +119,8 @@ export const handler:Handler = async function handler (
                     creator_human_name: creatorHumanName,
                     ...inv
                 } = res.rows[0]
+                await client.end()
+
                 return {
                     // rename id to code
                     body: JSON.stringify({
@@ -135,6 +138,7 @@ export const handler:Handler = async function handler (
                 console.log('**error**', _err)
                 // TODO
                 // better error handling
+                await client.end()
                 return { body: _err.toString(), statusCode: 500 }
             }
         }
@@ -199,6 +203,8 @@ export const handler:Handler = async function handler (
             }
 
             return { body: err, statusCode: 500 }
+        } finally {
+            await client.end()
         }
     }
 
@@ -267,6 +273,8 @@ export const handler:Handler = async function handler (
         } catch (_err) {
             console.log('**query error**', _err)
             return { body: _err.toString(), statusCode: 500 }
+        } finally {
+            await client.end()
         }
 
         return {

@@ -61,7 +61,6 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
 
     try {
         const res = await client.query(sql)
-        console.log('**db response**', JSON.stringify(res.rows[0], null, 2))
         data = res.rows[0].check_seq_and_get_user
     } catch (_err) {
         console.log('**error**', _err)
@@ -77,6 +76,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     }
 
     const { machines, user } = data
+    client.end()
 
     return {
         statusCode: 200,

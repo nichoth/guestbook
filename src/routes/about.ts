@@ -82,7 +82,7 @@ export const AboutRoute:FunctionComponent = function () {
 
         <p>
             Something to keep in mind is that your web browser is the only place
-            that has your keys. So if you do something like delete your browser
+            where your keys exist. So if you do something like delete your browser
             data, then your keys disappear too.
         </p>
 

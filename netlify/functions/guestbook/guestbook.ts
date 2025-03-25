@@ -9,7 +9,7 @@ import {
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
-import { getDbString } from '../util.js'
+import { getDbString, sanitizeHeader } from '../util.js'
 
 /**
  * PUT call means add or update the contact info for the given user.
@@ -27,10 +27,15 @@ export const handler:Handler = async function handler (
     }
 
     // check the auth/header
+    // always must authenticate for this function
     const headerString = ev.headers.authorization
     if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
     const parsedHeader:ParsedHeader = parseHeader(headerString)
     const { seq, author } = parsedHeader
+
+    if (!sanitizeHeader(seq, author)) {
+        return { body: 'Invalid signature', statusCode: 403 }
+    }
 
     // check signature
     const isOk = await verifyParsed(parsedHeader)   // check signature
@@ -43,6 +48,7 @@ export const handler:Handler = async function handler (
 
     if (ev.httpMethod === 'GET') {
         // get the guestbook
+        // get all usr records from DB iff their signature is ok
         const sql = `
             -- check seq and return data iff seq is ok
             SELECT email, human_name, body, username
@@ -58,7 +64,6 @@ export const handler:Handler = async function handler (
             res = response.rows
         } catch (err) {
             console.error('error executing query:', err)
-            console.log('error to string', err.toString())
             return { body: 'query issue', statusCode: 500 }
         } finally {
             client.end()
@@ -109,3 +114,10 @@ export const handler:Handler = async function handler (
         body: JSON.stringify({ hello: 'hello' })
     }
 }
+
+// -- check seq and return data iff seq is ok
+// IF NOT (SELECT check_seq(machinename, new_seq)) THEN
+//     RAISE EXCEPTION 'Invalid signature';
+// END IF;
+// SELECT email, human_name, body, username
+// FROM usr
