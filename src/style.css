@@ -1,6 +1,7 @@
 :root {
     --mw: 30rem;
     --error-bgc: red;
+    --focus-border-color: #00d3ff;
 }
 
 hr {
@@ -9,6 +10,13 @@ hr {
 
 code {
     font-size: 1rem;
+}
+
+textarea {
+    &:focus {
+        border: none;
+        outline: 2px solid #00d3ff;
+    }
 }
 
 .fourzerofour {
