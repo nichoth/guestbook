@@ -1,6 +1,6 @@
 {
   "$schema": "https://www.partykit.io/schema.json",
-  "name": "guestbook",
+  "name": "bellingham-guestbook",
   "main": "party/index.ts",
   "compatibilityDate": "2025-03-16",
   "serve": {

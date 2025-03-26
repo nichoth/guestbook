@@ -14,6 +14,7 @@
     "version": "auto-changelog --template keepachangelog --breaking-pattern 'BREAKING CHANGE' && git add CHANGELOG.md",
     "setup-db": "esbuild ./script/dbinit.ts --platform=node --format=esm | node --input-type=module",
     "script": "esbuild ./script/testing.ts --platform=node --format=esm | node --input-type=module",
+    "preinstall": "export $(cat .env | xargs)",
     "postversion": "git push --follow-tags",
     "prepublishOnly": "npm run build"
   },
@@ -22,7 +23,7 @@
     "@bicycle-codes/message": "^0.9.1",
     "@bicycle-codes/one-webcrypto": "^1.1.2",
     "@bicycle-codes/request": "^0.6.20",
-    "@hello-system/connect": "github:hello-system/connect#main",
+    "@hello-system/connect": "^0.0.5",
     "@nichoth/components": "^0.16.17",
     "@nichoth/nanoid": "^5.0.8",
     "@nichoth/nanoid-dictionary": "^5.0.7",

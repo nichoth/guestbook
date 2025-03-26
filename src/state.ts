@@ -1,4 +1,5 @@
 import { type Signal, batch, signal } from '@preact/signals'
+import { Connection } from '@hello-system/connect'
 import PartySocket from 'partysocket'
 import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance, type HTTPError } from 'ky'
@@ -8,7 +9,7 @@ import type { Invitation, User, Machine, Contact } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 import { PARTYKIT_HOST } from '../party/client.js'
-import { code, getPartyUrl, when } from './util.js'
+import { when } from './util.js'
 // eslint-disable-next-line
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
 const debug = Debug()
@@ -35,10 +36,9 @@ export function State ():{
     list:Signal<null|Contact[]>;
     machines:Signal<Machine[]|null>;
     keys:Signal<Keys|null>;
-    party:Signal<PartySocket|null>;  // for users
-    newMachineParty:Signal<PartySocket|null>;  // for adding a new machine
-    newMachineWords:Signal<null|string[]>;  // words from new machine
-    newMachineConfirmed:Signal<boolean>;
+    presenceParty:Signal<PartySocket|null>;  // for user presence
+    party:Signal<PartySocket|null>;  // for adding a new machine
+    notes:Signal<string|null>;  // when you add a device, can send notes
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
     const onRoute = Route()
@@ -51,10 +51,9 @@ export function State ():{
         user: signal<User|null|false>(null),
         list: signal(null),
         machines: signal(null),
+        presenceParty: signal(null),
         party: signal(null),
-        newMachineParty: signal(null),
-        newMachineWords: signal(null),
-        newMachineConfirmed: signal(false),
+        notes: signal(null),
         route: signal<string>(location.pathname + location.search)
     }
 
@@ -124,71 +123,57 @@ State.initAddDevice = async function (
     state:ReturnType<typeof State>,
     note?:string,
 ):Promise<string> {
-    const roomName = await collision(state)
-    // first a POST call
-    // we authenticate as an existing machine
-    await ky.post(getPartyUrl(roomName), {
-        json: { note },
+    const createHeaders = HeaderFactory({
+        privateKey: state.keys.value!.privateSignKey,
+        publicKey: state.keys.value!.publicSignKey
     })
 
-    const party = new PartySocket({
-        host: PARTYKIT_HOST,
-        room: roomName
-    })
+    const [roomName, ws] = await Connection.init(
+        'https://bellingham-guestbook.nichoth.partykit.dev',
+        {
+            headers: { authorization: await createHeaders() },
+            note
+        }
+    )
 
-    // room should be "open" now,
-    // so create the ws connection
-    state.newMachineParty.value = party
-
-    party.addEventListener('message', ev => {
-        // we should get two words from the new machine
-        const { words }:{ words:string[] } = JSON.parse(ev.data)
-        state.newMachineWords.value = words
-        // then you need to confirm in the GUI that the words are ok
-    })
+    state.party.value = ws
 
     return roomName
 }
 
-State.confirmNewMachine = function (state:ReturnType<typeof State>) {
-    state.newMachineParty.value?.send(JSON.stringify({ type: 'accept' }))
-    state.newMachineParty.value?.close()
-}
-
 /**
- * Called by the new machine
+ * Called by the new machine.
+ *   - Connect to the room created by the existing device.
+ *   - Maybe send a note with your connection message
+ * @returns {Connection} The connection we just created. Need to
+ *   listen for events in the view code.
  */
-State.newMachine = async function (
+State.newMachineConnect = async function (
     state:ReturnType<typeof State>,
-    roomCode:string
-) {
-    const party = new PartySocket({
-        host: PARTYKIT_HOST,
-        room: roomCode
+    code:string,
+    note?:string
+):Promise<Connection> {
+    const ws = await Connection.join(code, PARTYKIT_HOST, { note })
+
+    // the note sent by the existing device
+    ws.addEventListener('note', function onNote (ev) {
+        state.notes.value = ev.data
+        ws.removeEventListener('note', onNote)
     })
 
-    state.newMachineParty.value = party
-
-    /**
-     * The existing machine will tell us when it
-     * confirms the new machine.
-     */
-    party.addEventListener('message', ev => {
-        const msg = JSON.parse(ev.data)
-        // we should get just one message that confirms the status
-        const { status } = msg
-        if (status === 'all done') {
-            state.newMachineConfirmed.value = true
-            party.close()
-
-            // and open the room for the user only
-            if (!state.user.value) return
-            state.party.value = new PartySocket({
-                host: PARTYKIT_HOST,
-                room: state.user.value.username
-            })
-        }
+    ws.addEventListener('approve', function onApprove (ev) {
+        debug('the new device was approved', ev.detail)
+        ws.removeEventListener('approve', onApprove)
     })
+
+    ws.addEventListener('reject', function onReject (ev) {
+        debug('the new device was rejected :(', ev.detail)
+        ws.removeEventListener('reject', onReject)
+    })
+
+    state.party.value = ws
+
+    return ws
 }
 
 // Delete a machine record
@@ -435,31 +420,4 @@ function escapeHtml (html:string) {
     const div = document.createElement('div')
     div.textContent = html
     return div.innerHTML
-}
-
-/**
- * Get a room in partykit. Make sure it doesn't collide with
- * any other room.
- */
-async function collision (
-    state:ReturnType<typeof State>,
-    roomName?:string
-):Promise<string> {
-    if (!roomName) roomName = code()
-
-    try {
-        // 200 response means the room is available
-        await ky.head(getPartyUrl(roomName))
-        return roomName
-    } catch (_err) {
-        const err = _err as HTTPError
-        if (err.response.status === 409) {
-            // 409 response to a `HEAD` request means
-            // the room is taken, so try again
-            return collision(state, code())
-        } else {
-            // should not get any other errors
-            throw err
-        }
-    }
 }
