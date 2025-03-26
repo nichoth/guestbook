@@ -93,8 +93,10 @@ export default class Server extends Connection implements Party.Server {
     /**
      * The new machine has been verified by the original machine.
      */
-    async onApprove (msg:JSONObject|JSONValue):Promise<this> {
+    async onApprove (msg:string):Promise<this> {
         console.log('approved this machine', msg)
+
+        const { machineName } = JSON.parse(msg)
         // add the new machine to a database
         const sql = `
         INSERT INTO machine (

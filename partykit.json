@@ -3,6 +3,7 @@
   "name": "bellingham-guestbook",
   "main": "party/index.ts",
   "compatibilityDate": "2025-03-16",
+  "compatibilityFlags": ["nodejs_compat"],
   "serve": {
     "path": "public-party",
     "build": {
