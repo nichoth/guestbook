@@ -25,6 +25,6 @@
 
 [build]
   command = "npm run build"
-  environment = { NODE_VERSION = '20' }
+  environment = { NODE_VERSION = '22' }
   functions = "netlify/functions"
   publish = "public"
