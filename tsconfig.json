@@ -3,7 +3,7 @@
     "listFiles": true,
     "module": "ES2022",
     "target": "ES2022",
-    "types": ["vite/client"],
+    "types": ["vite/client", "@cloudflare/workers-types/2023-07-01"],
     "typeRoots": ["./node_modules"],
     "moduleResolution": "Bundler",
     "esModuleInterop": false,
@@ -29,6 +29,7 @@
     "party/client.ts",
     "src/**/*",
     "test",
-    "lib.es5.d.ts"
+    "lib.es5.d.ts",
+    "./cloudflare/worker-config.d.ts"
   ]
 }
