@@ -68,6 +68,24 @@ export const AboutRoute:FunctionComponent = function () {
         </p>
 
         <p>
+            This is a demonstration of an auth system I first saw used by${NBSP}
+            <a href="https://github.com/fission-codes">Fission</a>, with${NBSP}
+            <a href="https://github.com/ucan-wg/ts-ucan">UCAN</a> tokens.
+        </p>
+
+        <p>
+            The idea is that you have at least one machine that is always${NBSP}
+            "logged in". Logged in, in this context, just means that the browser
+            has a keyapir that is authorized by the server.
+        </p>
+
+        <p>
+            To use a different machine, you authorize a new keypair owned by
+            that machine. The new keypair can be time restricted, or have
+            different, more granular permissions.
+        </p>
+
+        <p>
             Some good news is that there are no passwords in this system.
             You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
