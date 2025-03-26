@@ -97,7 +97,7 @@ export function State ():{
 
 /**
  * Open a connection for your username.
- * You must be "logged in" to do this; must have a keypair.
+ * The user must be "logged in" to do this, must have a keypair.
  */
 State.Party = async function (state:ReturnType<typeof State>, roomName:string) {
     const keys = state.keys.value!
@@ -136,8 +136,8 @@ State.initAddDevice = async function (
         room: roomName
     })
 
-    // room should be "open" now
-    // create the ws connection
+    // room should be "open" now,
+    // so create the ws connection
     state.newMachineParty.value = party
 
     party.addEventListener('message', ev => {
@@ -151,7 +151,7 @@ State.initAddDevice = async function (
 }
 
 State.confirmNewMachine = function (state:ReturnType<typeof State>) {
-    state.newMachineParty.value?.send(JSON.stringify({ status: 'all done' }))
+    state.newMachineParty.value?.send(JSON.stringify({ type: 'accept' }))
     state.newMachineParty.value?.close()
 }
 

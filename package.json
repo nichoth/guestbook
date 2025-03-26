@@ -22,6 +22,7 @@
     "@bicycle-codes/message": "^0.9.1",
     "@bicycle-codes/one-webcrypto": "^1.1.2",
     "@bicycle-codes/request": "^0.6.20",
+    "@hello-system/connect": "github:hello-system/connect#main",
     "@nichoth/components": "^0.16.17",
     "@nichoth/nanoid": "^5.0.8",
     "@nichoth/nanoid-dictionary": "^5.0.7",
