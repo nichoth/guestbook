@@ -1,5 +1,5 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "silverkey"
+name = "bellingham-guestbook"
 compatibility_date = "2024-10-11"
 compatibility_flags = ["nodejs_compat"]
 upload_source_maps = true
@@ -32,7 +32,7 @@ enabled = true
 #
 [vars]
 NODE_ENV = "production"
-NODE_VERSION = "20.16.0"
+NODE_VERSION = "22.13.1"
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai
@@ -52,10 +52,10 @@ NODE_VERSION = "20.16.0"
 
 # Bind a D1 database. D1 is Cloudflare’s native serverless SQL database.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#d1-databases
-# [[d1_databases]]
-# binding = "MY_DB"
-# database_name = "my-database"
-# database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+[[d1_databases]]
+binding = "DB"
+database_name = "bellingham-guestbook"
+database_id = "a7a4c800-ef33-4007-bf3d-452ab3f1fdd8"
 
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless
 #   functions programmatically on behalf of your customers.
@@ -86,8 +86,8 @@ NODE_VERSION = "20.16.0"
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
 [[kv_namespaces]]
-binding = "auth"
-id = "1d29be6549c94f83bf46f25672955320"
+binding = "bellingham-guestbook"
+id = "ba82646e22934fd6aed97c7c77f9a4f1"
 
 # Bind an mTLS certificate. Use to present a client certificate when communicating with another service.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#mtls-certificates
@@ -108,9 +108,9 @@ id = "1d29be6549c94f83bf46f25672955320"
 
 # Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#r2-buckets
-[[r2_buckets]]
-binding = 'BUCKET' # <~ valid JavaScript variable name
-bucket_name = 'silverkey'
+# [[r2_buckets]]
+# binding = 'BUCKET' # <~ valid JavaScript variable name
+# bucket_name = 'bellingham-guestbook'
 
 # Bind another Worker service. Use this binding to call another Worker without network overhead.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
