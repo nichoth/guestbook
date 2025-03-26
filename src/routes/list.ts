@@ -17,7 +17,7 @@ export const ListRoute:FunctionComponent<{
             html`<ul class="contacts">
                 ${state.list.value?.map(contact => {
                     return html`<li class="contact">
-                        <${Profile} user=${contact} />
+                        <${Profile} context="list" user=${contact} />
                     </li>`
                 })}
             </ul>` :

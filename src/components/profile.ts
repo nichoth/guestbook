@@ -5,16 +5,27 @@ import type { User } from '../types'
 import './profile.css'
 
 export const Profile:FunctionComponent<{
-    user:User
+    user:User;
+    context?:'list'
 }> = function Profile (props) {
-    const { user } = props
+    const { user, context } = props
 
     return html`<div class="component profile">
         <dl>
             <dt>name</dt>
-            <dd>${user.username}</dd>
+            <dd>${user.humanName}</dd>
+            ${context === 'list' ?
+                null :
+                html`
+                    <dt>username</dt>
+                    <dd>${user.username}</dd>
+                `
+            }
             <dt>email</dt>
-            <dd>${user.email}</dd>
+            <dd>${props.context === 'list' ?
+                html`<a href="mailto:${user.email}">${user.email}</a>` :
+                html`<code>${user.email}</code>`
+            }</dd>
             <dt>note</dt>
             <dd class="note">
                 ${user.body ?
