@@ -52,23 +52,6 @@ export const WhoamiRoute:FunctionComponent<{
         }
     }, [])
 
-    // <div class="profile">
-    //     <dl>
-    //         <dt>name</dt>
-    //         <dd>${user.username}</dd>
-    //         <dt>email</dt>
-    //         <dd>${user.email}</dd>
-    //         <dt>note</dt>
-    //         <dd class="note">
-    //             ${user.body ?
-    //                 html`<div class="markdown">
-    //                     <${Markdown} markdown=${user.body} />
-    //                 </div>` :
-    //                 html`<em class="none">none</em>`
-    //             }
-    //         </dd>
-    //     </dl>
-
     return html`<div class="route whoami">
         <h2>Who am I?</h2>
         <${Profile} user=${state.user.value} />

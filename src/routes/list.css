@@ -1,17 +1,20 @@
 .route.list {
     & ul {
         padding: 0;
-        padding-left: 1.5rem;
+        list-style: none;
+
+        & dl {
+            background-color: #fff9e0a3;
+            border-radius: 10px;
+            border: 1px solid;
+            padding: 1rem;
+        }
 
         & li {
             & div.email {
                 display: flex;
                 gap: 1rem;
             }
-
-            /* & div.body {
-
-            } */
         }
     }
 }

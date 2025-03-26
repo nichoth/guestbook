@@ -1,5 +1,21 @@
 .component.profile {
+    & .markdown {
+        margin-bottom: 0;
+    }
+
+    & .markup {
+        margin-bottom: 0;
+    }
+
+    & p {
+        margin-bottom: 0;
+    }
+
     & dd {
         font-size: 1.2rem;
+
+        &.note {
+            margin-bottom: 0;
+        }
     }
 }

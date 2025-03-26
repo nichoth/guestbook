@@ -1,6 +1,7 @@
 import { html } from 'htm/preact'
 import type { State } from '../state.js'
 import { type FunctionComponent } from 'preact'
+import { Profile } from '../components/profile.js'
 import './link.css'
 import './list.css'
 // import Debug from '@substrate-system/debug'
@@ -16,20 +17,7 @@ export const ListRoute:FunctionComponent<{
             html`<ul class="contacts">
                 ${state.list.value?.map(contact => {
                     return html`<li class="contact">
-                        <div class="email">
-                            <span>${contact.humanName}</span>
-                            <span>
-                                <a href="mailto:${contact.email}">
-                                    ${contact.email}
-                                </a>
-                            </span>
-                        </div>
-                        ${contact.body ?
-                            html`<div class="body">
-                                ${contact.body}
-                            </div>` :
-                            null
-                        }
+                        <${Profile} user=${contact} />
                     </li>`
                 })}
             </ul>` :
