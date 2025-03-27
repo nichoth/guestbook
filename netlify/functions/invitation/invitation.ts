@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { z } from 'zod'
 import type {
     Handler,
@@ -48,6 +49,9 @@ export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
     const client = new Client(getDbString(process.env))
+
+    console.log('process env node env', process.env.NODE_ENV)
+    console.log('process env varrrrrr', process.env.DATABASE_URL_DEVELOPMENT)
 
     if (ev.httpMethod === 'GET') {
         // if theres not a query param,

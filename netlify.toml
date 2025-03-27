@@ -19,6 +19,12 @@
   to = "/index.html"
   status = 200
 
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.dev.environment]
+  NODE_ENV = "development"
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
