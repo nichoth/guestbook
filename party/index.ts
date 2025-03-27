@@ -1,5 +1,5 @@
 import { Connection } from '@hello-system/connect/server'
-import { Client, type DatabaseError } from 'pg'
+// import { Client, type DatabaseError } from 'pg'
 import type * as Party from 'partykit/server'
 import { getDeviceName } from '@bicycle-codes/keys'
 import {
