@@ -48,10 +48,15 @@ const Request = z.object({
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
-    const client = new Client(getDbString(process.env))
+    const envVar = getDbString(process.env)
+    const client = new Client(envVar)
+
+    console.log('**netlify env**', Netlify.env.get('DATABASE_URL'))
 
     console.log('process env node env', process.env.NODE_ENV)
     console.log('process env varrrrrr', process.env.DATABASE_URL_DEVELOPMENT)
+    console.log('**db url**',  process.env.DATABASE_URL)
+    console.log('**the resolved env var**', envVar)
 
     if (ev.httpMethod === 'GET') {
         // if theres not a query param,
