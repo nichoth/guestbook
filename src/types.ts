@@ -18,7 +18,11 @@ export type Machine = {
     did:DID;
     machineName:string;
     humanName:string;
+    seq:number;
+    user:string;  // <-- the email of the user
 }
+
+export type ClientSideMachine = Omit<Machine, 'seq'>
 
 export type Invitation = {
     note:string;

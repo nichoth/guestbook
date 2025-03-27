@@ -7,7 +7,8 @@ import {
     parseHeader,
     verifyParsed
 } from '@bicycle-codes/request'
-import { getDbString, sanitizeHeader } from '../netlify/functions/util'
+import type { Machine } from '../src/types.js'
+import { sanitizeHeader } from '../netlify/functions/util'
 
 interface JSONObject {
     [x:string]:JSONValue;  // eslint-disable-line
@@ -16,6 +17,9 @@ interface JSONObject {
 type JSONValue = string | number | boolean | JSONObject;
 
 export default class Server extends Connection implements Party.Server {
+    newMachine?:{ did }
+    machines?:Record<string, string>  // a record from machineName to user email
+
     /**
      * This is a POST request from the existing machine.
      */
@@ -26,7 +30,7 @@ export default class Server extends Connection implements Party.Server {
             })
         }
 
-        // first connection
+        // this is called on first connection only
         // check the auth header, then open the room
         const token = req.headers.get('authorization') ?? ''
         if (!token) {
@@ -60,34 +64,36 @@ export default class Server extends Connection implements Party.Server {
 
         const machineName = await getDeviceName(author)
 
-        // check that the machine is in the database
-        const sql = `
-            SELECT check_seq('${machineName}', ${seq});
-        `
-
-        const client = new Client(getDbString(process.env))
-        await client.connect()
-        try {
-            const { check_seq: check } = (await client.query(sql)).rows[0]
-            if (!check) {
-                return new Response(null, {
-                    status: 403,
-                    headers: Connection.CORS
-                })
-            }
-        } catch (_err) {
-            const err = _err as DatabaseError
-            console.log('**query error**', err)
-            return new Response(null, {
-                status: 500,
+        // check that the machine record exists
+        const machineRecord = await this.room.storage.get<Machine>(machineName)
+        if (!machineRecord) {
+            return new Response('Invalid machine', {
+                status: 403,
                 headers: Connection.CORS
             })
-        } finally {
-            await client.end()
+        }
+
+        // check signature sequence number
+        if (machineRecord.seq <= seq) {
+            return new Response('Invalid signature', {
+                status: 403
+            })
+        } else {
+            // update seq
+            await this.room.storage.put(machineName, {
+                ...machineRecord,
+                seq
+            })
         }
 
         // the parent class reads the response code returned here
         return new Response(null, { status: 200, headers: Connection.CORS })
+    }
+
+    async onJoin (msg:{ data: { did } }) {
+        // **new machine has joined** { note: 'hello', data: 'abc' }
+        console.log('got the new machine....', msg)
+        this.newMachine = msg.data
     }
 
     /**
@@ -97,25 +103,32 @@ export default class Server extends Connection implements Party.Server {
         console.log('approved this machine', msg)
 
         const { machineName } = JSON.parse(msg)
+        await this.room.storage.put(machineName, {
+            machineName,
+            did: this.newMachine!.did,
+            seq: 0,
+
+        })
+
         // add the new machine to a database
-        const sql = `
-        INSERT INTO machine (
-            machine_name,
-            owner,
-            did,
-            seq,
-            human_name
-        ) VALUES (
-            '${machineName}',
-            (SELECT email FROM usr WHERE usr.email = 'test@beef.com'),
-            'did:key:zstring',
-            0,
-            'Phone'
-        );,
-        `
-        const client = new Client(getDbString(process.env))
-        await client.connect()
-        await client.query(sql)
+        // const sql = `
+        // INSERT INTO machine (
+        //     machine_name,
+        //     owner,
+        //     did,
+        //     seq,
+        //     human_name
+        // ) VALUES (
+        //     '${machineName}',
+        //     (SELECT email FROM usr WHERE usr.email = 'test@beef.com'),
+        //     'did:key:zstring',
+        //     0,
+        //     'Phone'
+        // );,
+        // `
+        // const client = new Client(getDbString(process.env))
+        // await client.connect()
+        // await client.query(sql)
 
         return this
     }

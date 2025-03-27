@@ -5,7 +5,7 @@ import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance, type HTTPError } from 'ky'
 import Route from 'route-event'
 import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
-import type { Invitation, User, Machine, Contact } from './types'
+import type { Invitation, User, Machine, Contact, ClientSideMachine } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 import { PARTYKIT_HOST } from '../party/client.js'
@@ -34,8 +34,8 @@ export function State ():{
     // `false` means we got a response, and this machine is not a user
     user:Signal<null|false|User>;
     list:Signal<null|Contact[]>;
-    machines:Signal<Machine[]|null>;
-    keys:Signal<Keys|null>;
+    machines:Signal<ClientSideMachine[]|null>;
+    keys:Signal<InstanceType<typeof Keys>|null>;
     presenceParty:Signal<PartySocket|null>;  // for user presence
     party:Signal<PartySocket|null>;  // for adding a new machine
     notes:Signal<string|null>;  // when you add a device, can send notes
@@ -47,7 +47,7 @@ export function State ():{
         _refs: signal(null),
         _setRoute: onRoute.setRoute.bind(onRoute),
         myInvitations: signal<null|Invitation[]>(null),
-        keys: signal<Keys|null>(null),
+        keys: signal<InstanceType<typeof Keys>|null>(null),
         user: signal<User|null|false>(null),
         list: signal(null),
         machines: signal(null),
@@ -65,7 +65,7 @@ export function State ():{
             return
         }
 
-        state.keys.value = keys
+        state.keys.value = keys as InstanceType<typeof Keys>
         ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
         State.init(state)
     })
@@ -151,9 +151,13 @@ State.initAddDevice = async function (
 State.newMachineConnect = async function (
     state:ReturnType<typeof State>,
     code:string,
-    note?:string
 ):Promise<Connection> {
-    const ws = await Connection.join(code, PARTYKIT_HOST, { note })
+    // const ws = await Connection.join(code, PARTYKIT_HOST, { note })
+    const keys:InstanceType<typeof Keys> = (state.keys.value || await Keys.load() as InstanceType<typeof Keys>)
+    const ws = await Connection.join(code, PARTYKIT_HOST, {
+        note: 'hello',
+        data: { did: keys.DID }  // send our DID to the new machine
+    })
 
     // the note sent by the existing device
     ws.addEventListener('note', function onNote (ev) {
@@ -358,6 +362,7 @@ State.acceptInvitation = async function (
             state.user.value = userData
             state.machines.value = (state.machines.value || []).concat([{
                 did: keys.DID,
+                user: userData.email,
                 humanName: machineHumanName,
                 machineName
             }])

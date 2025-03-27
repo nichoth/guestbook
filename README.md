@@ -1,9 +1,11 @@
 # Bellingham Guestbook
 
-A list of contacts for [Innovate Bellingham](https://innovatebellingham.org/)
+A contact list for the [Innovate Bellingham](https://innovatebellingham.org/)
 events.
 
 ## develop
+
+Start a local lambda function server, frontend server, and websocket server.
 
 ```
 npm start
