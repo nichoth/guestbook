@@ -12,6 +12,7 @@ import {
 } from '@bicycle-codes/request'
 import { Client } from 'pg'
 import { getDbString, sanitizeHeader } from '../util.js'
+import { neon } from '@neondatabase/serverless'
 
 const ZodDID = z.custom<DID>((val:string) => {
     return (val.startsWith('did:key:z') && val.length < 450)
@@ -94,11 +95,11 @@ export const handler:Handler = async function handler (
             if (code.length !== 36) {
                 return { body: 'Bad code', statusCode: 403 }
             }
-            await client.connect()
+            // await client.connect()
+            const sql = neon(getDbString(process.env))
 
             try {
-                // get the invitation from DB
-                const sql = `
+                const res = await sql`
                     SELECT 
                         i.id AS code,
                         i.remaining,
@@ -107,23 +108,18 @@ export const handler:Handler = async function handler (
                         u.username AS creator_username,
                         u.human_name AS creator_human_name,
                         u.body AS creator_body
-                    FROM 
-                        invitation i
-                    JOIN 
-                        usr u
-                    ON 
-                        i.creator = u.email
-                    WHERE 
-                        i.id = '${code}';
+                    FROM invitation i
+                    JOIN usr u
+                    ON i.creator = u.email
+                    WHERE i.id = ${code}
                 `
-                const res = await client.query(sql)
+
                 const {
                     creator_email: creatorEmail,
                     creator_username: creatorUsername,
                     creator_human_name: creatorHumanName,
                     ...inv
-                } = res.rows[0]
-                await client.end()
+                } = res[0]
 
                 return {
                     // rename id to code
@@ -137,13 +133,9 @@ export const handler:Handler = async function handler (
                     }),
                     statusCode: 200
                 }
-            } catch (_err) {
-                // query error
-                console.log('**error**', _err)
-                // TODO
-                // better error handling
-                await client.end()
-                return { body: _err.toString(), statusCode: 500 }
+            } catch (err) {
+                console.log('**query error**', err)
+                return { body: err.toString(), statusCode: 500 }
             }
         }
     }

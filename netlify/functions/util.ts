@@ -1,8 +1,8 @@
 export function getDbString (env:NodeJS.ProcessEnv):string {
-    let envVar:string|undefined = env[`DATABASE_URL_${process.env.NODE_ENV?.toUpperCase()}`]
+    let envVar:string|undefined = env[`NEON_URL_${process.env.NODE_ENV?.toUpperCase()}`]
     if (envVar) return envVar
 
-    envVar = env['DATABASE_URL']
+    envVar = env['NEON_URL']
     if (!envVar) throw new Error('Not DB URL')
 
     return envVar

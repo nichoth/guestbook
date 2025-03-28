@@ -24,6 +24,7 @@
     "@bicycle-codes/one-webcrypto": "^1.1.2",
     "@bicycle-codes/request": "^0.6.20",
     "@hello-system/connect": "^0.0.6",
+    "@neondatabase/serverless": "^1.0.0",
     "@nichoth/components": "^0.16.17",
     "@nichoth/nanoid": "^5.0.8",
     "@nichoth/nanoid-dictionary": "^5.0.7",

@@ -1,5 +1,6 @@
 import { Connection } from '@hello-system/connect/server'
 // import { Client, type DatabaseError } from 'pg'
+import { neon } from '@neondatabase/serverless'
 import type * as Party from 'partykit/server'
 import { getDeviceName } from '@bicycle-codes/keys'
 import {
@@ -8,7 +9,7 @@ import {
     verifyParsed
 } from '@bicycle-codes/request'
 import type { Machine } from '../src/types.js'
-import { sanitizeHeader } from '../netlify/functions/util'
+import { getDbString, sanitizeHeader } from '../netlify/functions/util'
 
 interface JSONObject {
     [x:string]:JSONValue;  // eslint-disable-line
@@ -29,6 +30,10 @@ export default class Server extends Connection implements Party.Server {
                 status: 405
             })
         }
+
+        const sql = neon(getDbString(process.env))
+        const res = await sql`SELECT * FROM invitation`
+        console.log('**res**', res)
 
         // this is called on first connection only
         // check the auth header, then open the room
