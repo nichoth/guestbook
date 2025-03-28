@@ -1,4 +1,9 @@
-# notes
+# Guestbook
+
+## Cloudflare / D1
+
+If we use D1, we would want to run everything in Cloudflare, b/c it performs
+better than an external application.
 
 ## envs
 
