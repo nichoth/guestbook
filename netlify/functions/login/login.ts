@@ -3,12 +3,14 @@ import {
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
-import { Client, type DatabaseError } from 'pg'
+// import { Client, type DatabaseError } from 'pg'
 import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
-import { type DID, getDeviceName } from '@bicycle-codes/keys'
+// import { type DID, getDeviceName } from '@bicycle-codes/keys'
+import { getDeviceName } from '@bicycle-codes/keys'
+import { neon } from '@neondatabase/serverless'
 import { getDbString, sanitizeHeader } from '../util.js'
 
 /**
@@ -38,59 +40,59 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     // check the the given keys are related to a user
     // check the the given `seq` number is ok
     // return the user and their machines
-    const client = new Client(getDbString(process.env))
-    await client.connect()
-    let data:({
-        user:{
-            body:string;
-            email:string;
-            human_name:string;
-            username:string;
-        },
-        machines: ({
-            machine_name:string;
-            human_name:string;
-            did:DID
-        })[]
-    })
+    // const client = new Client(getDbString(process.env))
+    // let data:({
+    //     user:{
+    //         body:string;
+    //         email:string;
+    //         human_name:string;
+    //         username:string;
+    //     },
+    //     machines: ({
+    //         machine_name:string;
+    //         human_name:string;
+    //         did:DID
+    //     })[]
+    // })
+
+    let data
     const machineName = await getDeviceName(author)
 
-    const sql = `
-        SELECT check_seq_and_get_user('${machineName}', ${seq});
-    `
-
+    const sql = neon(getDbString(process.env))
     try {
-        const res = await client.query(sql)
-        data = res.rows[0].check_seq_and_get_user
+        data = await sql`
+            SELECT check_seq_and_get_user(${machineName}, ${seq});
+        `
+
+        console.log('**user record**', JSON.stringify(data, null, 2))
+
+        const { machines, user } = data
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                user: {
+                    ...user,
+                    humanName: user.human_name
+                },
+                machines: machines.map(machine => {
+                    return {
+                        machineName: machine.machine_name,
+                        humanName: machine.human_name,
+                    }
+                })
+            })
+        }
     } catch (_err) {
-        console.log('**error**', _err)
-        const err = _err as DatabaseError
+        console.log('**login error**', _err.toString())
+        const err = _err as Error
+        console.log('**err.message**', err.message)
         if (err.message.includes('sequence number')) {
             console.log('err msg', err.message)
             console.log('seq', seq)
             return { body: 'Invalid sequence number', statusCode: 403 }
         }
 
-        console.log('**unhandled error**', err)
-        return { statusCode: 500 }
-    }
-
-    const { machines, user } = data
-    client.end()
-
-    return {
-        statusCode: 200,
-        body: JSON.stringify({
-            user: {
-                ...user,
-                humanName: user.human_name
-            },
-            machines: machines.map(machine => {
-                return {
-                    machineName: machine.machine_name,
-                    humanName: machine.human_name,
-                }
-            })
-        })
+        return { body: 'query error', statusCode: 500 }
     }
 }

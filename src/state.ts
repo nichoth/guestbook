@@ -59,6 +59,7 @@ export function State ():{
 
     Keys.load().then(async keys => {
         if (!keys.persisted) {
+            debug('not persisted keys')
             state.user.value = false
             // not yet a user, don't create keys yet.
             // We create & persist keys in the `acceptInvitation` function below

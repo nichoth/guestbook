@@ -12,6 +12,8 @@ import {
 } from '@bicycle-codes/request'
 import { getDbString, sanitizeHeader } from '../util.js'
 import { neon } from '@neondatabase/serverless'
+// import { neonConfig, Client } from '@neondatabase/serverless'
+// import ws from 'ws'
 
 const ZodDID = z.custom<DID>((val:string) => {
     return (val.startsWith('did:key:z') && val.length < 450)
@@ -86,7 +88,7 @@ export const handler:Handler = async function handler (
         } else {
             // if there is a query param, then get a specific invitation
             // no auth
-            const code = params.code!
+            const code = params.code!.trim()
             if (code.length !== 36) {
                 return { body: 'Bad code', statusCode: 403 }
             }
@@ -162,22 +164,33 @@ export const handler:Handler = async function handler (
             // check invitation
             // call the accept function in DB
             const sql = neon(getDbString(process.env))
-            const res = await sql`
-                SELECT accept_invitation(
-                    '${code}',
-                    '${machineName}',
-                    '${machineHumanName}',
-                    '${did}',
-                    '${slugUsername}',
-                    '${userHumanName}',
-                    '${email}',
-                    '${body}',
-                    '${bluesky}'
-                )
-            `
+            console.log('**NODE_ENV**', process.env.NODE_ENV)
+            console.log('db string???', !!getDbString(process.env))
+            console.log('the request....', JSON.stringify(data, null, 2))
+
+            // const res = await sql`
+            //     SELECT accept_invitation(
+            //         '${code}',
+            //         '${machineName}',
+            //         '${machineHumanName}',
+            //         '${did}',
+            //         '${slugUsername}',
+            //         '${userHumanName}',
+            //         '${email}',
+            //         '${body}',
+            //         '${bluesky}'
+            //     )
+            // `
+
+            const res = await sql.query(`
+                SELECT accept_invitation($1::uuid, $2, $3, $4, $5, $6, $7, $8, $9)
+            `, [code, machineName, machineHumanName, did, slugUsername,
+                userHumanName, email, body, bluesky])
+
+            console.log('**response**', res)
 
             return {
-                body: JSON.stringify(res[0].accept_invitation),
+                body: JSON.stringify(res),
                 statusCode: 200
             }
         } catch (_err) {

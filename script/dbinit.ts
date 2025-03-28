@@ -43,7 +43,7 @@ const statements = [
     `CREATE TABLE IF NOT EXISTS machine (
         machine_name        VARCHAR(255) PRIMARY KEY,
         owner               VARCHAR(255),
-        did                 VARCHAR(255) NOT NULL,
+        did                 TEXT NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          VARCHAR(255) NOT NULL,
         FOREIGN KEY (owner) REFERENCES usr(email) ON DELETE CASCADE
@@ -170,11 +170,11 @@ const statements = [
     // function to accept an invitation
     // (create a new user & machine)
     `
-        CREATE FUNCTION accept_invitation(
-            invitation_id UUID,
+        CREATE OR REPLACE FUNCTION accept_invitation(
+            invitation_id VARCHAR(255),
             new_machine_name VARCHAR(255),
             new_machine_human_name VARCHAR(255),
-            new_machine_did VARCHAR(255),
+            new_machine_did TEXT,
             new_username VARCHAR(255),
             new_user_human_name VARCHAR(255),
             new_user_email VARCHAR(255),
@@ -293,10 +293,10 @@ try {
     await dropTables(client)
     console.log('success dropping')
 
-    const res = await Promise.all(statements.map(s => {
+    await Promise.all(statements.map(s => {
         return client.query(s)
     }))
-    console.log('success creating', res)
+    console.log('success creating')
     await client.end()
 } catch (_err) {
     const err = _err as Error
