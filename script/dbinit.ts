@@ -1,24 +1,11 @@
 import 'dotenv/config'
-// import { neon, type NeonQueryFunction } from '@neondatabase/serverless'
 import { neonConfig, Client } from '@neondatabase/serverless'
 import ws from 'ws'
 
 neonConfig.webSocketConstructor = ws
 
-// import pg from 'pg'
-// const { Client } = pg
-// const envVar = process.env[`DATABASE_URL_${process.env.NODE_ENV?.toUpperCase()}`]
-// console.log('NODE_ENV', process.env.NODE_ENV)
-// const client = new Client(envVar)
-
-// const env = process.env.NODE_ENV
-// if (env !== 'staging' && env !== 'development' && env !== 'test') {
-//     throw new Error('Bad environment')
-// }
-
 console.log('**NODE_ENV**', process.env.NODE_ENV)
 
-// async function dropTables (sql:NeonQueryFunction<boolean, boolean>) {
 async function dropTables (client:InstanceType<typeof Client>) {
     const statements = [
         'DROP TABLE IF EXISTS machine CASCADE;',
@@ -40,7 +27,7 @@ const statements = [
         username    VARCHAR(255) NOT NULL,
         human_name  VARCHAR(255) NOT NULL,
         bluesky     VARCHAR(255),
-        body        VARCHAR(255) NOT NULL
+        body        TEXT NOT NULL
     );`,
 
     // invitation
@@ -48,7 +35,7 @@ const statements = [
         id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         remaining   INT         NOT NULL,
         creator     VARCHAR(255)      NOT NULL,
-        note        VARCHAR(255),
+        note        TEXT,
         FOREIGN KEY (creator)   REFERENCES usr(email) ON DELETE CASCADE
     );`,
 
@@ -303,8 +290,6 @@ const statements = [
 try {
     const client = new Client(getDbString(process.env))
     await client.connect()
-    // const sql = neon(getDbString(process.env)) as NeonQueryFunction<boolean, boolean>
-    // await client.connect()
     await dropTables(client)
     console.log('success dropping')
 
@@ -318,18 +303,6 @@ try {
     console.log('**error**', err)
     console.log('****', err.stack)
 }
-
-// client.end()
-
-// -- Step 4: Retrieve all machines belonging to the user
-// SELECT COALESCE(json_agg(json_build_object(
-//     'machine_name', m.machine_name,
-//     'did', m.did,
-//     'seq', m.seq,
-//     'human_name', m.human_name
-// )), '[]') INTO machines
-// FROM machine m
-// WHERE m.owner = (SELECT owner FROM machine AS mac WHERE mac.machine_name = machine_name LIMIT 1);
 
 function getDbString (env:NodeJS.ProcessEnv):string {
     let envVar:string|undefined = env[`NEON_URL_${process.env.NODE_ENV?.toUpperCase()}`]

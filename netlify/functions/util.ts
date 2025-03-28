@@ -9,5 +9,9 @@ export function getDbString (env:NodeJS.ProcessEnv):string {
 }
 
 export function sanitizeHeader (seq:number, author:string) {
-    return (author.length < 450 && seq < Number.MAX_SAFE_INTEGER)
+    try {
+        return (author.length < 450 && seq < Number.MAX_SAFE_INTEGER)
+    } catch (_err) {
+        return false
+    }
 }

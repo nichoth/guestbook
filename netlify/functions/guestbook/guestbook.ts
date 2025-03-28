@@ -3,13 +3,13 @@ import type {
     HandlerEvent,
 } from '@netlify/functions'
 import { getDeviceName } from '@bicycle-codes/keys'
+import { neon } from '@neondatabase/serverless'
 import {
     verifyParsed,
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
 import { getDbString, sanitizeHeader } from '../util.js'
-import { neon } from '@neondatabase/serverless'
 
 /**
  * PUT call means add or update the contact info for the given user.
@@ -43,40 +43,27 @@ export const handler:Handler = async function handler (
         return { body: 'Invalid signature', statusCode: 403 }
     }
 
-    // const client = new Client(getDbString(process.env))
     const machineName = await getDeviceName(author)
     const sql = neon(getDbString(process.env))
 
     if (ev.httpMethod === 'GET') {
-        // get the guestbook
-        // get all usr records from DB iff their signature is ok
-
-        // const sql = `
-        // -- First, check if check_seq is TRUE for your user
-        // WITH check_result AS (
-        //     SELECT check_seq('${machineName}', ${seq}) AS is_valid
-        // )
-        // -- Then, return all users only if the check is valid
-        // SELECT *
-        // FROM usr
-        // WHERE (SELECT is_valid FROM check_result) = TRUE;
-        // `
-
-        // await client.connect()
-        const res = await sql`
-            SELECT * FROM usr
-            WHERE 
-        `
-        // let res:(undefined|Record<string, string>)[]
-
+        let res
         try {
-            const response = (await client.query(sql))
-            res = response.rows
+            res = await sql`
+                -- First, check if check_seq is TRUE for your user
+                WITH check_result AS (
+                    SELECT check_seq('${machineName}', ${seq}) AS is_valid
+                )
+                -- Then, return all users only if the check is valid
+                SELECT *
+                FROM usr
+                WHERE (SELECT is_valid FROM check_result) = TRUE;
+            `
         } catch (err) {
             console.error('error executing query:', err)
-            return { body: 'query issue', statusCode: 500 }
+            return { body: 'query error', statusCode: 500 }
         } finally {
-            client.end()
+            // sql disconnect
         }
 
         return {

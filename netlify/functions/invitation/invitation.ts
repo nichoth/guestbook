@@ -10,7 +10,6 @@ import {
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
-import { Client } from 'pg'
 import { getDbString, sanitizeHeader } from '../util.js'
 import { neon } from '@neondatabase/serverless'
 
@@ -49,9 +48,6 @@ const Request = z.object({
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
-    const envVar = getDbString(process.env)
-    const client = new Client(envVar)
-
     if (ev.httpMethod === 'GET') {
         // if theres not a query param,
         // then get all invitations created by the user
@@ -73,10 +69,10 @@ export const handler:Handler = async function handler (
                 return { body: 'Invalid signature', statusCode: 403 }
             }
 
-            await client.connect()
-
+            // get all my invitations
             // check the author & seq in the query
-            const sql = `
+            const sql = neon(getDbString(process.env))
+            const res = await sql`
                 SELECT i.id AS code
                 FROM invitation i
                 JOIN usr u ON i.creator = u.email
@@ -85,18 +81,16 @@ export const handler:Handler = async function handler (
                     AND check_seq('${machineName}', '${seq}');
             `
 
-            const res = await client.query(sql)
-            console.log('**invitations**', JSON.stringify(res.rows, null, 2))
-            return { statusCode: 200, body: JSON.stringify(res.rows) }
+            console.log('**invitations**', JSON.stringify(res, null, 2))
+            return { statusCode: 200, body: JSON.stringify(res) }
         } else {
-            // if there is a query param, then get the specific invitation
+            // if there is a query param, then get a specific invitation
             // no auth
             const code = params.code!
             if (code.length !== 36) {
                 return { body: 'Bad code', statusCode: 403 }
             }
 
-            // await client.connect()
             const sql = neon(getDbString(process.env))
 
             try {
@@ -162,13 +156,13 @@ export const handler:Handler = async function handler (
         const { did, humanName: machineHumanName } = machine
         const slugUsername = userHumanName.split(' ').filter(Boolean).join('_')
         const machineName = await getDeviceName(did)
-        await client.connect()
 
         // check that the given invitation is valid
         try {
             // check invitation
             // call the accept function in DB
-            const sql = `
+            const sql = neon(getDbString(process.env))
+            const res = await sql`
                 SELECT accept_invitation(
                     '${code}',
                     '${machineName}',
@@ -182,10 +176,8 @@ export const handler:Handler = async function handler (
                 )
             `
 
-            const res = await client.query(sql)
-
             return {
-                body: JSON.stringify(res.rows[0].accept_invitation),
+                body: JSON.stringify(res[0].accept_invitation),
                 statusCode: 200
             }
         } catch (_err) {
@@ -197,8 +189,6 @@ export const handler:Handler = async function handler (
             }
 
             return { body: err, statusCode: 500 }
-        } finally {
-            await client.end()
         }
     }
 
@@ -241,14 +231,19 @@ export const handler:Handler = async function handler (
         const { note, remainingUses } = data
         const machineName = getDeviceName(author)
         // note & remainingUses are ok now b/c we validated with zod
-        await client.connect()
 
-        let invitation
         try {
+            // @TODO
             // check the user status in query
             // the given machine 'author' must be a current user
 
-            const sql = `
+            const sql = neon(getDbString(process.env))
+
+            /**
+             * @TODO
+             * Make sure the given machine is valid.
+             */
+            const res = await sql`
                 INSERT INTO invitation (
                     remaining,
                     creator,
@@ -262,18 +257,10 @@ export const handler:Handler = async function handler (
                 )
             `
 
-            invitation = await client.query(sql)
-            console.log('**created an invitation**', invitation)
+            return { body: JSON.stringify(res[0]), statusCode: 200 }
         } catch (_err) {
             console.log('**query error**', _err)
             return { body: _err.toString(), statusCode: 500 }
-        } finally {
-            await client.end()
-        }
-
-        return {
-            body: JSON.stringify({ invitation: invitation.rows }),
-            statusCode: 200
         }
     }
 
