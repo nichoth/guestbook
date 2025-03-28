@@ -1,5 +1,4 @@
 import { Connection } from '@hello-system/connect/server'
-// import { Client, type DatabaseError } from 'pg'
 import { neon } from '@neondatabase/serverless'
 import type * as Party from 'partykit/server'
 import { getDeviceName } from '@bicycle-codes/keys'
@@ -9,7 +8,8 @@ import {
     verifyParsed
 } from '@bicycle-codes/request'
 import type { Machine } from '../src/types.js'
-import { getDbString, sanitizeHeader } from '../netlify/functions/util'
+import { sanitizeHeader } from '../netlify/functions/util'
+import { getDbString } from './util.js'
 
 interface JSONObject {
     [x:string]:JSONValue;  // eslint-disable-line
@@ -18,8 +18,17 @@ interface JSONObject {
 type JSONValue = string | number | boolean | JSONObject;
 
 export default class Server extends Connection implements Party.Server {
+    readonly room:Party.Room
     newMachine?:{ did }
     machines?:Record<string, string>  // a record from machineName to user email
+    sql:ReturnType<typeof neon>
+
+    constructor (room:Party.Room) {
+        super(room)
+        const env = room.env as { NODE_ENV, NEON_URL }
+        this.room = room
+        this.sql = neon(getDbString(env))
+    }
 
     /**
      * This is a POST request from the existing machine.
@@ -31,9 +40,10 @@ export default class Server extends Connection implements Party.Server {
             })
         }
 
-        const sql = neon(getDbString(process.env))
-        const res = await sql`SELECT * FROM invitation`
-        console.log('**res**', res)
+        const res = await this.sql`
+            SELECT * FROM invitation
+        `
+        console.log('**results**', res)
 
         // this is called on first connection only
         // check the auth header, then open the room

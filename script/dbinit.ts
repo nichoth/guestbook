@@ -1,15 +1,24 @@
 import 'dotenv/config'
-import pg from 'pg'
-const { Client } = pg
-const envVar = process.env[`DATABASE_URL_${process.env.NODE_ENV?.toUpperCase()}`]
-console.log('NODE_ENV', process.env.NODE_ENV)
-const client = new Client(envVar)
+// import { neon, type NeonQueryFunction } from '@neondatabase/serverless'
+import { neonConfig, Client } from '@neondatabase/serverless'
+import ws from 'ws'
 
-const env = process.env.NODE_ENV
-if (env !== 'staging' && env !== 'development' && env !== 'test') {
-    throw new Error('Bad environment')
-}
+neonConfig.webSocketConstructor = ws
 
+// import pg from 'pg'
+// const { Client } = pg
+// const envVar = process.env[`DATABASE_URL_${process.env.NODE_ENV?.toUpperCase()}`]
+// console.log('NODE_ENV', process.env.NODE_ENV)
+// const client = new Client(envVar)
+
+// const env = process.env.NODE_ENV
+// if (env !== 'staging' && env !== 'development' && env !== 'test') {
+//     throw new Error('Bad environment')
+// }
+
+console.log('**NODE_ENV**', process.env.NODE_ENV)
+
+// async function dropTables (sql:NeonQueryFunction<boolean, boolean>) {
 async function dropTables (client:InstanceType<typeof Client>) {
     const statements = [
         'DROP TABLE IF EXISTS machine CASCADE;',
@@ -17,11 +26,9 @@ async function dropTables (client:InstanceType<typeof Client>) {
         'DROP TABLE IF EXISTS invitation CASCADE;',
     ]
 
-    const res = await Promise.all(statements.map(sql => {
-        return client.query(sql)
+    return await Promise.all(statements.map(s => {
+        return client.query(s)
     }))
-
-    return res
 }
 
 // the env var determines which DB we are targeting
@@ -29,29 +36,29 @@ async function dropTables (client:InstanceType<typeof Client>) {
 const statements = [
     // user
     `CREATE TABLE IF NOT EXISTS usr (
-        email       STRING PRIMARY KEY NOT NULL UNIQUE,
-        username    STRING NOT NULL,
-        human_name  STRING NOT NULL,
-        bluesky     STRING,
-        body        STRING NOT NULL
+        email       VARCHAR(255) PRIMARY KEY NOT NULL UNIQUE,
+        username    VARCHAR(255) NOT NULL,
+        human_name  VARCHAR(255) NOT NULL,
+        bluesky     VARCHAR(255),
+        body        VARCHAR(255) NOT NULL
     );`,
 
     // invitation
     `CREATE TABLE IF NOT EXISTS invitation (
         id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
         remaining   INT         NOT NULL,
-        creator     STRING      NOT NULL,
-        note        STRING,
+        creator     VARCHAR(255)      NOT NULL,
+        note        VARCHAR(255),
         FOREIGN KEY (creator)   REFERENCES usr(email) ON DELETE CASCADE
     );`,
 
     // machine
     `CREATE TABLE IF NOT EXISTS machine (
-        machine_name        STRING PRIMARY KEY,
-        owner               STRING,
-        did                 STRING NOT NULL,
+        machine_name        VARCHAR(255) PRIMARY KEY,
+        owner               VARCHAR(255),
+        did                 VARCHAR(255) NOT NULL,
         seq                 INT DEFAULT 0,
-        human_name          STRING NOT NULL,
+        human_name          VARCHAR(255) NOT NULL,
         FOREIGN KEY (owner) REFERENCES usr(email) ON DELETE CASCADE
     );`,
 
@@ -95,7 +102,7 @@ const statements = [
 
     // function to check & update the `seq` number
     `
-    CREATE OR REPLACE FUNCTION check_seq(machinename STRING, new_seq INT)
+    CREATE OR REPLACE FUNCTION check_seq(machinename VARCHAR(255), new_seq INT)
     RETURNS BOOLEAN AS
     $$
     DECLARE
@@ -131,7 +138,7 @@ const statements = [
         is_valid BOOLEAN;
         user_record JSONB;
         machines JSONB;
-        email STRING;
+        email VARCHAR(255);
     BEGIN
         -- Step 1: Check if the sequence number is valid
         SELECT check_seq(machinename, new_seq) INTO is_valid;
@@ -184,8 +191,8 @@ const statements = [
             new_username VARCHAR(255),
             new_user_human_name VARCHAR(255),
             new_user_email VARCHAR(255),
-            new_body STRING,
-            new_bluesky STRING
+            new_body VARCHAR(255),
+            new_bluesky VARCHAR(255)
         )
         RETURNS JSONB AS $$
 
@@ -294,19 +301,25 @@ const statements = [
 ]
 
 try {
+    const client = new Client(getDbString(process.env))
     await client.connect()
+    // const sql = neon(getDbString(process.env)) as NeonQueryFunction<boolean, boolean>
+    // await client.connect()
     await dropTables(client)
-    const res = await Promise.all(statements.map(sql => {
-        return client.query(sql)
-    }))
-
     console.log('success dropping')
-    console.log('success', res.filter(r => Boolean(r)).map(r => r.rows))
-} catch (err) {
+
+    const res = await Promise.all(statements.map(s => {
+        return client.query(s)
+    }))
+    console.log('success creating', res)
+    await client.end()
+} catch (_err) {
+    const err = _err as Error
     console.log('**error**', err)
+    console.log('****', err.stack)
 }
 
-client.end()
+// client.end()
 
 // -- Step 4: Retrieve all machines belonging to the user
 // SELECT COALESCE(json_agg(json_build_object(
@@ -317,3 +330,13 @@ client.end()
 // )), '[]') INTO machines
 // FROM machine m
 // WHERE m.owner = (SELECT owner FROM machine AS mac WHERE mac.machine_name = machine_name LIMIT 1);
+
+function getDbString (env:NodeJS.ProcessEnv):string {
+    let envVar:string|undefined = env[`NEON_URL_${process.env.NODE_ENV?.toUpperCase()}`]
+    if (envVar) return envVar
+
+    envVar = env['NEON_URL']
+    if (!envVar) throw new Error('Not DB URL')
+
+    return envVar
+}

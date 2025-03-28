@@ -95,6 +95,7 @@ export const handler:Handler = async function handler (
             if (code.length !== 36) {
                 return { body: 'Bad code', statusCode: 403 }
             }
+
             // await client.connect()
             const sql = neon(getDbString(process.env))
 

@@ -14,7 +14,6 @@
     "version": "auto-changelog --template keepachangelog --breaking-pattern 'BREAKING CHANGE' && git add CHANGELOG.md",
     "setup-db": "esbuild ./script/dbinit.ts --platform=node --format=esm | node --input-type=module",
     "script": "esbuild ./script/testing.ts --platform=node --format=esm | node --input-type=module",
-    "preinstall": "export $(cat .env | xargs)",
     "postversion": "git push --follow-tags",
     "prepublishOnly": "npm run build"
   },
