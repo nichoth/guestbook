@@ -46,13 +46,18 @@ export const handler:Handler = async function handler (
     const machineName = await getDeviceName(author)
     const sql = neon(getDbString(process.env))
 
+    // const res = await sql.query(`
+    //     SELECT accept_invitation($1::uuid, $2, $3, $4, $5, $6, $7, $8, $9)
+    // `, [code, machineName, machineHumanName, did, slugUsername,
+    //     userHumanName, email, body, bluesky])
+
     if (ev.httpMethod === 'GET') {
         let res
         try {
             res = await sql`
                 -- First, check if check_seq is TRUE for your user
                 WITH check_result AS (
-                    SELECT check_seq('${machineName}', ${seq}) AS is_valid
+                    SELECT check_seq(${machineName}::VARCHAR, ${seq}::INT) AS is_valid
                 )
                 -- Then, return all users only if the check is valid
                 SELECT *
@@ -60,7 +65,7 @@ export const handler:Handler = async function handler (
                 WHERE (SELECT is_valid FROM check_result) = TRUE;
             `
         } catch (err) {
-            console.error('error executing query:', err)
+            console.error('**error executing query**:', err)
             return { body: 'query error', statusCode: 500 }
         } finally {
             // sql disconnect
