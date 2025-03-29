@@ -233,21 +233,31 @@ export const handler:Handler = async function handler (
 
             /**
              * @TODO
+             * HTTP POST
              * Make sure the given machine is valid.
              */
+
             const res = await sql`
-                INSERT INTO invitation (
-                    remaining,
-                    creator,
-                    note
-                ) VALUES (
-                    ${uses},
-                    (SELECT owner
-                    FROM machine
-                    WHERE machine_name = ${machineName}),
-                    ${note}
-                )
+            WITH valid_user AS (
+                SELECT owner
+                FROM machine
+                WHERE machine_name = ${machineName}
+                AND owner IN (SELECT email FROM usr)
+            )
+            INSERT INTO invitation (
+                remaining,
+                creator,
+                note
+            )
+            SELECT 
+                ${uses},       -- remaining (uses)
+                owner,         -- creator (from valid_user)
+                ${note}        -- note
+            FROM valid_user
+            RETURNING *;
             `
+
+            console.log('**the new invitations**', res)
 
             return { body: JSON.stringify(res[0]), statusCode: 200 }
         } catch (_err) {
