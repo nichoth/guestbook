@@ -1,6 +1,7 @@
 import { html } from 'htm/preact'
 import { type State } from '../state.js'
 import { type FunctionComponent } from 'preact'
+import { NBSP } from '@substrate-system/util/constants'
 import '@nichoth/components/text-input.css'
 import './home.css'
 // import Debug from '@substrate-system/debug'
@@ -58,5 +59,5 @@ function MainPart ({ state }:{ state:ReturnType<typeof State> }) {
         `
     }
 
-    return html`<p>Welcome, <code>${state.user.value.humanName}</code>.</p>`
+    return html`<p>Welcome,${NBSP} <code>${state.user.value.humanName}</code>.</p>`
 }

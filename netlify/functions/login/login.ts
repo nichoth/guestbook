@@ -40,33 +40,18 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     // check the the given keys are related to a user
     // check the the given `seq` number is ok
     // return the user and their machines
-    // const client = new Client(getDbString(process.env))
-    // let data:({
-    //     user:{
-    //         body:string;
-    //         email:string;
-    //         human_name:string;
-    //         username:string;
-    //     },
-    //     machines: ({
-    //         machine_name:string;
-    //         human_name:string;
-    //         did:DID
-    //     })[]
-    // })
 
-    let data
+    let data:{ check_seq_and_get_user:{ user, machines } }
     const machineName = await getDeviceName(author)
 
     const sql = neon(getDbString(process.env))
     try {
-        data = await sql`
+        const result = await sql`
             SELECT check_seq_and_get_user(${machineName}, ${seq});
         `
+        data = result[0] as { check_seq_and_get_user:{ user, machines } }
 
-        console.log('**user record**', JSON.stringify(data, null, 2))
-
-        const { machines, user } = data
+        const { machines, user } = data.check_seq_and_get_user
 
         return {
             statusCode: 200,
