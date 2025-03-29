@@ -46,11 +46,6 @@ export const handler:Handler = async function handler (
     const machineName = await getDeviceName(author)
     const sql = neon(getDbString(process.env))
 
-    // const res = await sql.query(`
-    //     SELECT accept_invitation($1::uuid, $2, $3, $4, $5, $6, $7, $8, $9)
-    // `, [code, machineName, machineHumanName, did, slugUsername,
-    //     userHumanName, email, body, bluesky])
-
     if (ev.httpMethod === 'GET') {
         let res
         try {
@@ -67,8 +62,6 @@ export const handler:Handler = async function handler (
         } catch (err) {
             console.error('**error executing query**:', err)
             return { body: 'query error', statusCode: 500 }
-        } finally {
-            // sql disconnect
         }
 
         return {

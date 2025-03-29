@@ -79,8 +79,8 @@ export const handler:Handler = async function handler (
                 FROM invitation i
                 JOIN usr u ON i.creator = u.email
                 JOIN machine m ON m.owner = u.email
-                WHERE m.machine_name = '${machineName}'
-                    AND check_seq('${machineName}', '${seq}');
+                WHERE m.machine_name = ${machineName}
+                    AND check_seq(${machineName}, ${seq});
             `
 
             console.log('**invitations**', JSON.stringify(res, null, 2))
