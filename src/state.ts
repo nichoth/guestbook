@@ -250,8 +250,6 @@ State.fetchInvitation = async function (
         searchParams: { code: invitationCode }
     }).json<Invitation>()
 
-    debug('got the invitation', res)
-
     return res
 }
 

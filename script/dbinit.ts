@@ -125,7 +125,7 @@ const statements = [
         is_valid BOOLEAN;
         user_record JSONB;
         machines JSONB;
-        email VARCHAR(255);
+        email_address VARCHAR(255);
     BEGIN
         -- Step 1: Check if the sequence number is valid
         SELECT check_seq(machinename, new_seq) INTO is_valid;
@@ -136,7 +136,7 @@ const statements = [
         END IF;
 
         -- Step 3: If valid, retrieve the user who owns the machine
-        SELECT owner INTO email
+        SELECT owner INTO email_address
         FROM machine
         WHERE machine_name = machinename
         LIMIT 1;
@@ -149,7 +149,7 @@ const statements = [
             'body', u.body
         ) INTO user_record
         FROM usr u
-        WHERE u.email = email;
+        WHERE u.email = email_address;
 
         -- Step 5: get their machines
         SELECT COALESCE(json_agg(json_build_object(
@@ -157,7 +157,7 @@ const statements = [
             'human_name', m.human_name
         )), '[]') INTO machines
         FROM machine m
-        WHERE m.owner = email;
+        WHERE m.owner = email_address;
 
         -- Step 6: Return the user and machines as JSON
         RETURN jsonb_build_object(

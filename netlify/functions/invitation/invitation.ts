@@ -159,28 +159,11 @@ export const handler:Handler = async function handler (
         const slugUsername = userHumanName.split(' ').filter(Boolean).join('_')
         const machineName = await getDeviceName(did)
 
-        // check that the given invitation is valid
         try {
             // check invitation
             // call the accept function in DB
             const sql = neon(getDbString(process.env))
             console.log('**NODE_ENV**', process.env.NODE_ENV)
-            console.log('db string???', !!getDbString(process.env))
-            console.log('the request....', JSON.stringify(data, null, 2))
-
-            // const res = await sql`
-            //     SELECT accept_invitation(
-            //         '${code}',
-            //         '${machineName}',
-            //         '${machineHumanName}',
-            //         '${did}',
-            //         '${slugUsername}',
-            //         '${userHumanName}',
-            //         '${email}',
-            //         '${body}',
-            //         '${bluesky}'
-            //     )
-            // `
 
             const res = await sql.query(`
                 SELECT accept_invitation($1::uuid, $2, $3, $4, $5, $6, $7, $8, $9)
