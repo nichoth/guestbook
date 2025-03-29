@@ -1,6 +1,7 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { useCallback } from 'preact/hooks'
+import { NumberInput } from '@nichoth/components/htm/number-input'
 import { State } from '../state.js'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import './invitations_create.css'
@@ -14,10 +15,13 @@ export const CreateInvitationRoute:FunctionComponent<{
         ev.preventDefault()
         const els = (ev.target as HTMLFormElement).elements
         const note = els['note'].value
+        const uses = els['read-limit'].value
 
-        debug('create a new invitation', els)
+        debug('create a new invitation')
+        debug('uses', uses)
+        debug('note', note)
 
-        await State.createInvitation(state, { note })
+        await State.createInvitation(state, { note, uses })
     }, [])
 
     return html`<div class="route invitations create">
@@ -29,7 +33,19 @@ export const CreateInvitationRoute:FunctionComponent<{
             <textarea placeholder="notes here..." name="note" class="note"></textarea>
 
             <div class="help-text">
-                This note will be visible by anyone who redeems this invitation.
+                This note will be visible to anyone who redeems this invitation.
+            </div>
+
+            <${NumberInput}
+                id="read-limit"
+                title="Set the number of uses for this invitation"
+                class="invitation-uses"
+                min=${1}
+                max=${100}
+                name="read-limit"
+            />
+            <div class="help-text">
+                Number of uses
             </div>
 
             <div class="controls">

@@ -191,7 +191,7 @@ export const handler:Handler = async function handler (
 
         const Req = z.object({
             note: z.string().max(6000),
-            remainingUses: z.number().max(500, 'Max 100 uses per invitation')
+            uses: z.number().max(500, 'Max 100 uses per invitation')
         })
 
         let data:z.infer<typeof Req>
@@ -203,7 +203,6 @@ export const handler:Handler = async function handler (
             return { body: 'Invalid JSON', statusCode: 415 }
         }
 
-        // check that they are a user
         const headerString = ev.headers.authorization
         if (!headerString) {
             return { body: 'Need to authenticate', statusCode: 401 }
@@ -222,9 +221,8 @@ export const handler:Handler = async function handler (
             return { body: 'Invalid signature', statusCode: 403 }
         }
 
-        const { note, remainingUses } = data
+        const { note, uses } = data
         const machineName = getDeviceName(author)
-        // note & remainingUses are ok now b/c we validated with zod
 
         try {
             // @TODO
@@ -243,7 +241,7 @@ export const handler:Handler = async function handler (
                     creator,
                     note
                 ) VALUES (
-                    ${remainingUses},
+                    ${uses},
                     (SELECT owner
                     FROM machine
                     WHERE machine_name = ${machineName}),

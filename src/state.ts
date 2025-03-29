@@ -378,11 +378,13 @@ State.acceptInvitation = async function (
 }
 
 State.createInvitation = async function (state:ReturnType<typeof State>, {
-    note
-}:{ note?:string }) {
+    note,
+    uses
+}:{ note?:string, uses:number }) {
     const inv = await ky.post('/api/invitation', {
         json: {
-            note
+            note,
+            uses
         }
     }).json<Invitation>()
 
