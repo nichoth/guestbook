@@ -6,8 +6,8 @@ import { State } from '../state.js'
 import { NumberInput } from '../components/number-input.js'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import './invitations_create.css'
-import Debug from '@substrate-system/debug'
-const debug = Debug()
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 export const CreateInvitationRoute:FunctionComponent<{
     state:ReturnType<typeof State>
@@ -19,10 +19,6 @@ export const CreateInvitationRoute:FunctionComponent<{
         const els = (ev.target as HTMLFormElement).elements
         const note = els['note'].value
         const uses = els['read-limit'].value
-
-        debug('create a new invitation')
-        debug('uses', uses)
-        debug('note', note)
 
         await State.createInvitation(state, { note, uses })
     }, [])

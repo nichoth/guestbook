@@ -1,5 +1,50 @@
 .route.invitations {
+    max-width: 40rem;
+
     & .content {
         min-height: 4rem;
+
+        &.none {
+            text-align: center;
+        }
+    }
+
+    & .label {
+        font-weight: lighter;
+        text-decoration: underline;
+        position: relative;
+        bottom: 0.8rem;
+        margin-right: 0.5rem;
+    }
+
+    & .controls {
+        margin-top: 2rem;
+    }
+
+    & ul.invitations {
+        list-style: none;
+        padding: 0;
+
+        & li {
+            border-bottom: 1px solid gray;
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+
+            & copy-button {
+                margin-right: 1rem;
+                border: none;
+
+                & button {
+                    &:hover {
+                        background-color: transparent;
+                    }
+                }
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
     }
 }

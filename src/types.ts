@@ -30,6 +30,7 @@ export type Invitation = {
         isoString:string;
     };
     code:string;
+    remaining:number;
     creator:{
         id:string;
         username:string;

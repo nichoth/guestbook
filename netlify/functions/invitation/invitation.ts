@@ -10,8 +10,9 @@ import {
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
-import { getDbString, sanitizeHeader } from '../util.js'
+import slugify from '@sindresorhus/slugify'
 import { neon } from '@neondatabase/serverless'
+import { getDbString, sanitizeHeader } from '../util.js'
 // import { neonConfig, Client } from '@neondatabase/serverless'
 // import ws from 'ws'
 
@@ -51,9 +52,8 @@ export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
     if (ev.httpMethod === 'GET') {
-        // if theres not a query param,
-        // then get all invitations created by the user
         const params = ev.queryStringParameters
+
         if (!params || !params.code) {
             // if there is not a query param,
             // then get all invitations that the given user has created
@@ -63,7 +63,7 @@ export const handler:Handler = async function handler (
             }
             const parsedHeader:ParsedHeader = parseHeader(headerString)
             const { seq, author } = parsedHeader
-            const machineName = getDeviceName(author)
+            const machineName = await getDeviceName(author)
 
             // check signature
             const isOk = await verifyParsed(parsedHeader)   // check signature
@@ -75,15 +75,22 @@ export const handler:Handler = async function handler (
             // check the author & seq in the query
             const sql = neon(getDbString(process.env))
             const res = await sql`
-                SELECT i.id AS code
-                FROM invitation i
+                SELECT id AS code, remaining, creator, note FROM invitation i
                 JOIN usr u ON i.creator = u.email
                 JOIN machine m ON m.owner = u.email
                 WHERE m.machine_name = ${machineName}
-                    AND check_seq(${machineName}, ${seq});
+                    AND check_seq(${machineName}, ${parseInt(seq)});
             `
 
             console.log('**invitations**', JSON.stringify(res, null, 2))
+
+            if (res.length === 0) {
+                // returns 0 if seq number is bad
+                console.log('**the sequence**', seq)
+                console.log('**machine name**', machineName)
+                return { body: 'Bad sequence number', statusCode: 403 }
+            }
+
             return { statusCode: 200, body: JSON.stringify(res) }
         } else {
             // if there is a query param, then get a specific invitation
@@ -156,7 +163,9 @@ export const handler:Handler = async function handler (
         const { bluesky, humanName: userHumanName, email, body } = data.userData
         const { code, machine } = data
         const { did, humanName: machineHumanName } = machine
-        const slugUsername = userHumanName.split(' ').filter(Boolean).join('_')
+        const slugUsername = slugify(userHumanName, {
+            separator: '_'
+        })
         const machineName = await getDeviceName(did)
 
         try {
@@ -191,7 +200,7 @@ export const handler:Handler = async function handler (
 
         const Req = z.object({
             note: z.string().max(6000),
-            uses: z.number().max(500, 'Max 100 uses per invitation')
+            uses: z.coerce.number().max(500, 'Max 500 uses per invitation')
         })
 
         let data:z.infer<typeof Req>
@@ -222,42 +231,50 @@ export const handler:Handler = async function handler (
         }
 
         const { note, uses } = data
-        const machineName = getDeviceName(author)
+        const machineName = await getDeviceName(author)
 
         try {
-            // @TODO
-            // check the user status in query
-            // the given machine 'author' must be a current user
-
             const sql = neon(getDbString(process.env))
 
             /**
-             * @TODO
              * HTTP POST
-             * Make sure the given machine is valid.
              */
+            console.log('**NODE_ENV**', process.env.NODE_ENV)
 
             const res = await sql`
-            WITH valid_user AS (
-                SELECT owner
-                FROM machine
-                WHERE machine_name = ${machineName}
-                AND owner IN (SELECT email FROM usr)
-            )
-            INSERT INTO invitation (
-                remaining,
-                creator,
-                note
-            )
-            SELECT 
-                ${uses},       -- remaining (uses)
-                owner,         -- creator (from valid_user)
-                ${note}        -- note
-            FROM valid_user
-            RETURNING *;
+                WITH seq_check AS (
+                    SELECT check_seq(${machineName}, ${seq}) AS seq_valid
+                ),
+                new_invitation AS (
+                    INSERT INTO invitation (
+                        remaining,
+                        creator,
+                        note
+                    )
+                    SELECT
+                        ${uses} AS remaining,
+                        u.email AS creator,
+                        ${note} AS note
+                    FROM machine m
+                    JOIN usr u ON u.email = m.owner
+                    WHERE m.machine_name = ${machineName}
+                        AND (SELECT seq_valid FROM seq_check)
+                    RETURNING *
+                )
+                SELECT * FROM new_invitation;
             `
 
-            console.log('**the new invitations**', res)
+            console.log('**the new invitation**', res)
+
+            if (res.length === 0) {
+                console.log('**the sequence**', seq)
+                console.log('**the machine name**', machineName)
+                // returns nothing if the `check_seq` call fails
+                return {
+                    body: 'Invalid signature',
+                    statusCode: 403
+                }
+            }
 
             return { body: JSON.stringify(res[0]), statusCode: 200 }
         } catch (_err) {
@@ -268,3 +285,30 @@ export const handler:Handler = async function handler (
 
     return { body: null, statusCode: 405 }
 }
+
+/*
+DO $$
+DECLARE
+  new_invitation RECORD;
+BEGIN
+  IF NOT check_seq(1665) THEN
+    RAISE EXCEPTION 'check_seq failed for sequence 1665. Aborting.';
+  END IF;
+
+  INSERT INTO invitation (
+      remaining,
+      creator,
+      note
+  )
+  SELECT
+      6 AS remaining,
+      u.email AS creator,
+      'hello sql' AS note
+  FROM machine m
+  JOIN usr u ON u.email = m.owner
+  WHERE m.machine_name = 'f7ztkj2opqnthq4ceepwbsa2gi3w5hkq'
+    AND check_seq('f7ztkj2opqnthq4ceepwbsa2gi3w5hkq', 1667) = true
+  RETURNING * INTO new_invitation;
+END;
+$$;
+*/
