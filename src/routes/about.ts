@@ -32,7 +32,7 @@ export const AboutRoute:FunctionComponent = function () {
         <p>
             The backend is <a href="https://www.netlify.com/platform/core/functions/">
             lambda functions, hosted by netlify</a>, and a database from${NBSP}
-            <a href="https://www.cockroachlabs.com/">Cockroach DB</a>.
+            <a href="https://neon.tech/">Neon DB</a>.
         </p>
 
         <p>
@@ -63,7 +63,8 @@ export const AboutRoute:FunctionComponent = function () {
             Your identity is handled by${NBSP}
             <a href="https://github.com/bicycle-codes/keys">
                 <code>@bicycle-codes/keys</code>
-            </a>, which is a library that saves a set of keys to <code>
+            </a>, a library that saves a <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
+            set of keys</a> to <code>
             indexedDB</code> in your browser.
         </p>
 
@@ -89,12 +90,8 @@ export const AboutRoute:FunctionComponent = function () {
             Some good news is that there are no passwords in this system.
             You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
-            "non-extractable"</a> keypairs in your browser.
-        </p>
-
-        <p>
-            This is good because it is one less thing that my server needs to
-            remember about you. It eliminates
+            "non-extractable"</a> keypairs in your browser, and 
+            my server needs to remember one less thing about you. It eliminates
             a security vector ${EM_DASH} there is no password to think about.
         </p>
 

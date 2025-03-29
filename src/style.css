@@ -1,5 +1,5 @@
 :root {
-    --mw: 30rem;
+    --mw: 40rem;
     --error-bgc: red;
     --focus-border-color: #00d3ff;
 }
@@ -148,7 +148,7 @@ header {
 
 .route {
     width: 100%;
-    max-width: 30rem;
+    max-width: var(--mw);
     margin: 0 auto;
     margin-top: 2rem;
 }

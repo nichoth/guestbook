@@ -25,11 +25,23 @@
         list-style: none;
         padding: 0;
 
+        & .invitation-field {
+            margin-bottom: 0;
+        }
+
         & li {
-            border-bottom: 1px solid gray;
-            padding: 0.5rem;
+            border-top: 1px dotted;
+            border-bottom: 1px dotted;
+            align-items: center;
+            padding: 0.5rem 0;
+            padding-top: 1rem;
+            padding-bottom: 0.5rem;
             display: flex;
             justify-content: space-between;
+
+            &:last-child {
+                margin-bottom: 2rem;
+            }
 
             & copy-button {
                 margin-right: 1rem;
@@ -40,10 +52,6 @@
                         background-color: transparent;
                     }
                 }
-            }
-
-            &:last-child {
-                border-bottom: none;
             }
         }
     }

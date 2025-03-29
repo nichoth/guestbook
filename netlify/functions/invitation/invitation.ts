@@ -79,15 +79,12 @@ export const handler:Handler = async function handler (
                 JOIN usr u ON i.creator = u.email
                 JOIN machine m ON m.owner = u.email
                 WHERE m.machine_name = ${machineName}
-                    AND check_seq(${machineName}, ${parseInt(seq)});
+                AND check_seq(${machineName}, ${parseInt(seq)});
             `
 
             console.log('**invitations**', JSON.stringify(res, null, 2))
 
             if (res.length === 0) {
-                // returns 0 if seq number is bad
-                console.log('**the sequence**', seq)
-                console.log('**machine name**', machineName)
                 return { body: 'Bad sequence number', statusCode: 403 }
             }
 
