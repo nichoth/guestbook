@@ -170,8 +170,6 @@ export const handler:Handler = async function handler (
             `, [code, machineName, machineHumanName, did, slugUsername,
                 userHumanName, email, body, bluesky])
 
-            console.log('**response**', res)
-
             return {
                 body: JSON.stringify(res),
                 statusCode: 200
