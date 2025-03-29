@@ -2,11 +2,10 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { useCallback } from 'preact/hooks'
 import { useSignal } from '@preact/signals'
-import { NumberInput } from '@nichoth/components/htm/number-input'
 import { State } from '../state.js'
+import { NumberInput } from '../components/number-input.js'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import './invitations_create.css'
-import '@nichoth/components/number-input.css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
 
