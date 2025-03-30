@@ -7,7 +7,6 @@ import {
     parseHeader,
     verifyParsed
 } from '@bicycle-codes/request'
-import type { Machine } from '../src/types.js'
 import { sanitizeHeader } from '../netlify/functions/util'
 import { getDbString } from './util.js'
 
@@ -98,7 +97,8 @@ export default class Server extends Connection implements Party.Server {
 
         if (!machine[0].is_valid) {
             return new Response('Invalid signature', {
-                status: 403
+                status: 403,
+                headers: Connection.CORS
             })
         }
 
@@ -107,7 +107,6 @@ export default class Server extends Connection implements Party.Server {
     }
 
     async onJoin (msg:{ data: { did } }) {
-        // **new machine has joined** { note: 'hello', data: 'abc' }
         console.log('got the new machine....', msg)
         this.newMachine = msg.data
     }

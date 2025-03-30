@@ -5,6 +5,16 @@
         width: 100%;
         min-height: 50vh;
         border: 1px solid;
+        padding: 1rem;
+
+        & .url {
+            margin-top: 2rem;
+            text-align: center;
+
+            & code {
+                font-size: 1.5rem;
+            }
+        }
 
         & .controls {
             margin-right: 1rem;
