@@ -11,7 +11,9 @@ import {
 import './invitations.css'
 // import Debug from '@substrate-system/debug'
 // const debug = Debug()
-register()
+if (!window.customElements.get('copy-button')) {
+    register()
+}
 
 export const InvitationRoute:FunctionComponent<{
     state:ReturnType<typeof State>
@@ -19,13 +21,17 @@ export const InvitationRoute:FunctionComponent<{
     return html`<div class="route invitations">
         <h2>Your Invitations</h2>
 
+        <p>
+            Invitations that you have created.
+        </p>
+
         <${Conntent} invs=${state.myInvitations.value} />
 
         <hr />
 
         <div class="controls">
             <${LinkPrimary} href="/invitations/create">
-                Create an invitation
+                Create a new invitation
             <//>
         </div>
     </div>`
@@ -47,11 +53,13 @@ function Conntent ({ invs }:{ invs:false|null|Invitation[] }) {
             return html`<li class="inv">
                 <div class="invitation-field">
                     <span><copy-button payload="${inv.code}"></copy-button></span>
-                    <span class="label">code</span>
-                    <span>${inv.code}</span>
+                    <span class="label">code:</span>
+                    <a href="/invitations/${inv.code}">
+                        ${inv.code}
+                    </a>
                 </div>
                 <div class="invitation-field">
-                    <span class="label">Remaining uses</span>
+                    <span class="label">Remaining uses:</span>
                     <span>${inv.remaining}</span>
                 </div>
             </li>`

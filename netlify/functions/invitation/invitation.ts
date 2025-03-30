@@ -75,18 +75,23 @@ export const handler:Handler = async function handler (
             // check the author & seq in the query
             const sql = neon(getDbString(process.env))
             const res = await sql`
-                SELECT id AS code, remaining, creator, note FROM invitation i
-                JOIN usr u ON i.creator = u.email
-                JOIN machine m ON m.owner = u.email
-                WHERE m.machine_name = ${machineName}
-                AND check_seq(${machineName}, ${parseInt(seq)});
+            WITH valid_machine AS (
+                SELECT owner
+                FROM machine
+                WHERE machine_name = ${machineName}
+                AND check_seq(${machineName}, ${parseInt(seq)}) = TRUE
+            )
+            SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts
+            FROM invitation i
+            JOIN usr u ON i.creator = u.email
+            JOIN valid_machine vm ON u.email = vm.owner;
             `
-
-            console.log('**invitations**', JSON.stringify(res, null, 2))
 
             if (res.length === 0) {
                 return { body: 'Bad sequence number', statusCode: 403 }
             }
+
+            console.log('**the invitations**', JSON.stringify(res, null, 2))
 
             return { statusCode: 200, body: JSON.stringify(res) }
         } else {

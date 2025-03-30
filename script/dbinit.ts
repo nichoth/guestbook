@@ -24,6 +24,7 @@ const statements = [
     // user
     `CREATE TABLE IF NOT EXISTS usr (
         email       VARCHAR(255) PRIMARY KEY NOT NULL UNIQUE,
+        ts          TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         username    VARCHAR(255) NOT NULL,
         human_name  VARCHAR(255) NOT NULL,
         bluesky     VARCHAR(255),
@@ -32,16 +33,18 @@ const statements = [
 
     // invitation
     `CREATE TABLE IF NOT EXISTS invitation (
-        id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-        remaining   INT         NOT NULL,
-        creator     VARCHAR(255)      NOT NULL,
+        id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+        ts          TIMESTAMP       WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        remaining   INT             NOT NULL,
+        creator     VARCHAR(255)    NOT NULL,
         note        TEXT,
-        FOREIGN KEY (creator)   REFERENCES usr(email) ON DELETE CASCADE
+        FOREIGN KEY (creator)       REFERENCES usr(email) ON DELETE CASCADE
     );`,
 
     // machine
     `CREATE TABLE IF NOT EXISTS machine (
         machine_name        VARCHAR(255) PRIMARY KEY,
+        ts          TIMESTAMP       WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         owner               VARCHAR(255),
         did                 TEXT NOT NULL,
         seq                 INT DEFAULT 0,

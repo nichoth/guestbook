@@ -2,17 +2,19 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { useCallback } from 'preact/hooks'
 import { useSignal } from '@preact/signals'
+import type { HTTPError } from 'ky'
 import { State } from '../state.js'
 import { NumberInput } from '../components/number-input.js'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import './invitations_create.css'
-// import Debug from '@substrate-system/debug'
-// const debug = Debug()
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 export const CreateInvitationRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
     const uses = useSignal<number>(1)
+    const isResolving = useSignal<boolean>(false)
 
     const create = useCallback(async function (ev:SubmitEvent) {
         ev.preventDefault()
@@ -20,7 +22,18 @@ export const CreateInvitationRoute:FunctionComponent<{
         const note = els['note'].value
         const uses = els['read-limit'].value
 
-        await State.createInvitation(state, { note, uses })
+        isResolving.value = true
+        try {
+            await State.createInvitation(state, { note, uses })
+            State.toast(state, 'success', 'Invitation created.')
+        } catch (_err) {
+            const err = _err as HTTPError
+            const res = await err.response.text()
+            debug('error creating invitation', res)
+            debug('err', err)
+            State.toast(state, 'error', res)
+        }
+        isResolving.value = false
     }, [])
 
     return html`<div class="route invitations create">
@@ -49,7 +62,10 @@ export const CreateInvitationRoute:FunctionComponent<{
             </div>
 
             <div class="controls">
-                <${BtnPrimary} type="submit">Create<//>
+                <${BtnPrimary}
+                    type="submit"
+                    isSpinning=${isResolving}
+                >Create<//>
             </div>
         </form>
     </div>`

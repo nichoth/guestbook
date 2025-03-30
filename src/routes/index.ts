@@ -9,6 +9,7 @@ import { ListRoute } from './list.js'
 import { WhoamiRoute } from './whoami.js'
 import { InvitationRoute } from './invitations.js'
 import { CreateInvitationRoute } from './invitations_create.js'
+import { InvitationByCode } from './invitations_code.js'
 // import Debug from '@substrate-system/debug'
 // const debug = Debug()
 
@@ -64,6 +65,10 @@ export default function _Router (state:ReturnType<typeof State>):Router {
     router.addRoute('/invitations/create', () => {
         State.fetchMyInvitations(state)
         return CreateInvitationRoute
+    })
+
+    router.addRoute('/invitations/:code', () => {
+        return InvitationByCode
     })
 
     return router
