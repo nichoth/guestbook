@@ -7,18 +7,22 @@
         border: 1px solid;
         padding: 1rem;
 
+        & .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-right: 1rem;
+            margin-top: auto;
+        }
+
         & .url {
             margin-top: 2rem;
             text-align: center;
 
             & code {
                 font-size: 1.5rem;
+                margin-right: 1rem;
             }
-        }
-
-        & .controls {
-            margin-right: 1rem;
-            margin-top: auto;
         }
     }
 }

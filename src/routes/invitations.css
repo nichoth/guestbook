@@ -44,12 +44,6 @@
             & copy-button {
                 margin-right: 1rem;
                 border: none;
-
-                & button {
-                    &:hover {
-                        background-color: transparent;
-                    }
-                }
             }
         }
     }

@@ -45,6 +45,23 @@ body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     margin: 1rem;
 
+    & copy-button {
+        border: none;
+        padding: 0;
+
+        & button {
+            border: 1px solid;
+            padding: 7px 8px;
+            border-radius: 8px;
+            position: relative;
+            top: -2px;
+
+            &:hover {
+                background-color: transparent;
+            }
+        }
+    }
+
     & .sl-toast-stack {
         width: 80vw;
         left: 10vw;
