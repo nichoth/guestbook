@@ -1,7 +1,9 @@
 :root {
-    --mw: 40rem;
+    --mw: 35rem;
     --error-bgc: red;
     --focus-border-color: #00d3ff;
+    --off-white: #FAF9F6;
+    --danger: red;
 }
 
 hr {
@@ -44,6 +46,11 @@ div.error {
 body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     margin: 1rem;
+    background-color: var(--off-white);
+
+    & sl-tooltip {
+        --show-delay: 800;
+    }
 
     & copy-button {
         border: none;
@@ -57,7 +64,7 @@ body {
             top: -2px;
 
             &:hover {
-                background-color: transparent;
+                background-color: white;
             }
         }
     }
@@ -74,6 +81,8 @@ body {
 
     & dl {
         padding: 1rem;
+        max-width: 30rem;
+        margin: 0 auto;
     }
 
 

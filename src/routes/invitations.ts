@@ -1,16 +1,19 @@
 import '@substrate-system/a11y'
 import { html } from 'htm/preact'
+import { useCallback } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import type { State } from '../state.js'
 import type { Invitation } from '../types.js'
 import { register } from '@substrate-system/copy-button'
 import '@substrate-system/copy-button/css'
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js'
 import {
     LinkButtonPrimary as LinkPrimary
 } from '../components/button-outline.js'
+import { IconX } from '../components/icon-close-x.js'
 import './invitations.css'
-// import Debug from '@substrate-system/debug'
-// const debug = Debug()
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 if (!window.customElements.get('copy-button')) {
     register()
 }
@@ -18,6 +21,11 @@ if (!window.customElements.get('copy-button')) {
 export const InvitationRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
+    const deleteInvitation = useCallback((ev:MouseEvent) => {
+        ev.preventDefault()
+        debug('delete this one')
+    }, [])
+
     return html`<div class="route invitations">
         <h2>Your Invitations</h2>
 
@@ -25,7 +33,10 @@ export const InvitationRoute:FunctionComponent<{
             Invitations that you have created.
         </p>
 
-        <${Conntent} invs=${state.myInvitations.value} />
+        <${Conntent}
+            invs=${state.myInvitations.value}
+            onDelete=${deleteInvitation}
+        />
 
         <hr />
 
@@ -37,7 +48,10 @@ export const InvitationRoute:FunctionComponent<{
     </div>`
 }
 
-function Conntent ({ invs }:{ invs:false|null|Invitation[] }) {
+function Conntent ({ invs, onDelete }:{
+    invs:false|null|Invitation[];
+    onDelete:(ev:MouseEvent)=>any;
+}) {
     if (invs === null) {
         return html`<div class="content"></div>`
     }
@@ -61,6 +75,11 @@ function Conntent ({ invs }:{ invs:false|null|Invitation[] }) {
                 <div class="invitation-field">
                     <span class="label">Remaining uses:</span>
                     <span>${inv.remaining}</span>
+                </div>
+                <div class="invitation-field">
+                    <sl-tooltip content="Delete this invitation">
+                        <${IconX} onClick=${onDelete} />
+                    </sl-tooltip>
                 </div>
             </li>`
         })}

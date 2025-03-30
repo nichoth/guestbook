@@ -11,7 +11,6 @@
 
     & .label {
         font-weight: lighter;
-        text-decoration: underline;
         margin-right: 0.5rem;
     }
 
@@ -28,7 +27,7 @@
         }
 
         & li {
-            border-top: 1px dotted;
+            /* border-top: 1px dotted; */
             border-bottom: 1px dotted;
             align-items: center;
             padding: 0.5rem 0;
@@ -36,6 +35,10 @@
             padding-bottom: 0.5rem;
             display: flex;
             justify-content: space-between;
+
+            &:first-child {
+                border-top: 1px dotted;
+            }
 
             &:last-child {
                 margin-bottom: 2rem;

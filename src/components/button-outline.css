@@ -41,10 +41,10 @@
     }
 
     &.danger {
-        border-color: var(--danger-color, red);
+        border-color: var(--danger-color, var(--danger, red));
 
         &:hover {
-            outline-color: var(--danger-color, red);
+            outline-color: var(--danger-color, var(--danger, red));
         }
     }
 

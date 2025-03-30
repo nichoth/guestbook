@@ -1,0 +1,14 @@
+.x-button {
+    background-color: transparent;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid;
+    border-radius: 50%;
+    transition: all 0.2s;
+    outline: 1px solid transparent;
+
+    &:hover {
+        background-color: white;
+        outline-color: black;
+    }
+}
