@@ -17,6 +17,9 @@ interface JSONObject {
 
 type JSONValue = string | number | boolean | JSONObject;
 
+/**
+ * In here, call Neon DB.
+ */
 export default class Server extends Connection implements Party.Server {
     readonly room:Party.Room
     newMachine?:{ did }
@@ -40,10 +43,15 @@ export default class Server extends Connection implements Party.Server {
             })
         }
 
-        const res = await this.sql`
-            SELECT * FROM invitation
-        `
-        console.log('**results**', res)
+        // console.log('**db string in auth**', getDbString(
+        //     this.room.env as { NODE_ENV, NEON_URL })
+        // )
+
+        // check if the `seq` number given in the request is valid
+        // const res = await this.sql`
+        //     SELECT * FROM invitation
+        // `
+        // console.log('**results**', res)
 
         // this is called on first connection only
         // check the auth header, then open the room
@@ -58,11 +66,13 @@ export default class Server extends Connection implements Party.Server {
         let header:ParsedHeader
         try {
             header = parseHeader<{ seq }>(token)
+            // console.log('**the header**', JSON.stringify(header, null, 2))
             if (!(await verifyParsed(header))) {
                 throw new Error('bad header signature')
             }
         } catch (_err) {
             // header parse failed
+            console.log('**bad header**', _err)
             return new Response('Invalid header', {
                 status: 403,
                 headers: Connection.CORS
@@ -71,6 +81,7 @@ export default class Server extends Connection implements Party.Server {
 
         const { seq, author } = header
         if (!sanitizeHeader(seq, author)) {
+            console.log('**not sanitize**', seq, author)
             return new Response('Invalid header', {
                 status: 403,
                 headers: Connection.CORS
@@ -80,24 +91,14 @@ export default class Server extends Connection implements Party.Server {
         const machineName = await getDeviceName(author)
 
         // check that the machine record exists
-        const machineRecord = await this.room.storage.get<Machine>(machineName)
-        if (!machineRecord) {
-            return new Response('Invalid machine', {
-                status: 403,
-                headers: Connection.CORS
-            })
-        }
+        // const machineRecord = await this.room.storage.get<Machine>(machineName)
+        const machine = await this.sql`
+            SELECT check_seq(${machineName}::VARCHAR, ${seq}::INT) AS is_valid
+        `
 
-        // check signature sequence number
-        if (machineRecord.seq <= seq) {
+        if (!machine[0].is_valid) {
             return new Response('Invalid signature', {
                 status: 403
-            })
-        } else {
-            // update seq
-            await this.room.storage.put(machineName, {
-                ...machineRecord,
-                seq
             })
         }
 

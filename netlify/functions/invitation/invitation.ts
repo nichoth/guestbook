@@ -75,16 +75,16 @@ export const handler:Handler = async function handler (
             // check the author & seq in the query
             const sql = neon(getDbString(process.env))
             const res = await sql`
-            WITH valid_machine AS (
-                SELECT owner
-                FROM machine
-                WHERE machine_name = ${machineName}
-                AND check_seq(${machineName}, ${parseInt(seq)}) = TRUE
-            )
-            SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts
-            FROM invitation i
-            JOIN usr u ON i.creator = u.email
-            JOIN valid_machine vm ON u.email = vm.owner;
+                WITH valid_machine AS (
+                    SELECT owner
+                    FROM machine
+                    WHERE machine_name = ${machineName}
+                    AND check_seq(${machineName}, ${parseInt(seq)}) = TRUE
+                )
+                SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts
+                FROM invitation i
+                JOIN usr u ON i.creator = u.email
+                JOIN valid_machine vm ON u.email = vm.owner;
             `
 
             if (res.length === 0) {

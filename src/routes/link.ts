@@ -1,5 +1,6 @@
 import { html } from 'htm/preact'
-import type { State } from '../state.js'
+import { useCallback } from 'preact/hooks'
+import { State } from '../state.js'
 import { ELLIPSIS, NBSP } from '@substrate-system/util/constants'
 import { type FunctionComponent } from 'preact'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
@@ -11,6 +12,12 @@ export const LinkRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
     debug('link route', state)
+
+    const initLink = useCallback((ev:MouseEvent) => {
+        ev.preventDefault()
+        debug('init')
+        State.initAddDevice(state, 'hello websockets')
+    }, [])
 
     return html`<div class="route link">
         <h2>Add a device to your account</h2>
@@ -26,7 +33,7 @@ export const LinkRoute:FunctionComponent<{
 
         <div class="add-device-info">
             <div class="controls">
-                <${BtnPrimary}>Add a device<//>
+                <${BtnPrimary} onClick=${initLink}>Add a device<//>
             </div>
         </div>
     </div>`
