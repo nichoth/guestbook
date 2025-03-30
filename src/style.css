@@ -43,7 +43,6 @@ div.error {
 
 body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    /* margin: 1rem; */
     margin: 1rem;
 
     & .sl-toast-stack {
@@ -55,6 +54,11 @@ body {
             font-size: 1rem;
         }
     }
+
+    & dl {
+        padding: 1rem;
+    }
+
 
     & div {
         margin-bottom: 1rem;

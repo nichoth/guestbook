@@ -1,0 +1,48 @@
+.route.invitation-by-code {
+    & .controls {
+        & .btn-outline {
+            border-width: 1px;
+            margin-left: 1rem;
+        }
+
+        & .btn-outline.danger {
+            border-width: 2px;
+        }
+    }
+
+    & dl {
+        border-radius: 20px;
+        border: 1px solid;
+        padding-bottom: 1rem;
+    }
+
+    & dd {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    & div.uses {
+        margin-bottom: 0;
+        font-family: monospace;
+        display: flex;
+        align-items: baseline;
+
+        & dt {
+            display: inline;
+        }
+
+        & dd.uses {
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0;
+            margin-left: 1rem;
+            min-width: 2.5rem;
+            min-height: 2.5rem;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 2px solid;
+            display: flex;
+        }
+    }
+}

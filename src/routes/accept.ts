@@ -128,8 +128,6 @@ export const AcceptRoute:FunctionComponent<{
     if (invitationSignal.value) {
         // we have fetched the invitation
         // show a form to input your user data
-        // const invData = invitationSignal.value
-        // const createdString = DateTime.fromISO(invData.ts.)
         return html`<div class="route accept">
             <h2>Invitation</h2>
             <dl>

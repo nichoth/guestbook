@@ -4,10 +4,9 @@
         list-style: none;
 
         & dl {
-            background-color: #fff9e0a3;
             border-radius: 10px;
             border: 1px solid;
-            padding: 1rem;
+            background-color: #fff9e0a3;
         }
 
         & li {
