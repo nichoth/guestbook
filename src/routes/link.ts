@@ -29,7 +29,14 @@ export const LinkRoute:FunctionComponent<{
     const initLink = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
         debug('init')
-        const code = await State.initAddDevice(state, 'hello websockets')
+        const [code, ws] = await State.initAddDevice(state, 'hello websockets')
+
+        // listen for events
+        ws.addEventListener('join', ev => {
+            const detail = ev.detail
+            debug('join event', detail)
+        })
+
         roomName.value = code
     }, [])
 
@@ -53,7 +60,7 @@ export const LinkRoute:FunctionComponent<{
         <div class="add-device-info">
             ${roomName.value ?
                 html`<div class="ws-info">
-                    The new device should connect to this url:
+                    The new device should visit this url:
                 </div>
                 <div class="url">
                     <code>${roomUrl.value}</code>
@@ -73,7 +80,12 @@ export const LinkRoute:FunctionComponent<{
                     <//>` :
                     null
                 }
-                <${BtnPrimary} onClick=${initLink}>Add a device<//>
+                <${BtnPrimary}
+                    onClick=${initLink}
+                    disabled=${!!roomName.value}
+                >
+                    Add a device
+                <//>
             </div>
         </div>
     </div>`

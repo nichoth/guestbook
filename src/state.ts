@@ -123,7 +123,7 @@ State.Party = async function (state:ReturnType<typeof State>, roomName:string) {
 State.initAddDevice = async function (
     state:ReturnType<typeof State>,
     note?:string,
-):Promise<string> {
+):Promise<[string, Connection]> {
     const createHeaders = HeaderFactory({
         privateKey: state.keys.value!.privateSignKey,
         publicKey: state.keys.value!.publicSignKey
@@ -139,7 +139,7 @@ State.initAddDevice = async function (
 
     state.party.value = ws
 
-    return roomName
+    return [roomName, ws]
 }
 
 /**
