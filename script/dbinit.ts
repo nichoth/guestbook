@@ -36,6 +36,7 @@ const statements = [
         id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
         ts          TIMESTAMP       WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         remaining   INT             NOT NULL,
+        initial     INT             NOT NULL,
         creator     VARCHAR(255)    NOT NULL,
         note        TEXT,
         FOREIGN KEY (creator)       REFERENCES usr(email) ON DELETE CASCADE

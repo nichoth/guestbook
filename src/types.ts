@@ -31,6 +31,7 @@ export type Invitation = {
     };
     code:string;
     remaining:number;
+    initial:number;
     creator:{
         id:string;
         username:string;

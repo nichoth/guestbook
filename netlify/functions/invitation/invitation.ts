@@ -81,7 +81,7 @@ export const handler:Handler = async function handler (
                     WHERE machine_name = ${machineName}
                     AND check_seq(${machineName}, ${parseInt(seq)}) = TRUE
                 )
-                SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts
+                SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts, i.initial
                 FROM invitation i
                 JOIN usr u ON i.creator = u.email
                 JOIN valid_machine vm ON u.email = vm.owner;
@@ -250,11 +250,13 @@ export const handler:Handler = async function handler (
                 new_invitation AS (
                     INSERT INTO invitation (
                         remaining,
+                        initial,
                         creator,
                         note
                     )
                     SELECT
                         ${uses} AS remaining,
+                        ${uses} AS initial,
                         u.email AS creator,
                         ${note} AS note
                     FROM machine m

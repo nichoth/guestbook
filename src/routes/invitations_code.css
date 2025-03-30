@@ -48,5 +48,11 @@
             border: 2px solid;
             display: flex;
         }
+
+        & .initial {
+            background-color: transparent;
+            margin-left: 0.5rem;
+            font-size: 1rem;
+        }
     }
 }

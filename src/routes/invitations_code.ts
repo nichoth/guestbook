@@ -58,7 +58,12 @@ export const InvitationByCode:FunctionComponent<{
 
                     <div class="uses">
                         <dt class="uses">Remaining uses</dt>
-                        <dd class="uses">${invitation.value.remaining}</dd>
+                        <dd class="uses">
+                            ${invitation.value.remaining}
+                        </dd>
+                        <span class="initial">
+                            / ${invitation.value.initial}
+                        </span>
                     </div>
                 </dl>
 
