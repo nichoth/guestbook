@@ -39,6 +39,7 @@ export function State ():{
     presenceParty:Signal<PartySocket|null>;  // for user presence
     party:Signal<PartySocket|null>;  // for adding a new machine
     notes:Signal<string|null>;  // when you add a device, can send notes
+    error:Signal<{ code:number, message:string }|null>;
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
     const onRoute = Route()
@@ -54,6 +55,7 @@ export function State ():{
         presenceParty: signal(null),
         party: signal(null),
         notes: signal(null),
+        error: signal(null),
         route: signal<string>(location.pathname + location.search)
     }
 
@@ -81,8 +83,7 @@ export function State ():{
      */
     onRoute((path:string, data) => {
         // for github pages
-        const newPath = path.replace('/template-ts-preact-htm/', '/')
-        state.route.value = newPath
+        state.route.value = path
         // handle scroll state like a web browser
         // (restore scroll position on back/forward)
         if (data.popstate) {
@@ -244,7 +245,7 @@ State.deleteInvitation = async function (
     code:string
 ):Promise<void> {
     try {
-        ky.delete('/api/invitation', {
+        await ky.delete('/api/invitation', {
             json: { code }
         })
 
@@ -260,17 +261,22 @@ State.deleteInvitation = async function (
 }
 
 /**
- * A new user checking if an invitation code is ok.
+ * A new user checking if an invitation code is ok, or an existing
+ * user getting a single invitation of theirs.
+ * The server looks at the headers to know if they are a user or not.
  */
 State.fetchInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string
-):Promise<Invitation> {
-    const res = await ky.get('/api/invitation', {
-        searchParams: { code: invitationCode }
-    }).json<Invitation>()
+):Promise<void> {
+    await when(state.user, async () => {
+        const res = await ky.get('/api/invitation', {
+            searchParams: { code: invitationCode }
+        }).json<Invitation>()
 
-    return res
+        state.myInvitations.value = (state.myInvitations.value || [])
+            .concat([res])
+    })
 }
 
 State.fetchMyInvitations = async function (

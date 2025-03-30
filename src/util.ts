@@ -17,14 +17,24 @@ export function getPartyUrl (code:string) {
 /**
  * Execute the given function once, after the given signal is truthy.
  */
-export function when (sig:Signal<any>, then:()=>Promise<any>) {
-    if (!sig.value) return
+export function when<T> (
+    sig:Signal<null|false|any>,
+    then:()=>Promise<T>
+):Promise<T> {
+    return new Promise((resolve, reject) => {
+        if (sig.value === null) return
 
-    const dispose = effect(() => {
-        if (!sig.value) return
-        (async () => {
-            await then()
-            dispose()
-        })()
+        const dispose = effect(() => {
+            if (sig.value === null) return
+            (async () => {
+                try {
+                    const res = await then()
+                    dispose()
+                    resolve(res)
+                } catch (err) {
+                    reject(err)
+                }
+            })()
+        })
     })
 }

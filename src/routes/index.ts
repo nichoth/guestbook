@@ -10,8 +10,9 @@ import { WhoamiRoute } from './whoami.js'
 import { InvitationRoute } from './invitations.js'
 import { CreateInvitationRoute } from './invitations_create.js'
 import { InvitationByCode } from './invitations_code.js'
-// import Debug from '@substrate-system/debug'
-// const debug = Debug()
+import { HTTPError } from 'ky'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 /**
  * We call router.match every time the index view re-renders.
@@ -67,7 +68,33 @@ export default function _Router (state:ReturnType<typeof State>):Router {
         return CreateInvitationRoute
     })
 
-    router.addRoute('/invitations/:code', () => {
+    /**
+     * This route is only for viewing your invitations.
+     * Accepting an invitation is a route like `/accept/:code`
+     */
+    router.addRoute('/invitations/:code', (match:{ params: { code }}) => {
+        const foundInvitation = (
+            state.myInvitations.value &&
+            state.myInvitations.value.find(inv => {
+                return inv.code === match.params.code
+            })
+        )
+
+        if (!foundInvitation) {
+            // fetch the invitation if it doesn't exist
+            State.fetchInvitation(state, match.params.code)
+                .catch(async err => {
+                    if (err instanceof HTTPError) {
+                        state.error.value = {
+                            code: err.response.status,
+                            message: await err.response.text()
+                        }
+                    } else {
+                        debug('**unhandled error**', err)
+                    }
+                })
+        }
+
         return InvitationByCode
     })
 

@@ -26,6 +26,7 @@ export const CreateInvitationRoute:FunctionComponent<{
         try {
             await State.createInvitation(state, { note, uses })
             State.toast(state, 'success', 'Invitation created.')
+            state._setRoute('/invitations')
         } catch (_err) {
             const err = _err as HTTPError
             const res = await err.response.text()

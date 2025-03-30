@@ -86,57 +86,63 @@ export const handler:Handler = async function handler (
             }
         }
 
-        const { code } = req
-        const sql = neon(getDbString(process.env))
-        const res = await sql`
-            WITH seq_check AS (
-                SELECT check_seq(${machineName}, ${seq}) AS seq_valid
-            ),
-            invitation_exists AS (
-                SELECT id
-                FROM invitation
-                WHERE id = ${code}
-            ),
-            delete_invitation AS (
-                DELETE FROM invitation
-                WHERE id = ${code}
-                AND (SELECT seq_valid FROM seq_check)
-                RETURNING id
-            )
-            SELECT
-                (SELECT seq_valid FROM seq_check) AS seq_valid,
-                (SELECT id IS NOT NULL FROM invitation_exists) AS invitation_found,
-                (SELECT id FROM delete_invitation) AS deleted_id
-        `
+        try {
+            const { code } = req
+            const sql = neon(getDbString(process.env))
+            const res = await sql`
+                WITH seq_check AS (
+                    SELECT check_seq(${machineName}, ${seq}) AS seq_valid
+                ),
+                invitation_exists AS (
+                    SELECT id
+                    FROM invitation
+                    WHERE id = ${code}
+                ),
+                delete_invitation AS (
+                    DELETE FROM invitation
+                    WHERE id = ${code}
+                    AND (SELECT seq_valid FROM seq_check)
+                    RETURNING id
+                )
+                SELECT
+                    (SELECT seq_valid FROM seq_check) AS seq_valid,
+                    (SELECT id IS NOT NULL FROM invitation_exists) AS invitation_found,
+                    (SELECT id FROM delete_invitation) AS deleted_id
+            `
 
-        const {
-            seq_valid: seqOk,
-            invitation_found: invitationExists,
-            deleted_id: deletedId
-        } = res[0]
+            const {
+                seq_valid: seqOk,
+                invitation_found: invitationExists,
+                deleted_id: deletedId
+            } = res[0]
 
-        if (!seqOk) {
-            return {
-                body: 'Invalid sequence number',
-                statusCode: 403
+            if (!seqOk) {
+                return {
+                    body: 'Invalid sequence number',
+                    statusCode: 403
+                }
             }
-        }
 
-        if (!invitationExists) {
-            return {
-                body: 'Invitation not found',
-                statusCode: 404
+            if (!invitationExists) {
+                return {
+                    body: 'Invitation not found',
+                    statusCode: 404
+                }
             }
-        }
 
-        if (!deletedId) {
-            return {
-                body: 'Delete failed.',
-                statusCode: 500
+            if (!deletedId) {
+                return {
+                    body: 'Delete failed for a mystery reason.',
+                    statusCode: 500
+                }
             }
-        }
 
-        return { body: null, statusCode: 204 }
+            return { body: null, statusCode: 204 }
+        } catch (_err) {
+            const err = _err as Error
+            console.log('**unhandled error** err')
+            return { body: err.message, statusCode: 500 }
+        }
     }
 
     if (ev.httpMethod === 'GET') {
@@ -181,53 +187,102 @@ export const handler:Handler = async function handler (
 
             return { statusCode: 200, body: JSON.stringify(res) }
         } else {
-            // if there is a query param, then get a specific invitation
-            // no auth
+            // there is a query param, so get a specific invitation
+            //
+            // if headers are present, then we should do an authenticated
+            // request, and get the full invitation doc
+            //
+            // if no headers, then we get only the public invitation data
             const code = params.code!.trim()
             if (code.length !== 36) {
                 return { body: 'Bad code', statusCode: 403 }
             }
 
-            const sql = neon(getDbString(process.env))
+            const headerString = ev.headers.authorization
+            if (!headerString) {
+                // then get just the public data
+                const sql = neon(getDbString(process.env))
 
-            try {
-                const res = await sql`
-                    SELECT 
-                        i.id AS code,
-                        i.remaining,
-                        i.note,
-                        i.creator AS creator_email,
-                        u.username AS creator_username,
-                        u.human_name AS creator_human_name,
-                        u.body AS creator_body
-                    FROM invitation i
-                    JOIN usr u
-                    ON i.creator = u.email
-                    WHERE i.id = ${code}
-                `
+                try {
+                    const res = await sql`
+                        SELECT 
+                            i.id AS code,
+                            i.remaining,
+                            i.note,
+                            i.creator AS creator_email,
+                            u.username AS creator_username,
+                            u.human_name AS creator_human_name,
+                            u.body AS creator_body
+                        FROM invitation i
+                        JOIN usr u
+                        ON i.creator = u.email
+                        WHERE i.id = ${code}
+                    `
 
-                const {
-                    creator_email: creatorEmail,
-                    creator_username: creatorUsername,
-                    creator_human_name: creatorHumanName,
-                    ...inv
-                } = res[0]
+                    const {
+                        creator_email: creatorEmail,
+                        creator_username: creatorUsername,
+                        creator_human_name: creatorHumanName,
+                        ...inv
+                    } = res[0]
 
-                return {
-                    // rename id to code
-                    body: JSON.stringify({
-                        ...inv,
-                        creator: {
-                            email: creatorEmail,
-                            username: creatorUsername,
-                            humanName: creatorHumanName
-                        }
-                    }),
-                    statusCode: 200
+                    return {
+                        // rename id to code
+                        body: JSON.stringify({
+                            ...inv,
+                            creator: {
+                                email: creatorEmail,
+                                username: creatorUsername,
+                                humanName: creatorHumanName
+                            }
+                        }),
+                        statusCode: 200
+                    }
+                } catch (err) {
+                    console.log('**query error**', err)
+                    return { body: err.toString(), statusCode: 500 }
                 }
-            } catch (err) {
-                console.log('**query error**', err)
-                return { body: err.toString(), statusCode: 500 }
+            } else {
+                // there is a header,
+                // so get the full invitation document
+                let machineName:string
+                let seq:number
+                const sql = neon(getDbString(process.env))
+                try {
+                    const [_machineName, _seq] = await verifyHeader(ev)
+                    machineName = _machineName
+                    seq = _seq
+                    const res = await sql`
+                        WITH seq_check AS (
+                            SELECT check_seq(${machineName}, ${seq}) AS seq_valid
+                        )
+                        SELECT *
+                        FROM invitation
+                        WHERE id = ${code}
+                        AND (SELECT seq_valid FROM seq_check);
+                    `
+
+                    if (!res.length) {
+                        return { body: null, statusCode: 404 }
+                    }
+
+                    const { id, ...rest } = res[0]
+
+                    return {
+                        body: JSON.stringify({
+                            ...rest,
+                            code: id
+                        }),
+                        statusCode: 200
+                    }
+                } catch (_err) {
+                    const err = _err as Error
+                    if (err.message.includes('Need to authenticate')) {
+                        return { body: err.message, statusCode: 401 }
+                    } else {
+                        return { body: err.message, statusCode: 403 }
+                    }
+                }
             }
         }
     }
@@ -354,8 +409,6 @@ export const handler:Handler = async function handler (
                 SELECT * FROM new_invitation;
             `
 
-            console.log('**the new invitation**', res)
-
             if (res.length === 0) {
                 console.log('**the sequence**', seq)
                 console.log('**the machine name**', machineName)
@@ -366,7 +419,15 @@ export const handler:Handler = async function handler (
                 }
             }
 
-            return { body: JSON.stringify(res[0]), statusCode: 200 }
+            const { id: code, ...rest } = res[0]
+
+            return {
+                body: JSON.stringify({
+                    ...rest,
+                    code
+                }),
+                statusCode: 200
+            }
         } catch (_err) {
             console.log('**query error**', _err)
             return { body: _err.toString(), statusCode: 500 }

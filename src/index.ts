@@ -37,7 +37,7 @@ export const Guestbook:FunctionComponent = function () {
             <p>Path not found.</p>
         </div>`
     } else {
-        ChildNode = match.action(match, state.route.value)
+        ChildNode = match.action(match, state)
         params = match.params
     }
 

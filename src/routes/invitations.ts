@@ -12,9 +12,10 @@ import {
 } from '../components/button-outline.js'
 import { IconX } from '../components/icon-close-x.js'
 import './invitations.css'
-import Debug from '@substrate-system/debug'
 import { type HTTPError } from 'ky'
-const debug = Debug()
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
+
 if (!window.customElements.get('copy-button')) {
     register()
 }
@@ -26,10 +27,9 @@ export const InvitationRoute:FunctionComponent<{
         ev.preventDefault()
         const data = (ev.currentTarget as HTMLButtonElement).dataset
         const code = data['code']
-        debug('delete this one', code)
 
         try {
-            State.deleteInvitation(state, code!)
+            await State.deleteInvitation(state, code!)
             State.toast(state, 'success', 'Invitation deleted')
         } catch (_err) {
             const err = _err as HTTPError
