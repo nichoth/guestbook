@@ -54,7 +54,7 @@ export const InvitationByCode:FunctionComponent<{
                     <dd>${ts.value}</dd>
 
                     <dt>Note</dt>
-                    <dd>${invitation.value.note}</dd>
+                    <dd>${invitation.value.note || html`<em>none</em>`}</dd>
 
                     <div class="uses">
                         <dt class="uses">Remaining uses</dt>

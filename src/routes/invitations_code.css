@@ -1,4 +1,6 @@
 .route.invitation-by-code {
+    max-width: 30rem;
+
     & .controls {
         & .btn-outline {
             border-width: 1px;
@@ -14,6 +16,8 @@
         border-radius: 20px;
         border: 1px solid;
         padding-bottom: 1rem;
+        background-color: white;
+        margin-bottom: 2rem;
     }
 
     & dd {
