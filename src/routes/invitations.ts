@@ -2,7 +2,7 @@ import '@substrate-system/a11y'
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
-import type { State } from '../state.js'
+import { State } from '../state.js'
 import type { Invitation } from '../types.js'
 import { register } from '@substrate-system/copy-button'
 import '@substrate-system/copy-button/css'
@@ -13,6 +13,7 @@ import {
 import { IconX } from '../components/icon-close-x.js'
 import './invitations.css'
 import Debug from '@substrate-system/debug'
+import { type HTTPError } from 'ky'
 const debug = Debug()
 if (!window.customElements.get('copy-button')) {
     register()
@@ -21,9 +22,19 @@ if (!window.customElements.get('copy-button')) {
 export const InvitationRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
-    const deleteInvitation = useCallback((ev:MouseEvent) => {
+    const deleteInvitation = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
-        debug('delete this one')
+        const data = (ev.currentTarget as HTMLButtonElement).dataset
+        const code = data['code']
+        debug('delete this one', code)
+
+        try {
+            State.deleteInvitation(state, code!)
+            State.toast(state, 'success', 'Invitation deleted')
+        } catch (_err) {
+            const err = _err as HTTPError
+            State.toast(state, 'error', await err.response.text())
+        }
     }, [])
 
     return html`<div class="route invitations">
@@ -72,13 +83,15 @@ function Conntent ({ invs, onDelete }:{
                         ${inv.code}
                     </a>
                 </div>
+
                 <div class="invitation-field">
                     <span class="label">Remaining uses:</span>
                     <span>${inv.remaining}</span>
                 </div>
+
                 <div class="invitation-field">
                     <sl-tooltip content="Delete this invitation">
-                        <${IconX} onClick=${onDelete} />
+                        <${IconX} data-code=${inv.code} onClick=${onDelete} />
                     </sl-tooltip>
                 </div>
             </li>`

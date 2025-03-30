@@ -239,6 +239,26 @@ State.forgot = async function (
     })
 }
 
+State.deleteInvitation = async function (
+    state:ReturnType<typeof State>,
+    code:string
+):Promise<void> {
+    try {
+        ky.delete('/api/invitation', {
+            json: { code }
+        })
+
+        state.myInvitations.value = (state.myInvitations.value || [])
+            .filter(inv => {
+                return inv.code !== code
+            })
+    } catch (_err) {
+        const err = _err as HTTPError
+        debug('error deleting this', err)
+        throw err
+    }
+}
+
 /**
  * A new user checking if an invitation code is ok.
  */

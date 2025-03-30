@@ -12,7 +12,7 @@ import {
 } from '@bicycle-codes/request'
 import slugify from '@sindresorhus/slugify'
 import { neon } from '@neondatabase/serverless'
-import { getDbString, sanitizeHeader } from '../util.js'
+import { getDbString, sanitizeHeader, verifyHeader } from '../util.js'
 // import { neonConfig, Client } from '@neondatabase/serverless'
 // import ws from 'ws'
 
@@ -42,6 +42,7 @@ const Request = z.object({
  *
  * POST method means create a new invitation
  * PATCH method means redeem an invitation (create a new user)
+ * DELETE -- delete an invitation
  * GET does two things
  *   - if you pass a query string with the code, then it is a new potential
  *     user checking that an invitation exists
@@ -51,6 +52,93 @@ const Request = z.object({
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
+    if (ev.httpMethod === 'DELETE') {
+        let machineName:string
+        let seq:number
+        try {
+            const [name, sequence] = await verifyHeader(ev)
+            machineName = name
+            seq = sequence
+        } catch (_err) {
+            const err = _err as Error
+            return {
+                body: err.message,
+                statusCode: err.message.includes('authenticate') ? 401 : 403
+            }
+        }
+
+        // parse request
+        let req:{ code:string }
+        try {
+            req = JSON.parse(ev.body!)
+            if (!req.code) {
+                console.log('**error no code**')
+                throw new Error('Need a code.')
+            }
+        } catch (_err) {
+            const err = _err as Error
+            console.log('**error parsing**', err)
+            return {
+                body: err.message.includes('code') ?
+                    err.message :
+                    'Invalid JSON',
+                statusCode: 422,
+            }
+        }
+
+        const { code } = req
+        const sql = neon(getDbString(process.env))
+        const res = await sql`
+            WITH seq_check AS (
+                SELECT check_seq(${machineName}, ${seq}) AS seq_valid
+            ),
+            invitation_exists AS (
+                SELECT id
+                FROM invitation
+                WHERE id = ${code}
+            ),
+            delete_invitation AS (
+                DELETE FROM invitation
+                WHERE id = ${code}
+                AND (SELECT seq_valid FROM seq_check)
+                RETURNING id
+            )
+            SELECT
+                (SELECT seq_valid FROM seq_check) AS seq_valid,
+                (SELECT id IS NOT NULL FROM invitation_exists) AS invitation_found,
+                (SELECT id FROM delete_invitation) AS deleted_id
+        `
+
+        const {
+            seq_valid: seqOk,
+            invitation_found: invitationExists,
+            deleted_id: deletedId
+        } = res[0]
+
+        if (!seqOk) {
+            return {
+                body: 'Invalid sequence number',
+                statusCode: 403
+            }
+        }
+
+        if (!invitationExists) {
+            return {
+                body: 'Invitation not found',
+                statusCode: 404
+            }
+        }
+
+        if (!deletedId) {
+            return {
+                body: 'Delete failed.',
+                statusCode: 500
+            }
+        }
+
+        return { body: null, statusCode: 204 }
+    }
+
     if (ev.httpMethod === 'GET') {
         const params = ev.queryStringParameters
 
@@ -90,8 +178,6 @@ export const handler:Handler = async function handler (
             if (res.length === 0) {
                 return { body: 'Bad sequence number', statusCode: 403 }
             }
-
-            console.log('**the invitations**', JSON.stringify(res, null, 2))
 
             return { statusCode: 200, body: JSON.stringify(res) }
         } else {
@@ -289,30 +375,3 @@ export const handler:Handler = async function handler (
 
     return { body: null, statusCode: 405 }
 }
-
-/*
-DO $$
-DECLARE
-  new_invitation RECORD;
-BEGIN
-  IF NOT check_seq(1665) THEN
-    RAISE EXCEPTION 'check_seq failed for sequence 1665. Aborting.';
-  END IF;
-
-  INSERT INTO invitation (
-      remaining,
-      creator,
-      note
-  )
-  SELECT
-      6 AS remaining,
-      u.email AS creator,
-      'hello sql' AS note
-  FROM machine m
-  JOIN usr u ON u.email = m.owner
-  WHERE m.machine_name = 'f7ztkj2opqnthq4ceepwbsa2gi3w5hkq'
-    AND check_seq('f7ztkj2opqnthq4ceepwbsa2gi3w5hkq', 1667) = true
-  RETURNING * INTO new_invitation;
-END;
-$$;
-*/
