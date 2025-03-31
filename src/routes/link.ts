@@ -1,13 +1,15 @@
 import { html } from 'htm/preact'
-import { useCallback } from 'preact/hooks'
+import { useCallback, useRef } from 'preact/hooks'
 import { ELLIPSIS, NBSP } from '@substrate-system/util/constants'
 import { type FunctionComponent } from 'preact'
 import { clipboardCopy } from '@substrate-system/copy-button/copy'
+import type { SlTooltip } from '@shoelace-style/shoelace'
 import { useComputed, useSignal } from '@preact/signals'
 import { register } from '@substrate-system/copy-button'
 import { Btn, Primary as BtnPrimary } from '../components/button-outline.js'
 import { State } from '../state.js'
 import './link.css'
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js'
 import '@substrate-system/copy-button/css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
@@ -25,6 +27,7 @@ export const LinkRoute:FunctionComponent<{
         if (!roomName.value) return null
         return `${location.href}/${roomName.value}`
     })
+    const copiedUrl = useRef<SlTooltip>(null)
 
     const initLink = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
@@ -40,10 +43,13 @@ export const LinkRoute:FunctionComponent<{
         roomName.value = code
     }, [])
 
-    const copyUrl = useCallback((ev:MouseEvent) => {
+    const copyUrl = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
-        clipboardCopy(roomUrl.value!)
-    }, [])
+        clipboardCopy(roomName.value!)
+        setTimeout(() => {
+            copiedUrl.current?.hide()
+        }, 2000)
+    }, [copiedUrl.current])
 
     return html`<div class="route link">
         <h2>Add a device to your account</h2>
@@ -75,9 +81,17 @@ export const LinkRoute:FunctionComponent<{
 
             <div class="controls">
                 ${roomName.value ?
-                    html`<${Btn} class="copy-btn" onClick=${copyUrl}>
-                        Copy URL
-                    <//>` :
+                    html`
+                        <sl-tooltip
+                            ref=${copiedUrl}
+                            content="Copied!"
+                            trigger="click"
+                        >
+                            <${Btn} class="copy-btn" onClick=${copyUrl}>
+                                Copy URL
+                            <//>
+                        </sl-tooltip>
+                    ` :
                     null
                 }
                 <${BtnPrimary}

@@ -1,4 +1,6 @@
 .route.link {
+    --sl-tooltip-arrow-size: 0;
+
     & .add-device-info {
         display: flex;
         flex-direction: column;
