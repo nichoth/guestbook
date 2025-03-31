@@ -41,7 +41,6 @@ export function State ():{
     keys:Signal<InstanceType<typeof Keys>|null>;
     presenceParty:Signal<PartySocket|null>;  // for user presence
     party:Signal<PartySocket|null>;  // for adding a new machine
-    notes:Signal<string|null>;  // when you add a device, can send notes
     error:Signal<{ code:number, message:string }|null>;
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
@@ -177,7 +176,6 @@ State.newMachineConnect = async function (
     // the note sent by the existing device
     ws.addEventListener('note', function onNote (ev) {
         debug('got a note from the old machine...', ev.detail)
-        state.notes.value = ev.data
         ws.removeEventListener('note', onNote)
     })
 

@@ -94,7 +94,8 @@ export const LinkNewDeviceRoute:FunctionComponent<{
                 <${BtnPrimary}
                     type="submit"
                     disabled=${(
-                        !pendingName.value)}
+                        !(pendingName.value) ||
+                        statusSignal.value === 'approved')}
                 >
                     Connect
                 <//>
