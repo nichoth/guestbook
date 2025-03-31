@@ -8,11 +8,14 @@ import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
 import type { Invitation, User, Machine, Contact, ClientSideMachine } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
-import { PARTYKIT_HOST } from '../party/client.js'
 import { when } from './util.js'
 // eslint-disable-next-line
 import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
 const debug = Debug()
+
+export const PARTYKIT_HOST = (import.meta.env.MODE === 'development' ?
+    'http://localhost:1999' :
+    'https://bellingham-guestbook.nichoth.partykit.dev')
 
 // set this incase they are not a user. We still try to login.
 let ky:KyInstance = Ky
@@ -123,7 +126,7 @@ State.Party = async function (state:ReturnType<typeof State>, roomName:string) {
  */
 State.initAddDevice = async function (
     state:ReturnType<typeof State>,
-    note?:string,
+    note:string,
 ):Promise<[string, Connection]> {
     const createHeaders = HeaderFactory({
         privateKey: state.keys.value!.privateSignKey,
@@ -136,10 +139,11 @@ State.initAddDevice = async function (
     const myName = thisMachine?.humanName
 
     const [roomName, ws] = await Connection.init(
-        'https://bellingham-guestbook.nichoth.partykit.dev',
+        PARTYKIT_HOST,
         {
             headers: { authorization: await createHeaders() },
-            note
+            note,
+            data: { oldMachineName: myName }
         }
     )
 

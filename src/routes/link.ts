@@ -82,6 +82,7 @@ export const LinkRoute:FunctionComponent<{
         ev.preventDefault()
         debug('approved')
         connection.value?.approve()
+        linkStatus.value = 'approved'
     }, [])
 
     return html`<div class="route link">
@@ -103,7 +104,12 @@ export const LinkRoute:FunctionComponent<{
             ${roomName.value ?
                 html`${newMachine.value ?
                     // show the copy URL iff new machine has not joined
-                    null :
+                    html`
+                        <div class="new-machine-info">
+                            <p>Note from the new machine:</p>
+                            <p>${newMachine.value?.note}</p>
+                        </div>
+                    ` :
                     html`
                         <div class="ws-info">
                             The new device should visit this url:

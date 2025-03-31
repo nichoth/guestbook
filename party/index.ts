@@ -1,7 +1,7 @@
 import { Connection } from '@hello-system/connect/server'
 import { neon } from '@neondatabase/serverless'
 import type * as Party from 'partykit/server'
-import { getDeviceName } from '@bicycle-codes/keys'
+import { getDeviceName, type DID } from '@bicycle-codes/keys'
 import {
     type ParsedHeader,
     parseHeader,
@@ -21,8 +21,8 @@ type JSONValue = string | number | boolean | JSONObject;
  */
 export default class Server extends Connection implements Party.Server {
     readonly room:Party.Room
-    newMachine?:{ did }
-    machines?:Record<string, string>  // a record from machineName to user email
+    newMachine?:{ did, humanName }
+    oldMachine?:{ machineName:string, did:DID }
     sql:ReturnType<typeof neon>
 
     constructor (room:Party.Room) {
@@ -38,21 +38,13 @@ export default class Server extends Connection implements Party.Server {
     async auth (req:Party.Request) {
         if (req.method !== 'POST') {
             return new Response(null, {
-                status: 405
+                status: 405,
+                headers: Connection.CORS
             })
         }
 
-        // console.log('**db string in auth**', getDbString(
-        //     this.room.env as { NODE_ENV, NEON_URL })
-        // )
-
-        // check if the `seq` number given in the request is valid
-        // const res = await this.sql`
-        //     SELECT * FROM invitation
-        // `
-        // console.log('**results**', res)
-
         // this is called on first connection only
+        // check if the `seq` number in the request is valid
         // check the auth header, then open the room
         const token = req.headers.get('authorization') ?? ''
         if (!token) {
@@ -65,7 +57,6 @@ export default class Server extends Connection implements Party.Server {
         let header:ParsedHeader
         try {
             header = parseHeader<{ seq }>(token)
-            // console.log('**the header**', JSON.stringify(header, null, 2))
             if (!(await verifyParsed(header))) {
                 throw new Error('bad header signature')
             }
@@ -89,8 +80,8 @@ export default class Server extends Connection implements Party.Server {
 
         const machineName = await getDeviceName(author)
 
-        // check that the machine record exists
-        // const machineRecord = await this.room.storage.get<Machine>(machineName)
+        // check that the machine record exists,
+        // and that the `seq` number is valid
         const machine = await this.sql`
             SELECT check_seq(${machineName}::VARCHAR, ${seq}::INT) AS is_valid
         `
@@ -103,11 +94,12 @@ export default class Server extends Connection implements Party.Server {
         }
 
         // the parent class reads the response code returned here
+        this.oldMachine = { machineName, did: author }
         return new Response(null, { status: 200, headers: Connection.CORS })
     }
 
-    async onJoin (msg:{ data: { did } }) {
-        console.log('got the new machine....', msg)
+    async onJoin (msg:{ data: { did, humanName } }) {
+        console.log('**join event**', msg)
         this.newMachine = msg.data
     }
 
@@ -116,16 +108,28 @@ export default class Server extends Connection implements Party.Server {
      */
     async onApprove (msg:string):Promise<this> {
         console.log('approved this machine', msg)
+        const newMachine = this.newMachine
+        const { humanName, did } = newMachine!
+        const newMachineName = await getDeviceName(did)
+        const oldMachine = this.oldMachine!
 
-        const { machineName } = JSON.parse(msg)
-        await this.room.storage.put(machineName, {
-            machineName,
-            did: this.newMachine!.did,
-            seq: 0,
+        // now update the DB
+        await this.sql`
+            INSERT INTO machine (
+                machine_name,
+                owner,
+                did,
+                seq,
+                human_name
+            ) VALUES (
+                ${newMachineName},
+                (SELECT owner FROM machine WHERE machine_name = ${oldMachine.machineName}),
+                ${did},
+                0,
+                ${humanName}
+            );
+        `
 
-        })
-
-        // add the new machine to a database
         // const sql = `
         // INSERT INTO machine (
         //     machine_name,

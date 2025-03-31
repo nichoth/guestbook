@@ -45,10 +45,12 @@ export const LinkNewDeviceRoute:FunctionComponent<{
         ws.addEventListener('note', ev => {
             debug('got the note in new machine', ev.detail)
             oldMachineNote.value = ev.detail.note
+            oldMachine.value = ev.detail.data.oldMachineName
         })
 
         ws.addEventListener('approve', ev => {
             debug('approved the new machine!', ev.detail)
+            statusSignal.value = 'approved'
             ws.close()
         })
 

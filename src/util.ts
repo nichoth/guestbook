@@ -1,7 +1,7 @@
 import { type Signal, effect } from '@preact/signals'
 import { customAlphabet } from '@nichoth/nanoid'
-import { PARTYKIT_HOST } from '../party/client.js'
 import { numbers } from '@nichoth/nanoid-dictionary'
+import { PARTYKIT_HOST } from './state.js'
 // import Debug from '@substrate-system/debug'
 // const debug = Debug()
 
