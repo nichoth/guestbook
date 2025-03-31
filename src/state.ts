@@ -130,6 +130,11 @@ State.initAddDevice = async function (
         publicKey: state.keys.value!.publicSignKey
     })
 
+    const thisMachine = (state.machines.value || []).find(async machine => {
+        return machine.machineName === await state.keys.value?.deviceName
+    })
+    const myName = thisMachine?.humanName
+
     const [roomName, ws] = await Connection.init(
         'https://bellingham-guestbook.nichoth.partykit.dev',
         {

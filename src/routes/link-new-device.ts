@@ -4,6 +4,10 @@ import { ELLIPSIS } from '@substrate-system/util/constants'
 import { TextInput } from '@nichoth/components/htm/text-input'
 import { type FunctionComponent } from 'preact'
 import { useSignal } from '@preact/signals'
+import {
+    type StatusSignal,
+    ConnectionStatus
+} from '../components/connection-status.js'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
 import { State } from '../state.js'
 import '@nichoth/components/text-input.css'
@@ -19,6 +23,10 @@ export const LinkNewDeviceRoute:FunctionComponent<{
     params:{ code:string }
 }> = function ({ state, params }) {
     const pendingName = useSignal<string>('')
+    const statusSignal:StatusSignal = useSignal('waiting')
+    const oldMachine = useSignal<string|null>(null)
+    const oldMachineNote = useSignal<string|null>(null)
+
     const joinRoom = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
         const { code } = params
@@ -32,13 +40,20 @@ export const LinkNewDeviceRoute:FunctionComponent<{
             }
         )
 
+        statusSignal.value = 'connected'
+
+        ws.addEventListener('note', ev => {
+            debug('got the note in new machine', ev.detail)
+            oldMachineNote.value = ev.detail.note
+        })
+
         ws.addEventListener('approve', ev => {
             debug('approved the new machine!', ev.detail)
             ws.close()
         })
 
         ws.addEventListener('reject', ev => {
-            debug('rejected!', ev.detail)
+            debug('rejected...', ev.detail)
         })
     }, [])
 
@@ -49,6 +64,11 @@ export const LinkNewDeviceRoute:FunctionComponent<{
 
     return html`<div class="route link-new-device">
         <h2>Add a device</h2>
+
+        <${ConnectionStatus}
+            linkStatus=${statusSignal}
+            displayName=${oldMachine.value}
+        />
 
         <form class="new-device-data" onSubmit=${joinRoom}>
             <${TextInput}

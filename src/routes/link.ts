@@ -7,8 +7,11 @@ import type { SlTooltip } from '@shoelace-style/shoelace'
 import { useComputed, useSignal, batch, type Signal } from '@preact/signals'
 import { type DID } from '@bicycle-codes/keys'
 import { register } from '@substrate-system/copy-button'
-import { Dot } from '../components/dot.js'
 import { Btn, Primary as BtnPrimary } from '../components/button-outline.js'
+import {
+    type StatusSignal,
+    ConnectionStatus
+} from '../components/connection-status.js'
 import { State } from '../state.js'
 import './link.css'
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js'
@@ -21,9 +24,11 @@ if (!window.customElements.get('copy-button')) {
     register()
 }
 
-type StatusSignal = Signal<null|'waiting'|'connected'|'approved'>
-type NewMachineSignal = Signal<null|{ note:string, DID:DID, name:string }>
+type NewMachineSignal = Signal<null|{ note:string, did:DID, name:string }>
 
+/**
+ * For the old machine.
+ */
 export const LinkRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
@@ -55,7 +60,7 @@ export const LinkRoute:FunctionComponent<{
                 newMachine.value = {
                     note: detail.note,
                     name: detail.data.newMachineName,
-                    DID: detail.data.DID
+                    did: detail.data.did
                 }
                 linkStatus.value = 'connected'
             })
@@ -96,23 +101,26 @@ export const LinkRoute:FunctionComponent<{
 
         <div class="add-device-info">
             ${roomName.value ?
-                html`<div class="ws-info">
-                    The new device should visit this url:
-                </div>
-                <div class="url">
-                    <code>${roomUrl.value}</code>
-                    <span>
-                        <copy-button payload="${roomUrl.value}"></copy-button>
-                    </span>
-                </div>
-
-                <${ConnectionStatus}
-                    linkStatus=${linkStatus}
-                    displayName=${linkStatus.value === 'waiting' ?
-                        'waiting' + ELLIPSIS :
-                        newMachine.value!.name
-                    }
-                />` :
+                html`${newMachine.value ?
+                    // show the copy URL iff new machine has not joined
+                    null :
+                    html`
+                        <div class="ws-info">
+                            The new device should visit this url:
+                        </div>
+                        <div class="url">
+                            <code>${roomUrl.value}</code>
+                            <span>
+                                <copy-button payload="${roomUrl.value}"></copy-button>
+                            </span>
+                        </div>
+                    `
+                }
+                    <${ConnectionStatus}
+                        linkStatus=${linkStatus}
+                        displayName=${newMachine.value?.name}
+                    />
+                ` :
                 null
             }
             
@@ -188,34 +196,5 @@ function Controls ({
                 Approve this device
             <//>
         </div>
-    `
-}
-
-function ConnectionStatus ({
-    linkStatus,
-    displayName
-}:{
-    linkStatus:StatusSignal;
-    displayName:string;
-}) {
-    const color = useComputed(() => {
-        if (!linkStatus.value) {
-            return 'gray'
-        }
-        if (linkStatus.value === 'waiting') {
-            return 'gray'
-        }
-        if (linkStatus.value === 'connected') {
-            return 'yellow'
-        }
-        if (linkStatus.value === 'approved') {
-            return 'green'
-        }
-    })
-
-    return html`<div class="connection-status">
-        <${Dot} color=${color.value} />
-        <span>${displayName}</span>
-    </div>
     `
 }
