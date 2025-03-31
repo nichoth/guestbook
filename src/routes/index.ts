@@ -9,6 +9,7 @@ import { ListRoute } from './list.js'
 import { WhoamiRoute } from './whoami.js'
 import { InvitationRoute } from './invitations.js'
 import { CreateInvitationRoute } from './invitations_create.js'
+import { LinkNewDeviceRoute } from './link-new-device.js'
 import { InvitationByCode } from './invitations_code.js'
 import { HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
@@ -36,6 +37,13 @@ export default function _Router (state:ReturnType<typeof State>):Router {
 
     router.addRoute('/link', () => {
         return LinkRoute
+    })
+
+    /**
+     * New device visits this route.
+     */
+    router.addRoute('/link/:code', () => {
+        return LinkNewDeviceRoute
     })
 
     router.addRoute('/accept/:token', () => {

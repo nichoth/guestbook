@@ -1,0 +1,81 @@
+import { html } from 'htm/preact'
+import { useCallback } from 'preact/hooks'
+import { ELLIPSIS } from '@substrate-system/util/constants'
+import { TextInput } from '@nichoth/components/htm/text-input'
+import { type FunctionComponent } from 'preact'
+import { useSignal } from '@preact/signals'
+import { Primary as BtnPrimary } from '../components/button-outline.js'
+import { State } from '../state.js'
+import '@nichoth/components/text-input.css'
+import './link-new-device.css'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
+
+/**
+ * The new device visits this route to add itself to an existing account.
+ */
+export const LinkNewDeviceRoute:FunctionComponent<{
+    state:ReturnType<typeof State>;
+    params:{ code:string }
+}> = function ({ state, params }) {
+    const pendingName = useSignal<string>('')
+    const joinRoom = useCallback(async (ev:SubmitEvent) => {
+        ev.preventDefault()
+        const { code } = params
+        const els = (ev.target as HTMLFormElement).elements
+        const ws = await State.newMachineConnect(
+            state,
+            code,
+            {
+                note: els['new-device-note'].value,
+                newMachineName: els['new-device-name'].value
+            }
+        )
+
+        ws.addEventListener('approve', ev => {
+            debug('approved the new machine!', ev.detail)
+            ws.close()
+        })
+
+        ws.addEventListener('reject', ev => {
+            debug('rejected!', ev.detail)
+        })
+    }, [])
+
+    const handleInput = useCallback((ev:InputEvent) => {
+        const input = ev.target as HTMLInputElement
+        pendingName.value = input.value
+    }, [])
+
+    return html`<div class="route link-new-device">
+        <h2>Add a device</h2>
+
+        <form class="new-device-data" onSubmit=${joinRoom}>
+            <${TextInput}
+                onInput=${handleInput}
+                value=${pendingName.value}
+                name="new-device-name"
+                displayName="Device name"
+            />
+
+            <label for="new-device-note">
+                This note will be visible to your existing device.
+            </label>
+            <textarea
+                name="new-device-note"
+                id="new-device-note"
+                placeholder="This is my note${ELLIPSIS}"
+            >
+          </textarea>
+
+          <div class="controls">
+                <${BtnPrimary}
+                    type="submit"
+                    disabled=${!pendingName.value}
+                >
+                    Connect
+                <//>
+            </div>
+        </form>
+    </div>`
+}

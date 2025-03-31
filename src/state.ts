@@ -153,16 +153,21 @@ State.initAddDevice = async function (
 State.newMachineConnect = async function (
     state:ReturnType<typeof State>,
     code:string,
+    data:{ newMachineName:string, note:string }
 ):Promise<Connection> {
-    // const ws = await Connection.join(code, PARTYKIT_HOST, { note })
-    const keys:InstanceType<typeof Keys> = (state.keys.value || await Keys.load() as InstanceType<typeof Keys>)
+    const keys:InstanceType<typeof Keys> = state.keys.value || await Keys.load()
+    if (!keys.persisted) await keys.persist()
     const ws = await Connection.join(code, PARTYKIT_HOST, {
-        note: 'hello',
-        data: { did: keys.DID }  // send our DID to the new machine
+        note: data.note,
+        data: {
+            newMachineName: data.newMachineName,
+            did: keys.DID  // send our DID to the new machine
+        }
     })
 
     // the note sent by the existing device
     ws.addEventListener('note', function onNote (ev) {
+        debug('got a note from the old machine...', ev.detail)
         state.notes.value = ev.data
         ws.removeEventListener('note', onNote)
     })
@@ -320,9 +325,16 @@ State.toast = async function (
     const refs = state._refs.value!
     const ref = refs[type]
 
+    let duration:number
+    if (type === 'error') {
+        duration = Infinity
+    } else {  // not error type
+        duration = opts.duration ?? 5000
+    }
+
     ref.current?.setAttribute(
         'duration',
-        '' + (opts.duration === undefined ? 5000 : null)
+        '' + duration
     )
 
     if (type === 'success') {

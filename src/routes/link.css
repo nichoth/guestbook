@@ -1,6 +1,12 @@
 .route.link {
     --sl-tooltip-arrow-size: 0;
 
+    & .connection-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     & .add-device-info {
         display: flex;
         flex-direction: column;
