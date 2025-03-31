@@ -98,56 +98,39 @@ export default class Server extends Connection implements Party.Server {
         return new Response(null, { status: 200, headers: Connection.CORS })
     }
 
-    async onJoin (msg:{ data: { did, humanName } }) {
-        console.log('**join event**', msg)
-        this.newMachine = msg.data
+    async onJoin (msg:{ data: { did, newMachineName } }) {
+        this.newMachine = { ...msg.data, humanName: msg.data.newMachineName }
     }
 
     /**
      * The new machine has been verified by the original machine.
      */
-    async onApprove (msg:string):Promise<this> {
-        console.log('approved this machine', msg)
+    async onApprove ():Promise<this> {
         const newMachine = this.newMachine
         const { humanName, did } = newMachine!
         const newMachineName = await getDeviceName(did)
         const oldMachine = this.oldMachine!
 
         // now update the DB
-        await this.sql`
-            INSERT INTO machine (
-                machine_name,
-                owner,
-                did,
-                seq,
-                human_name
-            ) VALUES (
-                ${newMachineName},
-                (SELECT owner FROM machine WHERE machine_name = ${oldMachine.machineName}),
-                ${did},
-                0,
-                ${humanName}
-            );
-        `
-
-        // const sql = `
-        // INSERT INTO machine (
-        //     machine_name,
-        //     owner,
-        //     did,
-        //     seq,
-        //     human_name
-        // ) VALUES (
-        //     '${machineName}',
-        //     (SELECT email FROM usr WHERE usr.email = 'test@beef.com'),
-        //     'did:key:zstring',
-        //     0,
-        //     'Phone'
-        // );,
-        // `
-        // const client = new Client(getDbString(process.env))
-        // await client.connect()
-        // await client.query(sql)
+        try {
+            await this.sql`
+                INSERT INTO machine (
+                    machine_name,
+                    owner,
+                    did,
+                    seq,
+                    human_name
+                ) VALUES (
+                    ${newMachineName},
+                    (SELECT owner FROM machine WHERE machine_name = ${oldMachine.machineName}),
+                    ${did},
+                    0,
+                    ${humanName}
+                );
+            `
+        } catch (err) {
+            console.log('**error**', err)
+        }
 
         return this
     }
@@ -156,7 +139,7 @@ export default class Server extends Connection implements Party.Server {
      * The new machine has been rejected.
      */
     async onReject (msg:JSONObject):Promise<this> {
-        console.log('reject this machine', msg)
+        console.log('**reject this machine**', msg)
         return this
     }
 }

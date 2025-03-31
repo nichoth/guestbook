@@ -198,6 +198,7 @@ function Controls ({
         <div class="controls">
             <${BtnPrimary}
                 onClick=${onApprove}
+                disabled=${status.value === 'approved'}
             >
                 Approve this device
             <//>
