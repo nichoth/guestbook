@@ -2,14 +2,9 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { NBSP, EM_DASH } from '@substrate-system/util/constants'
 import './about.css'
-// import Debug from '@substrate-system/debug'
-// const debug = Debug()
 
 /**
- * Accept invitation route.
- *   - check with the server if the invitation is valid.
- *   - if we are passed a parameter, then call to redeem
- *     else, show a text input for the invitation code
+ * The colophon
  */
 export const AboutRoute:FunctionComponent = function () {
     return html`<div class="route about">

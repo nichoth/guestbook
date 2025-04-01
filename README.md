@@ -7,6 +7,6 @@ events.
 
 Start a local lambda function server, frontend server, and websocket server.
 
-```
+```sh
 npm start
 ```
