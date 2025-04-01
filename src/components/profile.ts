@@ -14,6 +14,7 @@ export const Profile:FunctionComponent<{
         <dl>
             <dt>name</dt>
             <dd>${user.humanName}</dd>
+
             ${context === 'list' ?
                 null :
                 html`
@@ -21,11 +22,20 @@ export const Profile:FunctionComponent<{
                     <dd>${user.username}</dd>
                 `
             }
+
             <dt>email</dt>
             <dd>${props.context === 'list' ?
                 html`<a href="mailto:${user.email}">${user.email}</a>` :
                 html`<code>${user.email}</code>`
             }</dd>
+
+            <dt>Bluesky</dt>
+            <dd>
+                <a href="https://bsky.app/profile/${user.bluesky}">
+                    ${user.bluesky}
+                </a>
+            </dd>
+
             <dt>note</dt>
             <dd class="note">
                 ${user.body ?
