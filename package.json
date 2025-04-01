@@ -65,7 +65,7 @@
     "@substrate-system/tapzero": "^0.10.13",
     "@types/pg": "^8.11.11",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
-    "@typescript-eslint/parser": "^8.8.1",
+    "@typescript-eslint/parser": "^8.29.0",
     "auto-changelog": "^2.4.0",
     "concurrently": "^9.0.1",
     "cssnano": "^7.0.6",
