@@ -9,6 +9,13 @@
         border: 1px solid;
         padding: 1rem;
 
+        & .new-machine-info {
+            & p:first-child {
+                margin-bottom: 0;
+                text-decoration: underline;
+            }
+        }
+
         & .controls {
             display: flex;
             gap: 2rem;

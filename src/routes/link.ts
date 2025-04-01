@@ -7,6 +7,7 @@ import type { SlTooltip } from '@shoelace-style/shoelace'
 import { useComputed, useSignal, batch, type Signal } from '@preact/signals'
 import { type DID } from '@bicycle-codes/keys'
 import { register } from '@substrate-system/copy-button'
+import { getDeviceName } from '@bicycle-codes/keys'
 import { Btn, Primary as BtnPrimary } from '../components/button-outline.js'
 import {
     type StatusSignal,
@@ -24,7 +25,12 @@ if (!window.customElements.get('copy-button')) {
     register()
 }
 
-type NewMachineSignal = Signal<null|{ note:string, did:DID, name:string }>
+export type NewMachine = {
+    note:string;
+    did:DID;
+    machineName:string;
+    humanName:string;
+}
 
 /**
  * For the old machine.
@@ -39,7 +45,7 @@ export const LinkRoute:FunctionComponent<{
         if (!roomName.value) return null
         return `${location.href}/${roomName.value}`
     })
-    const newMachine:NewMachineSignal = useSignal(null)
+    const newMachine:Signal<NewMachine|null> = useSignal(null)
 
     const initLink = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
@@ -56,10 +62,11 @@ export const LinkRoute:FunctionComponent<{
         ws.addEventListener('join', ev => {
             const detail = ev.detail
             debug('join event in old machine', detail)
-            batch(() => {
+            batch(async () => {
                 newMachine.value = {
                     note: detail.note,
-                    name: detail.data.newMachineName,
+                    machineName: await getDeviceName(detail.data.did),
+                    humanName: detail.data.newMachineName,
                     did: detail.data.did
                 }
                 linkStatus.value = 'connected'
@@ -82,7 +89,13 @@ export const LinkRoute:FunctionComponent<{
         ev.preventDefault()
         debug('approved')
         connection.value?.approve()
-        linkStatus.value = 'approved'
+
+        // need to update the list of machines too
+
+        batch(() => {
+            State.pushMachine(state, newMachine.value!)
+            linkStatus.value = 'approved'
+        })
     }, [])
 
     return html`<div class="route link">
@@ -124,14 +137,13 @@ export const LinkRoute:FunctionComponent<{
                 }
                     <${ConnectionStatus}
                         linkStatus=${linkStatus}
-                        displayName=${newMachine.value?.name}
+                        displayName=${newMachine.value?.humanName}
                     />
                 ` :
                 null
             }
             
             <${Controls}
-                newMachine=${newMachine}
                 roomName=${roomName}
                 onInit=${initLink}
                 roomUrl=${roomUrl}
@@ -149,7 +161,6 @@ function Controls ({
     status,
     onApprove
 }:{
-    newMachine:NewMachineSignal;
     roomName:Signal<string|null>;
     onInit:(ev:MouseEvent)=>any;
     onApprove:(ev:MouseEvent)=>any;

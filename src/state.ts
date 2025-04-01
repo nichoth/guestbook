@@ -9,8 +9,8 @@ import type { Invitation, User, Machine, Contact, ClientSideMachine } from './ty
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
 import { when } from './util.js'
-// eslint-disable-next-line
-import SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
+import type SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
+import { type NewMachine } from './routes/link.js'
 const debug = Debug()
 
 export const PARTYKIT_HOST = (import.meta.env.MODE === 'development' ?
@@ -21,8 +21,8 @@ export const PARTYKIT_HOST = (import.meta.env.MODE === 'development' ?
 let ky:KyInstance = Ky
 
 /**
- * Setup any state
- *   - routes
+ * Setup state
+ *   - route handling
  *   - keys
  *   - user data
  */
@@ -37,7 +37,7 @@ export function State ():{
     // `false` means we got a response, and this machine is not a user
     user:Signal<null|false|User>;
     list:Signal<null|Contact[]>;
-    machines:Signal<ClientSideMachine[]|null>;
+    machines:Signal<(ClientSideMachine|NewMachine)[]|null>;
     keys:Signal<InstanceType<typeof Keys>|null>;
     presenceParty:Signal<PartySocket|null>;  // for user presence
     party:Signal<PartySocket|null>;  // for adding a new machine
@@ -45,6 +45,14 @@ export function State ():{
     _setRoute:(path:string)=>void;
 } {  // eslint-disable-line indent
     const onRoute = Route()
+
+    window.onerror = function (ev:string|Event) {
+        debug('**unhandled error**', ev)
+    }
+
+    window.addEventListener('unhandledrejection', ev => {
+        debug('**uncaught promise error**', ev)
+    })
 
     const state = {
         _refs: signal(null),
@@ -61,11 +69,7 @@ export function State ():{
         route: signal<string>(location.pathname + location.search)
     }
 
-    State.init(state).then(res => {
-        debug('initted', res)
-    })
-
-    Keys.load().then(async keys => {
+    Keys.load().then(keys => {
         if (!keys.persisted) {
             debug('not persisted keys')
             state.user.value = false
@@ -75,15 +79,10 @@ export function State ():{
             return
         }
 
-        state.keys.value = keys as InstanceType<typeof Keys>
+        state.keys.value = keys
         ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
         State.init(state)
     })
-
-    // (async () => {
-    //     const res = await Ky.get('/api/guestbook').json()
-    //     debug('the response', res)
-    // })()
 
     /**
      * set the app state to match the browser URL
@@ -208,6 +207,13 @@ State.removeMachine = async function (
     return res
 }
 
+State.pushMachine = function (
+    state:ReturnType<typeof State>,
+    machine:NewMachine
+) {
+    state.machines.value = (state.machines.value || []).concat([machine])
+}
+
 State.newDeviceApproved = async function (state:ReturnType<typeof State>) {
     if (!state.keys.value?.persisted) {
         const keys = await Keys.load()
@@ -224,9 +230,9 @@ State.newDeviceApproved = async function (state:ReturnType<typeof State>) {
 /**
  * Get your user record from the server.
  */
-State.init = async function (state:ReturnType<typeof State>) {
+State.init = async function (state:ReturnType<typeof State>):Promise<void> {
+    if (!state.keys.value) return
     const data = await State.Login(state)
-
     debug('init', data)
 
     if (!data.user) {
@@ -480,8 +486,7 @@ State.Login = async function (
             // 401 means they are not a member of the site
             State.toast(state, 'error', err.toString())
         }
-        debug('errrrrrr', err)
-        throw err
+        debug('**login error**', err)
     }
 
     const { machines, user } = res
