@@ -12,13 +12,7 @@ export const HomeRoute:FunctionComponent<{
 }> = function HomeRoute ({ state }) {
     return html`<div class="route home">
         <p class="explanation">
-            A guestbook for <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://innovatebellingham.org/"
-            >
-                Innovate Bellingham
-            </a>
+            A guestbook for the internet.
         </p>
 
         <p>
@@ -27,6 +21,16 @@ export const HomeRoute:FunctionComponent<{
         </p>
 
         <hr />
+
+        <p>
+            This is a contact list, originally designed for the <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://innovatebellingham.org/"
+            >Innovate Bellingham meetings</a>. It is a demonstration of various
+            web technologies, notably, the <a href="/about#keys">login system
+            </a>, which is nice because there are no passwords.
+        </p>
 
         <${MainPart} state=${state} />
     </div>`
