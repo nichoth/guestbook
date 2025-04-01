@@ -1,7 +1,6 @@
-# Bellingham Guestbook
+# Internet Guestbook
 
-A contact list for the [Innovate Bellingham](https://innovatebellingham.org/)
-events.
+A contact list, as a demonstration of various web technologies.
 
 ## develop
 
