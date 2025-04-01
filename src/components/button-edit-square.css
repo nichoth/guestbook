@@ -1,0 +1,13 @@
+.btn-edit-square {
+    /* display: flex;
+    justify-content: center; */
+    height: fit-content;
+
+    & edit-square {
+        & svg {
+            height: 1.4rem;
+            width: 1.4rem;
+        }
+    }
+
+}

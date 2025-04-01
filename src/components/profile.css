@@ -1,4 +1,23 @@
 .component.profile {
+    & .controls {
+        margin-bottom: -2rem;
+        margin-right: 2rem;
+
+        & button.icon-btn {
+            border: none;
+            background-color: transparent;
+
+            & svg {
+                width: 1.4rem;
+                height: 1.4rem;
+            }
+
+            &:hover {
+                opacity: 0.4;
+            }
+        }
+    }
+
     & .markdown {
         margin-bottom: 0;
     }

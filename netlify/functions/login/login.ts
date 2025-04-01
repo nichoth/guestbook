@@ -53,6 +53,8 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
 
         const { machines, user } = data.check_seq_and_get_user
 
+        console.log('**the user**', user)
+
         return {
             statusCode: 200,
             body: JSON.stringify({

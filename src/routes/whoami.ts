@@ -4,7 +4,7 @@ import { useCallback } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { State } from '../state.js'
 import { useComputed, useSignal, useSignalEffect } from '@preact/signals'
-import type { Machine } from '../types.js'
+import type { Machine, User } from '../types.js'
 import { Dot } from '../components/dot.js'
 import { Profile } from '../components/profile.js'
 import '../components/dl.css'
@@ -40,6 +40,10 @@ export const WhoamiRoute:FunctionComponent<{
         }, {})
     })
 
+    const editProfile = useCallback((user:User) => {
+        debug('edit the profile', user)
+    }, [])
+
     const removeMachine = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
         const machineName = (ev.currentTarget as HTMLButtonElement).dataset['machineid']
@@ -54,7 +58,7 @@ export const WhoamiRoute:FunctionComponent<{
 
     return html`<div class="route whoami">
         <h2>Who am I?</h2>
-        <${Profile} user=${state.user.value} />
+        <${Profile} user=${state.user.value} onEdit=${editProfile} />
 
         <h2>Your Devices</h2>
         <ul>

@@ -150,6 +150,7 @@ const statements = [
             'email', u.email,
             'username', u.username,
             'human_name', u.human_name,
+            'bluesky', u.bluesky,
             'body', u.body
         ) INTO user_record
         FROM usr u
