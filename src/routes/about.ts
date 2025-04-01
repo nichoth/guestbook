@@ -58,15 +58,21 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
             invited by someone who is already a member.
         </p>
 
+        <h2>Invitations</h2>
         <p>
-            That is the trust level to keep in mind when you use this.
-            You are trusting the other
-            people at <a
-                target="_blank"
+            In the <a target="_blank"
                 rel="noopener noreferrer"
                 href="https://innovatebellingham.org/"
-            >Innovate Bellingham</a> not to give out memberships to spam
-            companies, etc.
+            >Bellingham meetings</a> app, we allow anyone who is a member to
+            invite new people. That's one difference. Because this
+            is designed for the internet in general, only one person is allowed
+            to create invitations ${EM_DASH} me. You are trusting that I won't
+            give out invitations to spam companies, etc.
+        </p>
+
+        <p>
+            Unfortunately, that means you don't get to see a full demonstration
+            of the invitation process.
         </p>
 
         <h2 id="keys">Keys</h2>
