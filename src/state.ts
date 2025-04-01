@@ -297,15 +297,12 @@ State.deleteInvitation = async function (
 State.fetchInvitation = async function (
     state:ReturnType<typeof State>,
     invitationCode:string
-):Promise<void> {
-    await when(state.user, async () => {
-        const res = await ky.get('/api/invitation', {
-            searchParams: { code: invitationCode }
-        }).json<Invitation>()
+):Promise<Invitation> {
+    const res = await ky.get('/api/invitation', {
+        searchParams: { code: invitationCode }
+    }).json<Invitation>()
 
-        state.myInvitations.value = (state.myInvitations.value || [])
-            .concat([res])
-    })
+    return res
 }
 
 State.fetchMyInvitations = async function (

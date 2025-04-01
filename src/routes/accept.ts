@@ -63,8 +63,8 @@ export const AcceptRoute:FunctionComponent<{
             isFetchResolving.value = true
             const invitation = await State.fetchInvitation(state, code)
             batch(() => {
-                invitationSignal.value = invitation
                 isFetchResolving.value = false
+                invitationSignal.value = invitation
             })
         } catch (_err) {
             const err = _err as HTTPError
