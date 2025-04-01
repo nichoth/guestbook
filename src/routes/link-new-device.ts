@@ -26,6 +26,7 @@ export const LinkNewDeviceRoute:FunctionComponent<{
     const statusSignal:StatusSignal = useSignal('waiting')
     const oldMachine = useSignal<string|null>(null)
     const oldMachineNote = useSignal<string|null>(null)
+    const loading = useSignal<boolean>(false)
 
     const joinRoom = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
@@ -48,10 +49,16 @@ export const LinkNewDeviceRoute:FunctionComponent<{
             oldMachine.value = ev.detail.data.oldMachineName
         })
 
-        ws.addEventListener('approve', ev => {
-            debug('approved the new machine!', ev.detail)
+        ws.addEventListener('approve', async ev => {
+            debug('got the approve event', ev.detail)
             statusSignal.value = 'approved'
-            ws.close()
+            if (!state.keys.value?.persisted) {
+                await state.keys.value?.persist()
+            }
+
+            loading.value = true
+            await State.init(state)
+            loading.value = false
         })
 
         ws.addEventListener('reject', ev => {
@@ -64,7 +71,10 @@ export const LinkNewDeviceRoute:FunctionComponent<{
         pendingName.value = input.value
     }, [])
 
-    return html`<div class="route link-new-device">
+    const classes = (['route', 'link-new-device',
+        loading.value ? 'loading' : null]).filter(Boolean).join(' ')
+
+    return html`<div class="${classes}">
         <h2>Add a device</h2>
 
         <${ConnectionStatus}
@@ -95,7 +105,7 @@ export const LinkNewDeviceRoute:FunctionComponent<{
                     type="submit"
                     disabled=${(
                         !(pendingName.value) ||
-                        statusSignal.value === 'approved')}
+                        (statusSignal.value === 'connected'))}
                 >
                     Connect
                 <//>

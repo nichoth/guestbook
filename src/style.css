@@ -10,6 +10,10 @@ hr {
     margin: 1rem 0;
 }
 
+.loading {
+    opacity: 0.4;
+}
+
 code {
     font-size: 1rem;
 }
@@ -35,12 +39,8 @@ div.error {
     padding: 1rem;
 }
 
-.index {
+.index, .route {
     transition: opacity 0.4s;
-
-    &.loading {
-        opacity: 0.4;
-    }
 }
 
 body {

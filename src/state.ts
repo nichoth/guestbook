@@ -164,7 +164,6 @@ State.newMachineConnect = async function (
     data:{ newMachineName:string, note:string }
 ):Promise<Connection> {
     const keys:InstanceType<typeof Keys> = state.keys.value || await Keys.load()
-    if (!keys.persisted) await keys.persist()
     const ws = await Connection.join(code, PARTYKIT_HOST, {
         note: data.note,
         data: {
@@ -173,20 +172,12 @@ State.newMachineConnect = async function (
         }
     })
 
-    // the note sent by the existing device
-    ws.addEventListener('note', function onNote (ev) {
-        debug('got a note from the old machine...', ev.detail)
-        ws.removeEventListener('note', onNote)
-    })
-
-    ws.addEventListener('approve', function onApprove (ev) {
-        debug('the new device was approved', ev.detail)
+    ws.addEventListener('approve', async function onApprove () {
+        if (!keys.persisted) {
+            await keys.persist()
+        }
         ws.removeEventListener('approve', onApprove)
-    })
-
-    ws.addEventListener('reject', function onReject (ev) {
-        debug('the new device was rejected :(', ev.detail)
-        ws.removeEventListener('reject', onReject)
+        ws.close()
     })
 
     state.party.value = ws
@@ -466,6 +457,7 @@ State.Login = async function (
             State.toast(state, 'error', err.toString())
         }
     }
+    debug('all logged in now...', res)
     const { machines, user } = res
     batch(async () => {
         state.user.value = user

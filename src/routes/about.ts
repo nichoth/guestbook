@@ -39,11 +39,17 @@ export const AboutRoute:FunctionComponent = function () {
             We do some input validation with <a href="https://zod.dev/">zod</a>.
         </p>
 
+        <p>
+            Some of the UI components are from <a href="https://shoelace.style/">
+            shoelace</a>, and some are <a href="https://github.com/nichoth/components">
+            my own</a>.
+        </p>
+
         <h2>Identity</h2>
         <p>
             This site has a concept of <em>who you are</em>, which we use
             for access control. The content on this site is only visible to
-            other members of the site. To become a member, you need to be
+            other members of the site. To become a member, you must be
             invited by someone who is already a member.
         </p>
 
@@ -90,8 +96,7 @@ export const AboutRoute:FunctionComponent = function () {
             Some good news is that there are no passwords in this system.
             You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
-            "non-extractable"</a> keypairs in your browser, and 
-            my server needs to remember one less thing about you. It eliminates
+            "non-extractable"</a> keypairs in your browser. It eliminates
             a security vector ${EM_DASH} there is no password to think about.
         </p>
 

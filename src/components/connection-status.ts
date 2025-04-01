@@ -3,7 +3,7 @@ import { type Signal, useComputed } from '@preact/signals'
 import { Dot } from './dot.js'
 import './connection-status.css'
 import Debug from '@substrate-system/debug'
-import { ELLIPSIS } from '@substrate-system/util/constants'
+import { ELLIPSIS, BULLET } from '@substrate-system/util/constants'
 const debug = Debug()
 
 export type StatusSignal = Signal<null|'waiting'|'connected'|'approved'>
@@ -38,7 +38,7 @@ export function ConnectionStatus ({
         <span class="status">
             ${linkStatus.value === 'waiting' ?
                 'waiting' + ELLIPSIS :
-                ' | ' + linkStatus.value
+                `${BULLET} ` + linkStatus.value
             }
         </span>
     </div>

@@ -9,7 +9,7 @@ import { Dot } from '../components/dot.js'
 import { Profile } from '../components/profile.js'
 import '../components/dl.css'
 import './whoami.css'
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js'
+import { IconX } from '../components/icon-close-x.js'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
 
@@ -75,13 +75,16 @@ export const WhoamiRoute:FunctionComponent<{
                     ${currentMachine.value === machine.machineName ?
                         null :
                         html`<div>
-                            <sl-icon-button
-                                onClick=${removeMachine}
-                                name="x-circle"
-                                label="Remove"
-                                data-machineid=${machineid}
+                            <sl-tooltip
+                                content="Remove this machine"
                             >
-                            </sl-icon-button>
+                                <${IconX}
+                                    data-machineid=${machineid}
+                                    aria-label="Remove"
+                                    name="x-circle"
+                                    onClick=${removeMachine}
+                                />
+                            </sl-tooltip>
                         </div>`
                     }
                 </li>`
