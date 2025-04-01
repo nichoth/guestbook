@@ -52,12 +52,8 @@ export const LinkNewDeviceRoute:FunctionComponent<{
         ws.addEventListener('approve', async ev => {
             debug('got the approve event', ev.detail)
             statusSignal.value = 'approved'
-            if (!state.keys.value?.persisted) {
-                await state.keys.value?.persist()
-            }
-
             loading.value = true
-            await State.init(state)
+            await State.newDeviceApproved(state)
             loading.value = false
         })
 
@@ -105,7 +101,10 @@ export const LinkNewDeviceRoute:FunctionComponent<{
                     type="submit"
                     disabled=${(
                         !(pendingName.value) ||
-                        (statusSignal.value === 'connected'))}
+                        (
+                            statusSignal.value === 'connected' ||
+                            statusSignal.value === 'approved'
+                        ))}
                 >
                     Connect
                 <//>

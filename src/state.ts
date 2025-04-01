@@ -61,12 +61,17 @@ export function State ():{
         route: signal<string>(location.pathname + location.search)
     }
 
+    State.init(state).then(res => {
+        debug('initted', res)
+    })
+
     Keys.load().then(async keys => {
         if (!keys.persisted) {
             debug('not persisted keys')
             state.user.value = false
             // not yet a user, don't create keys yet.
-            // We create & persist keys in the `acceptInvitation` function below
+            // We create & persist keys in the `acceptInvitation` function,
+            // or the `newDeviceApproved` function
             return
         }
 
@@ -190,24 +195,39 @@ State.removeMachine = async function (
     state:ReturnType<typeof State>,
     machine:Machine
 ) {
+    debug('removing this one...', machine)
+
     const res = await ky.delete('/api/machine', {
         json: machine
     })
 
     state.machines.value = state.machines.value!.filter(m => {
-        return m.did !== machine.did
+        return m.machineName !== machine.machineName
     })
 
     return res
 }
 
+State.newDeviceApproved = async function (state:ReturnType<typeof State>) {
+    if (!state.keys.value?.persisted) {
+        const keys = await Keys.load()
+        await keys.persist()
+        state.keys.value = keys
+    }
+
+    ky = SignedRequest(Ky, state.keys.value.signKeypair, window.localStorage)
+
+    const res = await State.Login(state)
+    debug('new device added and logged in', res)
+}
+
 /**
  * Get your user record from the server.
- * This tells us if the current machine has an account.
- * If you have an account, then get the guestlist also.
  */
 State.init = async function (state:ReturnType<typeof State>) {
     const data = await State.Login(state)
+
+    debug('init', data)
 
     if (!data.user) {
         // `false` means this machine is not a member
@@ -450,14 +470,20 @@ State.Login = async function (
             user:User;
             machines:Machine[];
         }>()
+        debug('login success', res)
     } catch (_err) {
         const err = _err as HTTPError
+        //
+        // we are getting 401, which means we are not sending headers
+        //
         if (err.response?.status !== 401) {
             // 401 means they are not a member of the site
             State.toast(state, 'error', err.toString())
         }
+        debug('errrrrrr', err)
+        throw err
     }
-    debug('all logged in now...', res)
+
     const { machines, user } = res
     batch(async () => {
         state.user.value = user

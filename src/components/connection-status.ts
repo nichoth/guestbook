@@ -1,10 +1,10 @@
 import { html } from 'htm/preact'
 import { type Signal, useComputed } from '@preact/signals'
-import { Dot } from './dot.js'
-import './connection-status.css'
-import Debug from '@substrate-system/debug'
 import { ELLIPSIS, BULLET } from '@substrate-system/util/constants'
-const debug = Debug()
+import './connection-status.css'
+import { Dot } from './dot.js'
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 export type StatusSignal = Signal<null|'waiting'|'connected'|'approved'>
 
@@ -29,8 +29,6 @@ export function ConnectionStatus ({
             return 'green'
         }
     })
-
-    debug('status', linkStatus.value)
 
     return html`<div class="connection-status">
         <${Dot} color=${color.value} />

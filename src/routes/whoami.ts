@@ -42,7 +42,7 @@ export const WhoamiRoute:FunctionComponent<{
 
     const removeMachine = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
-        const machineName = (ev.target as HTMLButtonElement).dataset['machineid']
+        const machineName = (ev.currentTarget as HTMLButtonElement).dataset['machineid']
         const machine = machinesByName.value![machineName!]
         try {
             await State.removeMachine(state, machine)
@@ -60,7 +60,7 @@ export const WhoamiRoute:FunctionComponent<{
         <ul>
             ${state.machines.value?.map(machine => {
                 const machineid = machine.machineName
-                const isCurrent = (currentMachine.value === machine.machineName)
+                const isCurrent = (currentMachine.value === machineid)
                 return html`<li key=${machineid}>
                     <div>
                         <${Dot} color=${isCurrent ? 'green' : 'gray'} />
