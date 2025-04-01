@@ -40,7 +40,7 @@ export const AboutRoute:FunctionComponent = function () {
             my own</a>.
         </p>
 
-        <h2>Identity</h2>
+        <h2 id="identity">Identity</h2>
         <p>
             This site has a concept of <em>who you are</em>, which we use
             for access control. The content on this site is only visible to
@@ -59,7 +59,7 @@ export const AboutRoute:FunctionComponent = function () {
             companies, etc.
         </p>
 
-        <h2>Keys</h2>
+        <h2 id="keys">Keys</h2>
         <p>
             Your identity is handled by${NBSP}
             <a href="https://github.com/bicycle-codes/keys">
@@ -114,7 +114,7 @@ export const AboutRoute:FunctionComponent = function () {
             to authorize the new machine for a limited time.
         </p>
 
-        <h2>Membership</h2>
+        <h2 id="membership">Membership</h2>
         <p>
             We avoid <em>spam</em> by restricting access to only
             members of the website. So you need to be a member in order to read
@@ -134,7 +134,7 @@ export const AboutRoute:FunctionComponent = function () {
             must give you the invitation code out-of-band from this website.
         </p>
 
-        <h2>Contact</h2>
+        <h2 id="contact">Contact</h2>
         <p>
             This website was made by <a href="https://nichoth.com/">nichoth</a>,
             for <a
