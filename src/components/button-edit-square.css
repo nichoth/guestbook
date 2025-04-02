@@ -1,7 +1,11 @@
-.btn-edit-square {
+button.btn-edit-square {
     /* display: flex;
     justify-content: center; */
     height: fit-content;
+
+    &:disabled {
+        opacity: 0.4;
+    }
 
     & edit-square {
         & svg {
@@ -9,5 +13,4 @@
             width: 1.4rem;
         }
     }
-
 }

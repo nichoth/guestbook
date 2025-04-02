@@ -245,6 +245,15 @@ State.init = async function (state:ReturnType<typeof State>):Promise<void> {
     }
 }
 
+State.updateProfile = async function (
+    _state:ReturnType<typeof State>,
+    newUserData:User
+) {
+    return await ky.put('/api/profile', {
+        json: newUserData
+    })
+}
+
 /**
  * Add your contact info.
  */

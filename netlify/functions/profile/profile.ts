@@ -1,0 +1,77 @@
+import 'dotenv/config'
+import { z } from 'zod'
+import type {
+    Handler,
+    HandlerEvent,
+} from '@netlify/functions'
+import { neon } from '@neondatabase/serverless'
+import { getDbString, verifyHeader } from '../util.js'
+import slugify from '@sindresorhus/slugify'
+
+const Request = z.object({
+    humanName: z.string().max(100),
+    email: z.string().max(100),
+    body: z.string().max(6000),
+    bluesky: z.string().max(100)
+})
+
+/**
+ * Edit the given user.
+ */
+export const handler:Handler = async function handler (ev:HandlerEvent) {
+    if (ev.httpMethod !== 'PUT') {
+        return { statusCode: 405 }
+    }
+
+    if (!ev.body) return { statusCode: 400 }
+
+    let machineName:string
+    let seq:number
+    try {
+        const [name, sequence] = await verifyHeader(ev)
+        machineName = name
+        seq = sequence
+    } catch (_err) {
+        const err = _err as Error
+        return {
+            body: err.message,
+            statusCode: err.message.includes('authenticate') ? 401 : 403
+        }
+    }
+
+    let data:{
+        email:string;
+        body?:string;
+        bluesky?:string;
+        humanName?:string;
+    }
+    try {
+        const rawData = JSON.parse(ev.body)
+        data = Request.parse(rawData)
+    } catch (_err) {
+        console.log('**error parsing**', _err)
+        return { body: 'Invalid JSON', statusCode: 415 }
+    }
+
+    const newUsername = (data.humanName ?
+        slugify(data.humanName, { separator: '_' }) :
+        null)
+
+    const sql = neon(getDbString(process.env))
+    const res = await sql`
+        -- Validate the machine name using the check_seq function
+        -- and update the user record if valid
+        UPDATE user
+        SET
+            human_name = COALESCE(${data.humanName}, human_name),
+            email = COALESCE(${data.email}, email),
+            username = COALESCE(${newUsername}, username)
+            ts = NOW()
+        WHERE email = ${data.email}
+        AND check_seq(${machineName}, ${seq}) = TRUE;
+    `
+
+    console.log('**updated the DB**', res)
+
+    return { statusCode: 204 }
+}

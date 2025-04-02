@@ -2,6 +2,7 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { EditSquare, register } from '@substrate-system/icons/edit-square'
 import { isRegistered } from '@substrate-system/web-component'
+import './button-edit-square.css'
 
 if (!isRegistered(EditSquare.TAG_NAME)) {
     register()
@@ -20,6 +21,7 @@ export const BtnEditSquare:FunctionComponent<{
         isResolving ? 'resolving' : null]).filter(Boolean).join(' ')
 
     return html`<button
+        aria-label="Edit"
         class="${classes}"
         onClick=${props.onClick}
         disabled=${props.disabled}

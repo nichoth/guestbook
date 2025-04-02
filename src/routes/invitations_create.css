@@ -1,6 +1,5 @@
 .route.invitations.create {
     & textarea {
-        width: 100%;
         min-height: 8rem;
         padding: 1rem;
         border-radius: 0;
