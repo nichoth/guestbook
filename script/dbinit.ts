@@ -129,7 +129,7 @@ const statements = [
         is_valid BOOLEAN;
         user_record JSONB;
         machines JSONB;
-        usr_id UUID;
+        user_id UUID;
     BEGIN
         -- Step 1: Check if the sequence number is valid
         SELECT check_seq(machinename, new_seq) INTO is_valid;
@@ -140,7 +140,7 @@ const statements = [
         END IF;
 
         -- Step 3: If valid, retrieve the user who owns the machine
-        SELECT owner INTO usr_id
+        SELECT owner INTO user_id
         FROM machine
         WHERE machine_name = machinename
         LIMIT 1;
@@ -163,7 +163,7 @@ const statements = [
             'human_name', m.human_name
         )), '[]') INTO machines
         FROM machine m
-        WHERE m.owner = usr_id;
+        WHERE m.owner = user_id;
 
         -- Step 6: Return the user and machines as JSON
         RETURN jsonb_build_object(
