@@ -61,11 +61,11 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     const res = await sql`
         -- Validate the machine name using the check_seq function
         -- and update the user record if valid
-        UPDATE user
+        UPDATE usr
         SET
             human_name = COALESCE(${data.humanName}, human_name),
-            body = COALESCE(${data.body}, body)
-            username = COALESCE(${newUsername}, username)
+            body = COALESCE(${data.body}, body),
+            username = COALESCE(${newUsername}, username),
             ts = NOW()
         WHERE email = ${data.email}
         AND check_seq(${machineName}, ${seq}) = TRUE;

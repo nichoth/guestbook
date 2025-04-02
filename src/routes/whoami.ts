@@ -40,8 +40,9 @@ export const WhoamiRoute:FunctionComponent<{
         }, {})
     })
 
-    const editProfile = useCallback((user:User) => {
+    const editProfile = useCallback(async (user:User) => {
         debug('edit the profile', user)
+        await State.updateProfile(state, user)
     }, [])
 
     const removeMachine = useCallback(async (ev:MouseEvent) => {

@@ -6,6 +6,7 @@ import '@substrate-system/icons/css'
 import { IconX } from './icon-close-x.js'
 import { useComputed, useSignal } from '@preact/signals'
 import slugify from '@sindresorhus/slugify'
+import { type HTTPError } from 'ky'
 import { isRegistered } from '@substrate-system/web-component'
 import { EM_DASH } from '@substrate-system/util/constants'
 import { Markdown } from '../components/markdown.js'
@@ -23,10 +24,11 @@ if (!isRegistered(EditSquare.TAG_NAME)) {
 export const Profile:FunctionComponent<{
     user:User;
     context?:'list';
-    onEdit?:(data:User)=>any;
+    onEdit?:(data:User)=>Promise<any>;
 }> = function Profile (props) {
     const { user, context, onEdit } = props
     const isEditing = useSignal<boolean>(false)
+    const isResolving = useSignal<boolean>(false)
 
     const pendingEdits = {
         humanName: useSignal(user.humanName),
@@ -41,13 +43,23 @@ export const Profile:FunctionComponent<{
         })
     })
 
-    const handleSave = useCallback((ev:MouseEvent) => {
+    const handleSave = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
         const newData = Object.keys(pendingEdits).reduce((acc, k) => {
             acc[k] = pendingEdits[k].value
             return acc
-        }, {})
+        }, {} as User)
         debug('the edited user data', newData)
+
+        isResolving.value = true
+        try {
+            await (onEdit && onEdit(newData))
+        } catch (_err) {
+            const err = _err as HTTPError
+            debug('the error', err)
+            debug(err.response.status)
+        }
+        isResolving.value = false
     }, [])
 
     const handleEdit = useCallback((ev:MouseEvent) => {
@@ -197,6 +209,7 @@ export const Profile:FunctionComponent<{
         ${isEditing.value ?
             html`<div class="controls">
                     <${BtnPrimary}
+                        isSpinning=${isResolving}
                         disabled=${!hasEdit.value}
                         onClick=${handleSave}
                     >
