@@ -18,9 +18,10 @@ import { getDbString, sanitizeHeader } from '../util.js'
  * Also, return the contact list here, b/c it saves a round-trip.
  */
 export const handler:Handler = async function handler (ev:HandlerEvent) {
-    if (ev.httpMethod !== 'GET') {
+    if (ev.httpMethod !== 'GET' && ev.httpMethod !== 'HEAD') {
         return { statusCode: 405 }
     }
+    if (ev.httpMethod === 'HEAD') return { statusCode: 200 }
     const headerString = ev.headers.authorization
     if (!headerString) return { body: 'Need to authenticate', statusCode: 401 }
     const parsedHeader:ParsedHeader = parseHeader(headerString)
