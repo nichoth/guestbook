@@ -177,7 +177,7 @@ const statements = [
     // (create a new user & machine)
     `
         CREATE OR REPLACE FUNCTION accept_invitation(
-            invitation_id VARCHAR(255),
+            invitation_id UUID,
             new_machine_name VARCHAR(255),
             new_machine_human_name VARCHAR(255),
             new_machine_did TEXT,
