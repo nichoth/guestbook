@@ -4,7 +4,7 @@ import { Primary as BtnPrimary } from '../components/button-outline.js'
 import { useCallback } from 'preact/hooks'
 import { type FunctionComponent } from 'preact'
 import { useComputed, useSignal } from '@preact/signals'
-import { State } from '../state.js'
+import { State } from '../state/index.js'
 import './link.css'
 import Debug from '@substrate-system/debug'
 const debug = Debug()

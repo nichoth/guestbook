@@ -9,7 +9,7 @@ import {
     ConnectionStatus
 } from '../components/connection-status.js'
 import { Primary as BtnPrimary } from '../components/button-outline.js'
-import { State } from '../state.js'
+import { State } from '../state/index.js'
 import '@nichoth/components/text-input.css'
 import './link-new-device.css'
 import Debug from '@substrate-system/debug'

@@ -1,5 +1,5 @@
 import { html } from 'htm/preact'
-import { type State } from '../state.js'
+import { type State } from '../state/index.js'
 import { type FunctionComponent } from 'preact'
 import { NBSP } from '@substrate-system/util/constants'
 import '@nichoth/components/text-input.css'

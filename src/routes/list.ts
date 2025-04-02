@@ -1,5 +1,5 @@
 import { html } from 'htm/preact'
-import type { State } from '../state.js'
+import type { State } from '../state/index.js'
 import { type FunctionComponent } from 'preact'
 import { Profile } from '../components/profile.js'
 import '../components/dl.css'

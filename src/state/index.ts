@@ -5,12 +5,12 @@ import { Keys } from '@bicycle-codes/keys'
 import Ky, { type KyInstance, type HTTPError } from 'ky'
 import Route from 'route-event'
 import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
-import type { Invitation, User, Machine, Contact, ClientSideMachine } from './types'
 import Debug from '@substrate-system/debug'
 import { type RefObject } from 'preact'
-import { when } from './util.js'
 import type SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
-import { type NewMachine } from './routes/link.js'
+import type { Invitation, User, Machine, Contact, ClientSideMachine } from '../types'
+import { when } from '../util.js'
+import { type NewMachine } from '../routes/link.js'
 const debug = Debug()
 
 export const PARTYKIT_HOST = (import.meta.env.MODE === 'development' ?

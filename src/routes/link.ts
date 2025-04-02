@@ -13,7 +13,7 @@ import {
     type StatusSignal,
     ConnectionStatus
 } from '../components/connection-status.js'
-import { State } from '../state.js'
+import { State } from '../state/index.js'
 import './link.css'
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js'
 import '@substrate-system/copy-button/css'
