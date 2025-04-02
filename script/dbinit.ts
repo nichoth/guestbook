@@ -23,7 +23,7 @@ async function dropTables (client:InstanceType<typeof Client>) {
 const statements = [
     // user
     `CREATE TABLE IF NOT EXISTS usr (
-        id          UUID         NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()
+        id          UUID         PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
         email       VARCHAR(255) NOT NULL UNIQUE,
         ts          TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         username    VARCHAR(255) NOT NULL,
@@ -37,7 +37,6 @@ const statements = [
         id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
         ts          TIMESTAMP       WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         remaining   INT             NOT NULL,
-        initial     INT             NOT NULL,
         creator     VARCHAR(255)    NOT NULL,
         note        TEXT,
         FOREIGN KEY (creator)       REFERENCES usr(email) ON DELETE CASCADE
@@ -47,7 +46,7 @@ const statements = [
     `CREATE TABLE IF NOT EXISTS machine (
         machine_name        VARCHAR(255) PRIMARY KEY,
         ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        owner               UUID
+        owner               UUID,
         did                 TEXT NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          VARCHAR(255) NOT NULL,
@@ -75,10 +74,10 @@ const statements = [
         human_name
     ) VALUES (
         'abc123_machinename_here',
-        (SELECT email FROM usr WHERE usr.email = 'test@beef.com'),
+        (SELECT id FROM usr WHERE usr.email = 'test@beef.com'),
         'did:key:zstring',
         0,
-        'Phone'
+        'Root Machine'
     );`,
 
     `INSERT INTO invitation (
@@ -149,7 +148,7 @@ const statements = [
         -- Step 4: Retrieve the user who owns the machine
         SELECT jsonb_build_object(
             'email', u.email,
-            'id, u.id,
+            'id', u.id,
             'username', u.username,
             'human_name', u.human_name,
             'bluesky', u.bluesky,
@@ -194,6 +193,7 @@ const statements = [
             remaining_count INT;
             user_record JSONB;
             machine_record JSONB;
+            new_user_id UUID;
         BEGIN
             -- Step 1: Get the current remaining count for the invitation
             SELECT remaining INTO remaining_count
@@ -294,6 +294,11 @@ const statements = [
     `
         CREATE INDEX machine_by_did
         ON machine (did);
+    `,
+
+    `
+        CREATE INDEX machine_by_machine_name
+        ON machine (machine_name);
     `,
 
     `
