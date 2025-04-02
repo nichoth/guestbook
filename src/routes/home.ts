@@ -30,7 +30,7 @@ export const HomeRoute:FunctionComponent<{
                 href="https://innovatebellingham.org/"
             >Innovate Bellingham</a> meeting. It is only visible to other
             members of the group. To join, you must be invited by
-            someone who is already a member.
+            a member.
         </p>
 
         <${MainPart} state=${state} />
