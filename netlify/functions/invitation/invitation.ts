@@ -13,8 +13,6 @@ import {
 import slugify from '@sindresorhus/slugify'
 import { neon } from '@neondatabase/serverless'
 import { getDbString, sanitizeHeader, verifyHeader } from '../util.js'
-// import { neonConfig, Client } from '@neondatabase/serverless'
-// import ws from 'ws'
 
 const ZodDID = z.custom<DID>((val:string) => {
     return (val.startsWith('did:key:z') && val.length < 450)

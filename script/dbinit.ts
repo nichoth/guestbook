@@ -23,7 +23,8 @@ async function dropTables (client:InstanceType<typeof Client>) {
 const statements = [
     // user
     `CREATE TABLE IF NOT EXISTS usr (
-        email       VARCHAR(255) PRIMARY KEY NOT NULL UNIQUE,
+        id          UUID         NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()
+        email       VARCHAR(255) NOT NULL UNIQUE,
         ts          TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         username    VARCHAR(255) NOT NULL,
         human_name  VARCHAR(255) NOT NULL,
@@ -45,12 +46,12 @@ const statements = [
     // machine
     `CREATE TABLE IF NOT EXISTS machine (
         machine_name        VARCHAR(255) PRIMARY KEY,
-        ts          TIMESTAMP       WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        owner               VARCHAR(255),
+        ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        owner               UUID
         did                 TEXT NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          VARCHAR(255) NOT NULL,
-        FOREIGN KEY (owner) REFERENCES usr(email) ON DELETE CASCADE
+        FOREIGN KEY (owner) REFERENCES usr(id) ON DELETE CASCADE
     );`,
 
     // test data
@@ -129,7 +130,7 @@ const statements = [
         is_valid BOOLEAN;
         user_record JSONB;
         machines JSONB;
-        email_address VARCHAR(255);
+        usr_id VARCHAR(255);
     BEGIN
         -- Step 1: Check if the sequence number is valid
         SELECT check_seq(machinename, new_seq) INTO is_valid;
@@ -140,7 +141,7 @@ const statements = [
         END IF;
 
         -- Step 3: If valid, retrieve the user who owns the machine
-        SELECT owner INTO email_address
+        SELECT owner INTO usr_id
         FROM machine
         WHERE machine_name = machinename
         LIMIT 1;
@@ -148,6 +149,7 @@ const statements = [
         -- Step 4: Retrieve the user who owns the machine
         SELECT jsonb_build_object(
             'email', u.email,
+            'id, u.id,
             'username', u.username,
             'human_name', u.human_name,
             'bluesky', u.bluesky,
@@ -162,7 +164,7 @@ const statements = [
             'human_name', m.human_name
         )), '[]') INTO machines
         FROM machine m
-        WHERE m.owner = email_address;
+        WHERE m.owner = usr_id;
 
         -- Step 6: Return the user and machines as JSON
         RETURN jsonb_build_object(
@@ -234,7 +236,7 @@ const statements = [
                 new_user_human_name,
                 new_body,
                 new_bluesky
-            );
+            ) RETURNING id INTO new_user_id;
             
             -- Retrieve the newly created user record as JSON
             SELECT jsonb_build_object(
@@ -255,7 +257,7 @@ const statements = [
                 human_name
             ) VALUES (
                 new_machine_name,
-                new_user_email,
+                new_user_id,
                 new_machine_did,
                 0,
                 new_machine_human_name
@@ -282,13 +284,20 @@ const statements = [
     `,
 
     // indexes
+
+    // invitation by email of the creator
     `
         CREATE INDEX invitation_by_creator
         ON invitation (creator);
     `,
+
     `
         CREATE INDEX machine_by_did
         ON machine (did);
+    `,
+
+    `
+        CREATE INDEX user_by_email ON usr(email ASC);
     `
 ]
 

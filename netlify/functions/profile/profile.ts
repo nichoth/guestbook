@@ -64,7 +64,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         UPDATE user
         SET
             human_name = COALESCE(${data.humanName}, human_name),
-            email = COALESCE(${data.email}, email),
+            body = COALESCE(${data.body}, body)
             username = COALESCE(${newUsername}, username)
             ts = NOW()
         WHERE email = ${data.email}

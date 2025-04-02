@@ -115,10 +115,3 @@ export const handler:Handler = async function handler (
         body: JSON.stringify({ hello: 'hello' })
     }
 }
-
-// -- check seq and return data iff seq is ok
-// IF NOT (SELECT check_seq(machinename, new_seq)) THEN
-//     RAISE EXCEPTION 'Invalid signature';
-// END IF;
-// SELECT email, human_name, body, username
-// FROM usr
