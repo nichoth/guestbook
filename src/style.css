@@ -6,6 +6,25 @@
     --danger: red;
 }
 
+.markdown {
+    & .markup {
+        & p {
+            margin-bottom: 1rem;
+        }
+
+        & ul {
+            list-style: initial;
+            padding: initial;
+            padding-left: 2rem;
+
+            & li {
+                display: list-item;
+                min-height: initial;
+            }
+        }
+    }
+}
+
 hr {
     margin: 1rem 0;
 }

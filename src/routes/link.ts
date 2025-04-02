@@ -105,6 +105,17 @@ export const LinkRoute:FunctionComponent<{
             No passwords ${ELLIPSIS}
         </p>
 
+        <p>
+            Normally we would have more granular permissions available here,
+            like for example setting a time limit on a new device, or giving the
+            device read-only permission.
+        </p>
+
+        <p>
+            But, for demonstration purposes, I haven't implemented that.
+            It should be easy to delete any device from your account though.
+        </p>
+
         ${!roomName.value ?
             html`<p>
                 This will generate a unique URL that you need to visit on the

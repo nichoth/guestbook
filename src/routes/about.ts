@@ -91,8 +91,8 @@ export const AboutRoute:FunctionComponent = function () {
             Some good news is that there are no passwords in this system.
             You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
-            "non-extractable"</a> keypairs in your browser. It eliminates
-            a security vector ${EM_DASH} there is no password to think about.
+            "non-extractable"</a> keypairs in your browser. This eliminates
+            a security vector ${EM_DASH} there are no passwords to think about.
         </p>
 
         <p>
@@ -130,7 +130,7 @@ export const AboutRoute:FunctionComponent = function () {
         <p>
             An invitation is a record in a database containing a${NBSP}
             <a href="https://github.com/uuidjs/uuid">universllay unique ID</a>,
-            which is created by an existing member. The existing member
+            created by an existing member. The existing member
             must give you the invitation code out-of-band from this website.
         </p>
 
@@ -148,6 +148,11 @@ export const AboutRoute:FunctionComponent = function () {
             <li>
                 <a href="mailto:nichoth@bicycle.codes">nichoth@bicycle.codes</a>
             </li>
+            <li><a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://nichoth.com/"
+            >nichoth.com</a></li>
             <li>
                 <a
                     target="_blank"

@@ -246,12 +246,28 @@ State.init = async function (state:ReturnType<typeof State>):Promise<void> {
 }
 
 State.updateProfile = async function (
-    _state:ReturnType<typeof State>,
+    state:ReturnType<typeof State>,
     newUserData:User
 ) {
-    return await ky.put('/api/profile', {
-        json: newUserData
-    })
+    try {
+        await ky.put('/api/profile', {
+            json: newUserData
+        })
+
+        state.user.value = newUserData
+        const list = state.list.value
+        if (!list) return
+        const index = state.list.value?.findIndex(val => {
+            return val.email === newUserData.email
+        })
+
+        if (!index || index < 0) return
+        const newList = list.concat([])
+        newList[index] = newUserData
+        state.list.value = newList
+    } catch (_err) {
+        debug('update failure', _err)
+    }
 }
 
 /**

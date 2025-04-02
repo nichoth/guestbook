@@ -54,11 +54,13 @@ export const Profile:FunctionComponent<{
         isResolving.value = true
         try {
             await (onEdit && onEdit(newData))
+            isEditing.value = false
         } catch (_err) {
             const err = _err as HTTPError
             debug('the error', err)
             debug(err.response.status)
         }
+
         isResolving.value = false
     }, [])
 
@@ -94,6 +96,7 @@ export const Profile:FunctionComponent<{
     const cancelEdit = useCallback((ev:MouseEvent) => {
         ev.preventDefault()
         isEditing.value = false
+        // reset the pending state
         Object.keys(pendingEdits).forEach((k) => {
             pendingEdits[k].value = user[k]
         })
