@@ -129,7 +129,7 @@ const statements = [
         is_valid BOOLEAN;
         user_record JSONB;
         machines JSONB;
-        usr_id VARCHAR(255);
+        usr_id UUID;
     BEGIN
         -- Step 1: Check if the sequence number is valid
         SELECT check_seq(machinename, new_seq) INTO is_valid;
@@ -155,7 +155,7 @@ const statements = [
             'body', u.body
         ) INTO user_record
         FROM usr u
-        WHERE u.email = email_address;
+        WHERE u.id = user_id;
 
         -- Step 5: get their machines
         SELECT COALESCE(json_agg(json_build_object(
