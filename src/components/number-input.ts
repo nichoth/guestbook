@@ -4,8 +4,8 @@ import type { FunctionComponent } from 'preact'
 import { type Signal, useSignalEffect } from '@preact/signals'
 import '@nichoth/components/number-input.css'
 import './number-input.css'
-import Debug from '@substrate-system/debug'
-const debug = Debug()
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 interface Props {
     name:string;
@@ -33,7 +33,6 @@ export const NumberInput:FunctionComponent<Props> = function NumberInput (props)
         const n = value.value
         const digits = n.toString().length
         const newWidth = (digits - 1) + 4
-        debug(newWidth)
         document.body.style.setProperty('--number-width', digits < 2 ?
             '4em' :
             (newWidth + 'em')
