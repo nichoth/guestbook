@@ -37,7 +37,8 @@ const statements = [
         id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
         ts          TIMESTAMP       WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         remaining   INT             NOT NULL,
-        creator     VARCHAR(255)    NOT NULL,
+        initial     INT             NOT NULL,  -- the initial # of uses
+        creator     VARCHAR(255)    NOT NULL,  -- the person who created it
         note        TEXT,
         FOREIGN KEY (creator)       REFERENCES usr(email) ON DELETE CASCADE
     );`,
@@ -82,9 +83,11 @@ const statements = [
 
     `INSERT INTO invitation (
         remaining,
+        initial,
         creator,
         note
     ) VALUES (
+        10,
         10,
         (SELECT email from usr WHERE usr.email = 'test@beef.com'),
         'this is a test invitation'
