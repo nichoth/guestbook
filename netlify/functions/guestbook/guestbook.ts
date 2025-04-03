@@ -3,6 +3,7 @@ import type {
     HandlerEvent,
 } from '@netlify/functions'
 import { getDeviceName } from '@bicycle-codes/keys'
+import { z } from 'zod'
 import { neon } from '@neondatabase/serverless'
 import {
     verifyParsed,
@@ -10,6 +11,14 @@ import {
     type ParsedHeader
 } from '@bicycle-codes/request'
 import { getDbString, sanitizeHeader } from '../util.js'
+import slugify from '@sindresorhus/slugify'
+
+const PutRequest = z.object({
+    humanName: z.string().max(100),
+    email: z.string().max(100),
+    body: z.string().max(6000),
+    bluesky: z.string().max(100)
+})
 
 /**
  * PUT call means add or update the contact info for the given user.
@@ -55,8 +64,7 @@ export const handler:Handler = async function handler (
                     SELECT check_seq(${machineName}::VARCHAR, ${seq}::INT) AS is_valid
                 )
                 -- Then, return all users only if the check is valid
-                SELECT *
-                FROM usr
+                SELECT * FROM usr
                 WHERE (SELECT is_valid FROM check_result) = TRUE;
             `
         } catch (err) {
@@ -66,12 +74,11 @@ export const handler:Handler = async function handler (
 
         return {
             statusCode: 200,
-            body: JSON.stringify((res)
-                .filter(r => Boolean(r))
+            body: JSON.stringify((res).filter(r => Boolean(r))
                 .map(r => {
                     return {
                         ...r,
-                        humanName: r!.human_name
+                        humanName: r.human_name
                     }
                 })
             )
@@ -81,19 +88,23 @@ export const handler:Handler = async function handler (
     /**
      * method is PUT
      *   - write to the DB
+     *   - upsert
      */
 
     // parse the incoming request
     if (!ev.body) return { statusCode: 400 }
-    const data:{
-        username:string;
-        humanName:string;
-        body:string;
-        email:string;
-        bluesky:string;
-    } = JSON.parse(ev.body)
+    let data:z.infer<typeof PutRequest>
 
-    const { username, body, email } = data
+    try {
+        const rawData = JSON.parse(ev.body)
+        data = PutRequest.parse(rawData)
+    } catch (err) {
+        return { body: err.message, statusCode: 422 }
+    }
+
+    const { body, email } = data
+    const username = slugify(data.humanName, { separator: '_' })
+
     if (email.length > 100 || username.length > 100) {
         return { statusCode: 413 }
     }
@@ -101,17 +112,22 @@ export const handler:Handler = async function handler (
         return { statusCode: 413 }
     }
 
-    // no spaces
-    const slugUsername = username.split(' ').filter(Boolean).join('_')
+    // update the user record in the DB
+    await sql`
+        INSERT INTO usr (
+            human_name,
+            email,
+            username,
+            bluesky,
+            body
+        ) VALUES (
+            ${data.humanName},
+            ${data.email},
+            ${username},
+            ${data.bluesky},
+            ${data.body}
+        );
+    `
 
-    if (!slugUsername) {
-        return { statusCode: 401 }
-    }
-
-    // update the DB
-
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ hello: 'hello' })
-    }
+    return { statusCode: 204 }
 }

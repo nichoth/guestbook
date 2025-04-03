@@ -22,8 +22,6 @@ export function when<T> (
     then:()=>Promise<T>
 ):Promise<T> {
     return new Promise((resolve, reject) => {
-        if (sig.value === null) return
-
         const dispose = effect(() => {
             if (sig.value === null) return
             (async () => {

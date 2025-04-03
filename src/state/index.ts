@@ -72,10 +72,10 @@ export function State ():{
     Keys.load().then(keys => {
         if (!keys.persisted) {
             debug('not persisted keys')
-            state.user.value = false
             // not yet a user, don't create keys yet.
             // We create & persist keys in the `acceptInvitation` function,
             // or the `newDeviceApproved` function
+            state.user.value = false
             return
         }
 
@@ -346,14 +346,41 @@ State.fetchMyInvitations = async function (
     })
 }
 
+/**
+ * GET the list.
+ */
 State.fetchList = async function (
     state:ReturnType<typeof State>
 ) {
     when(state.user, async () => {
         if (state.list.value) return  // only fetch once
         state.list.value = await ky.get('/api/guestbook').json()
-        debug('**got the list**')
     })
+}
+
+/**
+ * GET a user by their slug. Must authenticate for this.
+ * We are just fetching the entire list for this usecase, because
+ * it is easier to develop (no additional backend logic).
+ *
+ * @throws {Error} If the user cannot be found in the database.
+ */
+State.fetchUser = async function (
+    state:ReturnType<typeof State>,
+    userSlug:string
+):Promise<User> {
+    const slug = userSlug.trim()
+    // do we have them already?
+    let user = state.list.value?.find(item => item.username === slug)
+    if (user) return user
+
+    // else, fetch the list
+    await State.fetchList(state)
+    user = state.list.value?.find(u => u.username === slug)
+
+    if (!user) throw new Error('Not user')
+
+    return user
 }
 
 /**

@@ -13,6 +13,8 @@ import { LinkNewDeviceRoute } from './link-new-device.js'
 import { InvitationByCode } from './invitations_code.js'
 import { HTTPError } from 'ky'
 import Debug from '@substrate-system/debug'
+import { UsernameRoute } from './username.js'
+import { when } from '../util.js'
 const debug = Debug()
 
 /**
@@ -64,6 +66,24 @@ export default function _Router (state:ReturnType<typeof State>):Router {
         State.fetchList(state)
 
         return ListRoute
+    })
+
+    router.addRoute('/list/:username', (match:{ params: { username }}) => {
+        // fetch the user if we don't have them already
+        const name = match.params.username
+        const list = state.list.value
+        const user = list?.find((item) => {
+            return item.username === name
+        })
+
+        if (user) return UsernameRoute
+
+        // else, query the DB
+        when(state.user, async () => {
+            State.fetchUser(state, name)
+        })
+
+        return UsernameRoute
     })
 
     router.addRoute('/invitations', () => {
