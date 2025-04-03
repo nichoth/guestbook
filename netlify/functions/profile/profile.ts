@@ -9,10 +9,10 @@ import { getDbString, verifyHeader } from '../util.js'
 import slugify from '@sindresorhus/slugify'
 
 const Request = z.object({
-    humanName: z.string().max(100),
+    humanName: z.optional(z.string().max(100)),
     email: z.string().max(100),
-    body: z.string().max(6000),
-    bluesky: z.string().max(100)
+    body: z.optional(z.string().max(6000)),
+    bluesky: z.optional(z.string().max(100))
 })
 
 /**
@@ -58,20 +58,26 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         null)
 
     const sql = neon(getDbString(process.env))
-    const res = await sql`
+    await sql`
         -- Validate the machine name using the check_seq function
         -- and update the user record if valid
+        WITH valid_user AS (
+            SELECT u.id
+            FROM usr u
+            JOIN machine m ON m.owner = u.id
+            WHERE m.machine_name = ${machineName}
+            AND check_seq(${machineName}, ${seq}) = TRUE
+        )
         UPDATE usr
         SET
             human_name = COALESCE(${data.humanName}, human_name),
             body = COALESCE(${data.body}, body),
             username = COALESCE(${newUsername}, username),
+            bluesky = COALESCE(${data.bluesky}, bluesky),
             ts = NOW()
-        WHERE email = ${data.email}
-        AND check_seq(${machineName}, ${seq}) = TRUE;
+        WHERE id = (SELECT id FROM valid_user)
+        RETURNING *;
     `
-
-    console.log('**updated the DB**', res)
 
     return { statusCode: 204 }
 }

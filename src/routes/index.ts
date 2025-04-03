@@ -68,9 +68,9 @@ export default function _Router (state:ReturnType<typeof State>):Router {
         return ListRoute
     })
 
-    router.addRoute('/list/:username', (match:{ params: { username }}) => {
+    router.addRoute('/list/:username', (match:{ params: { username:string }}) => {
         // fetch the user if we don't have them already
-        const name = match.params.username
+        const name = match.params.username.trim()
         const list = state.list.value
         const user = list?.find((item) => {
             return item.username === name

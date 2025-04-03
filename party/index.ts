@@ -14,7 +14,7 @@ interface JSONObject {
     [x:string]:JSONValue;  // eslint-disable-line
 }
 
-type JSONValue = string | number | boolean | JSONObject;
+type JSONValue = string|number|boolean|JSONObject;
 
 /**
  * In here, call Neon DB.
@@ -48,7 +48,7 @@ export default class Server extends Connection implements Party.Server {
         // check the auth header, then open the room
         const token = req.headers.get('authorization') ?? ''
         if (!token) {
-            return new Response('Missing auth header', {
+            return new Response('Missing header', {
                 status: 401,
                 headers: Connection.CORS
             })
