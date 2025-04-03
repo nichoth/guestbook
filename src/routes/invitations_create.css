@@ -21,8 +21,4 @@
     & .input-group-number {
         margin-bottom: 0;
     }
-
-    & input[type="number"] {
-        width: 4rem;
-    }
 }

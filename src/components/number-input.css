@@ -1,0 +1,12 @@
+:root {
+    --number-width: 4em;
+}
+
+.input-group-number {
+    & input[type="number"] {
+        /* width: 4em; */
+        width: var(--number-width, 4em)!important;
+        min-width: 4em;
+        /* width: 4em; */
+    }
+}

@@ -50,7 +50,7 @@ export const CreateInvitationRoute:FunctionComponent<{
             </label>
 
             <${NumberInput}
-                id="read-limit"
+                id="invitation-limit"
                 title="Set the number of uses for this invitation"
                 class="invitation-uses"
                 min=${1}

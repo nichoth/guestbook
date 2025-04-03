@@ -1,8 +1,11 @@
 import { html } from 'htm/preact'
 import { useCallback } from 'preact/hooks'
 import type { FunctionComponent } from 'preact'
-import type { Signal } from '@preact/signals'
+import { type Signal, useSignalEffect } from '@preact/signals'
 import '@nichoth/components/number-input.css'
+import './number-input.css'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 interface Props {
     name:string;
@@ -22,6 +25,20 @@ export const NumberInput:FunctionComponent<Props> = function NumberInput (props)
         .split(' ')
         .concat(['input-group-number'])
         .join(' ')
+
+    /**
+     * Set a CSS variable for the number of digits in the input
+     */
+    useSignalEffect(() => {
+        const n = value.value
+        const digits = n.toString().length
+        const newWidth = (digits - 1) + 4
+        debug(newWidth)
+        document.body.style.setProperty('--number-width', digits < 2 ?
+            '4em' :
+            (newWidth + 'em')
+        )
+    })
 
     const changer = useCallback((ev:InputEvent) => {
         if (onChange) {
