@@ -38,7 +38,7 @@ export const NumberInput:FunctionComponent<Props> = function NumberInput (props)
             max=${max}
             min=${min}
             onChange=${changer}
-            value=${value.value}
+            value=${value}
             name=${name}
         />
 

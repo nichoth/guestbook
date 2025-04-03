@@ -160,6 +160,7 @@ export const handler:Handler = async function handler (
             // check signature
             const isOk = await verifyParsed(parsedHeader)   // check signature
             if (!isOk) {
+                console.log('**bad signature**')
                 return { body: 'Invalid signature', statusCode: 403 }
             }
 
@@ -173,15 +174,11 @@ export const handler:Handler = async function handler (
                     WHERE machine_name = ${machineName}
                     AND check_seq(${machineName}, ${parseInt(seq)}) = TRUE
                 )
-                SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts, i.initial
+                SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts
                 FROM invitation i
                 JOIN usr u ON i.creator = u.email
-                JOIN valid_machine vm ON u.email = vm.owner;
+                JOIN valid_machine vm ON u.id = vm.owner;
             `
-
-            if (res.length === 0) {
-                return { body: 'Bad sequence number', statusCode: 403 }
-            }
 
             return { statusCode: 200, body: JSON.stringify(res) }
         } else {
