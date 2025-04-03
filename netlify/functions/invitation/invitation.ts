@@ -323,15 +323,13 @@ export const handler:Handler = async function handler (
                 statusCode: 200
             }
         } catch (_err) {
-            console.log('**caught an error**', url)
             console.log('**query error**', _err.toString())
-            console.log('**slug**')
             const err = _err.toString()
-            if (err.includes('usr_pkey')) {
+            if (err.includes('duplicate key value')) {
                 return { body: 'That email is taken', statusCode: 409 }
             }
 
-            return { body: err, statusCode: 500 }
+            return { body: err.toString(), statusCode: 500 }
         }
     }
 
