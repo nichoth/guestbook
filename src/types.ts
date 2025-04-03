@@ -10,6 +10,7 @@ export type User = {
 
 export type Contact = {
     humanName:string;
+    username:string;
     email:string;
     body:string;
 }
