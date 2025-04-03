@@ -306,10 +306,11 @@ export const handler:Handler = async function handler (
         })
         const machineName = await getDeviceName(did)
 
+        const url = getDbString(process.env)
         try {
             // check invitation
             // call the accept function in DB
-            const sql = neon(getDbString(process.env))
+            const sql = neon(url)
             console.log('**NODE_ENV**', process.env.NODE_ENV)
 
             const res = await sql.query(`
@@ -322,8 +323,9 @@ export const handler:Handler = async function handler (
                 statusCode: 200
             }
         } catch (_err) {
-            // query error
+            console.log('**caught an error**', url)
             console.log('**query error**', _err.toString())
+            console.log('**slug**')
             const err = _err.toString()
             if (err.includes('usr_pkey')) {
                 return { body: 'That email is taken', statusCode: 409 }
@@ -372,7 +374,9 @@ export const handler:Handler = async function handler (
         const machineName = await getDeviceName(author)
 
         try {
-            const sql = neon(getDbString(process.env))
+            const url = getDbString(process.env)
+            console.log('**the url**', url)
+            const sql = neon(url)
 
             /**
              * HTTP POST
@@ -424,7 +428,7 @@ export const handler:Handler = async function handler (
                 statusCode: 200
             }
         } catch (_err) {
-            console.log('**query error**', _err)
+            console.log('**query error in POST**', _err)
             return { body: _err.toString(), statusCode: 500 }
         }
     }
