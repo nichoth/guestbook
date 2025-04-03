@@ -11,6 +11,7 @@ async function dropTables (client:InstanceType<typeof Client>) {
         'DROP TABLE IF EXISTS machine CASCADE;',
         'DROP TABLE IF EXISTS usr CASCADE;',
         'DROP TABLE IF EXISTS invitation CASCADE;',
+        'DROP TABLE IF EXISTS login CASCADE;',
     ]
 
     return await Promise.all(statements.map(s => {
@@ -41,6 +42,13 @@ const statements = [
         creator     VARCHAR(255)    NOT NULL,  -- the person who created it
         note        TEXT,
         FOREIGN KEY (creator)       REFERENCES usr(email) ON DELETE CASCADE
+    );`,
+
+    `CREATE TABLE IF NOT EXISTS login (
+        usr                 UUID,        NOT NULL
+        code                UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+        ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usr)   REFERENCES usr(id)
     );`,
 
     // machine
@@ -292,6 +300,11 @@ const statements = [
     `
         CREATE INDEX invitation_by_creator
         ON invitation (creator);
+    `,
+
+    `
+        CREATE INDEX login_by_code
+        ON login (code)
     `,
 
     `

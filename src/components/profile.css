@@ -1,4 +1,10 @@
 .component.profile {
+    & a {
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
     & .controls {
         margin-bottom: -2rem;
         margin-right: 2rem;
