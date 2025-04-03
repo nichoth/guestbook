@@ -48,7 +48,7 @@ export const LostRoute:FunctionComponent<{
     return html`<div class="route lost">
         <p>
             If there is an account with this email, we will send a message
-            to the address with the ability to reset your keys.
+            to reset your keys.
         </p>
         <form onSubmit=${submit}>
             <${TextInput}
