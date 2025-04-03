@@ -5,11 +5,19 @@
 
         & dl {
             border-radius: 10px;
-            border: 1px solid;
+            /* border: 1px solid; */
             background-color: #fff9e0a3;
         }
 
+        & .component.profile {
+            margin-bottom: 0;
+        }
+
         & li {
+            overflow: scroll;
+            border: 1px solid;
+            border-radius: 10px;
+
             & div.email {
                 display: flex;
                 gap: 1rem;
