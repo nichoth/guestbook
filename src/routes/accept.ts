@@ -166,7 +166,8 @@ export const AcceptRoute:FunctionComponent<{
                 <${TextInput} type="email" name="email" displayName="email" />
                 <div class="help-text">
                     This email address is used to reset your keys if you
-                    lose them.
+                    lose them. We don't do anything to verify your email
+                    address, so be sure it is correct.
                 </div>
 
                 <${TextInput} name="machine-name" displayName="Device name" />
