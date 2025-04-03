@@ -26,7 +26,7 @@ const statements = [
         id          UUID         PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
         email       VARCHAR(255) NOT NULL UNIQUE,
         ts          TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        username    VARCHAR(255) NOT NULL,
+        username    VARCHAR(255) NOT NULL UNIQUE,
         human_name  VARCHAR(255) NOT NULL,
         bluesky     VARCHAR(255),
         body        TEXT NOT NULL

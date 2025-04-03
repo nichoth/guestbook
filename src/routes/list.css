@@ -26,6 +26,17 @@
             border: 1px solid;
             border-radius: 10px;
 
+            & .markdown {
+                & a {
+                    text-decoration: underline;
+                    color: blue;
+
+                    &:hover {
+                        color: black;
+                    }
+                }
+            }
+
             & a {
                 text-decoration: none;
                 color: initial;
