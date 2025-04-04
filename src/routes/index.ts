@@ -12,9 +12,10 @@ import { CreateInvitationRoute } from './invitations_create.js'
 import { LinkNewDeviceRoute } from './link-new-device.js'
 import { InvitationByCode } from './invitations_code.js'
 import { HTTPError } from 'ky'
-import Debug from '@substrate-system/debug'
 import { UsernameRoute } from './username.js'
 import { when } from '../util.js'
+import { LoginRoute } from './login.js'
+import Debug from '@substrate-system/debug'
 const debug = Debug()
 
 /**
@@ -66,6 +67,14 @@ export default function _Router (state:ReturnType<typeof State>):Router {
         State.fetchList(state)
 
         return ListRoute
+    })
+
+    router.addRoute('/login', () => {
+        return LoginRoute
+    })
+
+    router.addRoute('/login/:code', () => {
+
     })
 
     router.addRoute('/contact/:username', (match:{ params: { username:string }}) => {

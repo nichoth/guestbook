@@ -3,12 +3,14 @@ import {
     parseHeader,
     type ParsedHeader
 } from '@bicycle-codes/request'
+import { Resend } from 'resend'
 import type {
     Handler,
     HandlerEvent,
 } from '@netlify/functions'
 import { getDeviceName } from '@bicycle-codes/keys'
 import { neon } from '@neondatabase/serverless'
+import { LoginTemplate } from '../../email-templates/login.js'
 import { getDbString, sanitizeHeader } from '../util.js'
 
 /**
@@ -18,6 +20,14 @@ import { getDbString, sanitizeHeader } from '../util.js'
  *   - POST method -- create a new one-time login URL
  */
 export const handler:Handler = async function handler (ev:HandlerEvent) {
+    let BASE_URL = 'https://bellingham.guestlist.town'
+    const env = process.env.NODE_ENV
+    if (env === 'development') {
+        BASE_URL = 'http://localhost:8888'
+    } else if (env === 'staging') {
+        BASE_URL = 'https://staging--bellingham-guestbook.netlify.app'
+    }
+
     const method = ev.httpMethod
     if (
         method !== 'GET' &&
@@ -27,6 +37,8 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     ) {
         return { statusCode: 405 }
     }
+
+    console.log('**NODE_ENV**', process.env.NODE_ENV)
 
     // this is for the CLI tool `wait-on`
     if (ev.httpMethod === 'HEAD') return { statusCode: 200 }
@@ -43,11 +55,9 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         const { seq: _seq, author } = parsedHeader
         seq = _seq
         machineName = await getDeviceName(author)
-
         if (!sanitizeHeader(seq, author)) {
             return { body: 'Invalid header', statusCode: 403 }
         }
-
         const isOk = await verifyParsed(parsedHeader)   // check signature
         if (!isOk) {
             console.log('**bad sig**', parsedHeader)
@@ -103,37 +113,57 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
 
     if (method === 'POST') {
         // create a one-time login URL
+        // this request comes from a new machine
+        // get the DID / machine name from the header
+
+        // parse the message, get their email
+        let msg:{ email:string }
+        try {
+            msg = JSON.parse(ev.body!)
+            if (!msg.email) throw new Error('Missing email')
+        } catch (err) {
+            console.log('**invalid json**', ev.body)
+            return { statusCode: 422, body: err.toString() }
+        }
+
         const sql = neon(getDbString(process.env))
 
         const res = await sql`
-            WITH valid_user AS (
-                -- Step 1: Validate the user by checking the sequence number
-                SELECT u.id AS user_id FROM usr u
-                JOIN machine m ON m.owner = u.id
-                WHERE m.machine_name = ${machineName!}
-                AND check_seq(${machineName!}, ${seq!}) = TRUE
-                LIMIT 1
-            )
-            -- Step 2: Insert a new login record if the user is valid
             INSERT INTO login (
-                usr,
+                user_id,
                 ts,
                 code
             )
             SELECT
-                valid_user.id,
+                u.id,
                 NOW(),
                 gen_random_uuid()
-            FROM valid_user
-            RETURNING code;
+            FROM usr u WHERE u.email = ${msg.email}
+            RETURNING code, (SELECT human_name 
+                ROM usr WHERE usr.email = ${msg.email}) AS human_name;
         `
 
-        if (res.length === 0) {
+        if (!res || res.length === 0) {
             console.log('**invalid user or signature**')
             return { statusCode: 422 }
         }
 
-        return { statusCode: 200 }
+        const { code, human_name: humanName } = res[0]
+        const resend = new Resend(process.env.RESEND_KEY)
+
+        resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: 'nichoth@bicycle.codes',
+            subject: 'Your single-use login code',
+            html: LoginTemplate({
+                loginLink: BASE_URL + `/login/${code}`,
+                name: humanName  // Use the human_name in the email template
+            })
+        })
+
+        return {
+            statusCode: 200
+        }
     }
 
     if (method === 'PATCH') {

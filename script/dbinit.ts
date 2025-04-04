@@ -33,6 +33,16 @@ const statements = [
         body        TEXT NOT NULL
     );`,
 
+    `CREATE TABLE IF NOT EXISTS pending_machine (
+        machine_name        VARCHAR(255) PRIMARY KEY,
+        ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        owner               UUID,
+        did                 TEXT NOT NULL,
+        seq                 INT DEFAULT 0,
+        human_name          VARCHAR(255) NOT NULL,
+        FOREIGN KEY (owner) REFERENCES usr(id) ON DELETE CASCADE
+    );`,
+
     // invitation
     `CREATE TABLE IF NOT EXISTS invitation (
         id          UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -45,10 +55,10 @@ const statements = [
     );`,
 
     `CREATE TABLE IF NOT EXISTS login (
-        usr                 UUID,        NOT NULL
-        code                UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-        ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (usr)   REFERENCES usr(id)
+        user_id                 UUID         NOT NULL,
+        code                    UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+        ts                      TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id)   REFERENCES usr(id)
     );`,
 
     // machine

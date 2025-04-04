@@ -43,11 +43,12 @@ function MainPart ({ state }:{ state:ReturnType<typeof State> }) {
         return null
     }
 
-    if (!state.user.value) {
+    if (!state.user.value) {  // false means this machine is not authorized
         return html`
             <p>
                 Are you a member? <a href="/link">
-                    Link this device to your existing account.</a>
+                    Link this device to your existing account</a>.
+                ${NBSP}Or, <a href="/login">request a single-use login code.</a>
             </p>
             <p>
                 Or <a href="/accept">accept an invitation</a>.
