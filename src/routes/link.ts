@@ -116,6 +116,22 @@ export const LinkRoute:FunctionComponent<{
             It should be easy to delete any device from your account though.
         </p>
 
+
+        <p>
+            This workflow is more applicable to a scenario using
+            something like <a href="https://github.com/ucan-wg">UCANs</a>, that
+            is, a situation where you need a <em>signature</em> from the
+            existing device.
+        </p>
+
+        <p>
+            At the end of the day this <em>is a centralized service</em>, so
+            we're using fairly traditional, server-centric authorization.
+            We do <a href="https://github.com/bicycle-codes/request">
+            sign requests with your keys</a>, though, for passwordless
+            authentication.
+        </p>
+
         ${!roomName.value ?
             html`<p>
                 This will generate a unique URL that you need to visit on the
@@ -189,7 +205,6 @@ function Controls ({
 
     // prompt for creating a room
     if (!roomName.value) {
-        debug('in here')
         return html`<div class="controls">
             <${BtnPrimary}
                 onClick=${onInit}

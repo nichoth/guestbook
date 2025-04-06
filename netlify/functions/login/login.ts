@@ -127,7 +127,6 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         }
 
         const sql = neon(getDbString(process.env))
-
         const res = await sql`
             INSERT INTO login (
                 user_id,
@@ -140,7 +139,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
                 gen_random_uuid()
             FROM usr u WHERE u.email = ${msg.email}
             RETURNING code, (SELECT human_name 
-                ROM usr WHERE usr.email = ${msg.email}) AS human_name;
+                FROM usr WHERE usr.email = ${msg.email}) AS human_name;
         `
 
         if (!res || res.length === 0) {
@@ -151,23 +150,32 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         const { code, human_name: humanName } = res[0]
         const resend = new Resend(process.env.RESEND_KEY)
 
-        resend.emails.send({
-            from: 'onboarding@resend.dev',
-            to: 'nichoth@bicycle.codes',
+        const { data, error } = await resend.emails.send({
+            from: 'mail@bellingham.guestlist.town',
+            to: [msg.email],
             subject: 'Your single-use login code',
             html: LoginTemplate({
                 loginLink: BASE_URL + `/login/${code}`,
-                name: humanName  // Use the human_name in the email template
+                name: humanName
             })
         })
 
-        return {
-            statusCode: 200
+        if (error) {
+            console.log('**error**', error)
+            return { statusCode: 500, body: error.message }
+        } else {
+            console.log('**sent the email**', data)
+            return {
+                body: JSON.stringify({ code }),
+                statusCode: 200
+            }
         }
     }
 
     if (method === 'PATCH') {
         // redeem a one-time login code
+        //   - get the keys from the header
+        //   - add the keys as a new machine record
     }
 
     return { statusCode: 405 }

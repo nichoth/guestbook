@@ -28,7 +28,7 @@ const statements = [
         email       VARCHAR(255) NOT NULL UNIQUE,
         ts          TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         username    VARCHAR(255) NOT NULL UNIQUE,
-        human_name  VARCHAR(255) NOT NULL,
+        human_name  VARCHAR(255) NOT NULL,  -- Ensure this column exists
         bluesky     VARCHAR(255),
         body        TEXT NOT NULL
     );`,

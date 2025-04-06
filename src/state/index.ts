@@ -532,6 +532,10 @@ State.LoginToken = async function (
     debug('code login response', res)
 }
 
+State.acceptTokenLogin = async function () {
+
+}
+
 State.Login = async function (
     state:ReturnType<typeof State>,
 ):Promise<{ user:User, machines:Machine[] }> {

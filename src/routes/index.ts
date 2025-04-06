@@ -74,7 +74,7 @@ export default function _Router (state:ReturnType<typeof State>):Router {
     })
 
     router.addRoute('/login/:code', () => {
-
+        return LoginRoute
     })
 
     router.addRoute('/contact/:username', (match:{ params: { username:string }}) => {

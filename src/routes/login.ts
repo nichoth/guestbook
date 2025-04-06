@@ -14,16 +14,16 @@ const debug = Debug()
  * Route for if you lost your keys.
  */
 export const LoginRoute:FunctionComponent<{
-    state:ReturnType<typeof State>
+    state:ReturnType<typeof State>;
 }> = function ({ state }) {
-    debug('login route', state)
     const pendingEmail = useSignal<string>('')
-    const pendingMachineName = useSignal<string>('')
     const isResolving = useSignal<boolean>(false)
     const isEmailValid = useComputed<boolean>(() => {
         const split = pendingEmail.value.split('@').filter(Boolean)
-        const [, tld] = pendingEmail.value.split('.').filter(Boolean)
-        if (split.length !== 2) return false
+        if (!(split.length >= 2)) return false
+        const segments = pendingEmail.value.split('.').filter(Boolean)
+        const tld = segments[segments.length - 1]
+        if (!(segments.length >= 2)) return false
         if (!tld || !tld.length) return false
         if (pendingEmail.value.split(' ').filter(Boolean).length > 1) {
             return false
@@ -34,10 +34,6 @@ export const LoginRoute:FunctionComponent<{
     const handleInput = useCallback((ev:InputEvent) => {
         const email = (ev.target as HTMLInputElement).value
         pendingEmail.value = email
-    }, [])
-
-    const editMachineName = useCallback((ev:InputEvent) => {
-        pendingMachineName.value = (ev.target as HTMLInputElement).value
     }, [])
 
     const submit = useCallback(async (ev:SubmitEvent) => {
@@ -52,14 +48,6 @@ export const LoginRoute:FunctionComponent<{
         isResolving.value = false
     }, [])
 
-    const isValid = useComputed<boolean>(() => {
-        return (
-            isEmailValid.value &&
-            !!(pendingMachineName.value) &&
-            !isResolving.value
-        )
-    })
-
     return html`<div class="route login">
         <form onSubmit=${submit}>
             <${TextInput}
@@ -68,17 +56,11 @@ export const LoginRoute:FunctionComponent<{
                 name="email"
             />
 
-            <${TextInput}
-                onInput=${editMachineName}
-                name="machine-name"
-                displayName="Machine name"
-            />
-
             <div class="controls">
                 <${BtnPrimary}
                     type="submit"
-                    disabled=${!isValid.value}
-                    isSpinning=${isResolving.value}
+                    disabled=${!isEmailValid.value}
+                    isSpinning=${isResolving}
                 >
                     Request a login code
                 <//>

@@ -14,11 +14,11 @@ export function LoginTemplate (data:{
         <body>
             <h1>Hello, ${name}.</h1>
             <p>
-                This is your link to login once on this machine.
+                This is your single-use link to login on this machine.
             </p>
 
             <p>
-                This will only authorize this machine for a single session,
+                This machine will be authorized for a single session,
                 meaning that you will be "logged out" on this device once
                 you close the browser tab.
             </p>
@@ -33,7 +33,7 @@ export function LoginTemplate (data:{
                             <td align="center">
                                 <p>
                                     <a href="${loginLink}" class="button">
-                                        Click here to join
+                                        Click here login
                                     </a>
                                 </p>
                             </td>
