@@ -36,11 +36,11 @@ const statements = [
     `CREATE TABLE IF NOT EXISTS pending_machine (
         machine_name        VARCHAR(255) PRIMARY KEY,
         ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        owner               UUID,
+        machine_owner               UUID,
         did                 TEXT NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          VARCHAR(255) NOT NULL,
-        FOREIGN KEY (owner) REFERENCES usr(id) ON DELETE CASCADE
+        FOREIGN KEY (machine_owner) REFERENCES usr(id) ON DELETE CASCADE
     );`,
 
     // invitation
@@ -65,11 +65,11 @@ const statements = [
     `CREATE TABLE IF NOT EXISTS machine (
         machine_name        VARCHAR(255) PRIMARY KEY,
         ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        owner               UUID,
+        machine_owner       UUID,
         did                 TEXT NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          VARCHAR(255) NOT NULL,
-        FOREIGN KEY (owner) REFERENCES usr(id) ON DELETE CASCADE
+        FOREIGN KEY (machine_owner) REFERENCES usr(id) ON DELETE CASCADE
     );`,
 
     // test data
@@ -87,7 +87,7 @@ const statements = [
 
     `INSERT INTO machine (
         machine_name,
-        owner,
+        machine_owner,
         did,
         seq,
         human_name
@@ -161,7 +161,7 @@ const statements = [
         END IF;
 
         -- Step 3: If valid, retrieve the user who owns the machine
-        SELECT owner INTO user_id
+        SELECT machine_owner INTO user_id
         FROM machine
         WHERE machine_name = machinename
         LIMIT 1;
@@ -184,7 +184,7 @@ const statements = [
             'human_name', m.human_name
         )), '[]') INTO machines
         FROM machine m
-        WHERE m.owner = user_id;
+        WHERE m.machine_owner = user_id;
 
         -- Step 6: Return the user and machines as JSON
         RETURN jsonb_build_object(
@@ -272,7 +272,7 @@ const statements = [
             -- Step 6: Create a new machine with the new user as its owner
             INSERT INTO machine (
                 machine_name,
-                owner,
+                machine_owner,
                 did,
                 seq,
                 human_name
@@ -287,7 +287,7 @@ const statements = [
             -- Retrieve the newly created machine record as JSON
             SELECT jsonb_build_object(
                 'machine_name', machine_name,
-                'owner', owner,
+                'owner', machine_owner,
                 'did', did,
                 'seq', seq,
                 'human_name', human_name

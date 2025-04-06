@@ -102,7 +102,11 @@ export const handler:Handler = async function handler (
         return { body: err.message, statusCode: 422 }
     }
 
-    const { body, email } = data
+    const trimmed = Object.keys(data).reduce((acc, k) => {
+        acc[k] = data[k].trim()
+        return acc
+    }, {} as z.infer<typeof PutRequest>)
+    const { body, email } = trimmed
     const username = slugify(data.humanName, { separator: '_' })
 
     if (email.length > 100 || username.length > 100) {
@@ -122,7 +126,7 @@ export const handler:Handler = async function handler (
             body
         ) VALUES (
             ${data.humanName},
-            ${data.email},
+            ${email},
             ${username},
             ${data.bluesky},
             ${data.body}

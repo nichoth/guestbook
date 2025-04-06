@@ -36,6 +36,10 @@ export function LoginTemplate (data:{
                                         Click here login
                                     </a>
                                 </p>
+                                <p>
+                                    This link is only valid for the next 5
+                                    minutes.
+                                </p>
                             </td>
                         </tr>
                     </table>

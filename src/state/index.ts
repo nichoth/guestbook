@@ -525,11 +525,9 @@ State.LoginToken = async function (
     state.keys.value = keys
     ky = SignedRequest(Ky, keys.signKeypair, window.localStorage)
 
-    const res = await ky.post('/api/login', {
+    await ky.post('/api/login', {
         json: { email }
-    }).json()
-
-    debug('code login response', res)
+    })
 }
 
 State.acceptTokenLogin = async function () {

@@ -169,7 +169,7 @@ export const handler:Handler = async function handler (
             const sql = neon(getDbString(process.env))
             const res = await sql`
                 WITH valid_machine AS (
-                    SELECT owner
+                    SELECT machine_owner
                     FROM machine
                     WHERE machine_name = ${machineName}
                     AND check_seq(${machineName}, ${parseInt(seq)}) = TRUE
@@ -177,7 +177,7 @@ export const handler:Handler = async function handler (
                 SELECT i.id AS code, i.remaining, i.creator, i.note, i.ts
                 FROM invitation i
                 JOIN usr u ON i.creator = u.email
-                JOIN valid_machine vm ON u.id = vm.owner;
+                JOIN valid_machine vm ON u.id = vm.machine_owner;
             `
 
             return { statusCode: 200, body: JSON.stringify(res) }
@@ -398,7 +398,7 @@ export const handler:Handler = async function handler (
                         u.email AS creator,
                         ${note} AS note
                     FROM machine m
-                    JOIN usr u ON u.email = m.owner
+                    JOIN usr u ON u.email = m.machine_owner
                     WHERE m.machine_name = ${machineName}
                         AND (SELECT seq_valid FROM seq_check)
                     RETURNING *

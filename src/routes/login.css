@@ -1,0 +1,13 @@
+.route.login {
+    & .status {
+        padding: 1rem;
+
+        &.success {
+            border: 4px solid green;
+
+            & span {
+                color: green;
+            }
+        }
+    }
+}

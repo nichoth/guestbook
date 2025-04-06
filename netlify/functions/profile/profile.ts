@@ -64,7 +64,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         WITH valid_user AS (
             SELECT u.id
             FROM usr u
-            JOIN machine m ON m.owner = u.id
+            JOIN machine m ON m.machine_owner = u.id
             WHERE m.machine_name = ${machineName}
             AND check_seq(${machineName}, ${seq}) = TRUE
         )

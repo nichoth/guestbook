@@ -46,7 +46,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     let machineName:string
     let seq:number
 
-    if (method === 'GET' || method === 'POST') {
+    if (method === 'GET') {
         const headerString = ev.headers.authorization
         if (!headerString) {
             return { body: 'Need to authenticate', statusCode: 401 }
@@ -63,9 +63,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
             console.log('**bad sig**', parsedHeader)
             return { statusCode: 403, body: 'Invalid signature' }
         }
-    }
 
-    if (method === 'GET') {
         // query the DB
         // check the the given keys are related to a user
         // check the the given `seq` number is ok
@@ -114,7 +112,6 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     if (method === 'POST') {
         // create a one-time login URL
         // this request comes from a new machine
-        // get the DID / machine name from the header
 
         // parse the message, get their email
         let msg:{ email:string }
@@ -145,7 +142,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         `
 
         if (!res || res.length === 0) {
-            console.log('**invalid user or signature**')
+            console.log('**invalid email**', email)
             return { statusCode: 422 }
         }
 
@@ -167,7 +164,6 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
             return { statusCode: 500, body: error.message }
         } else {
             return {
-                body: JSON.stringify({ code }),
                 statusCode: 200
             }
         }
@@ -176,7 +172,76 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
     if (method === 'PATCH') {
         // redeem a one-time login code
         //   - get the keys from the header
+        //   - check the timestamp is within 5 minutes
         //   - add the keys as a new machine record
+        //   - delete the login record
+
+        // get the key from the header //
+        const headerString = ev.headers.authorization
+        if (!headerString) {
+            return { body: 'Need to authenticate', statusCode: 401 }
+        }
+        const parsedHeader:ParsedHeader = parseHeader(headerString)
+        const { seq: _seq, author } = parsedHeader
+        seq = _seq
+        machineName = await getDeviceName(author)
+        if (!sanitizeHeader(seq, author)) {
+            return { body: 'Invalid header', statusCode: 403 }
+        }
+        const isOk = await verifyParsed(parsedHeader)   // check signature
+        if (!isOk) {
+            console.log('**bad sig**', parsedHeader)
+            return { statusCode: 403, body: 'Invalid signature' }
+        }
+
+        // parse the message, get their code
+        let msg:{ code:string }
+        try {
+            msg = JSON.parse(ev.body!)
+            if (!msg.code) throw new Error('Missing code')
+        } catch (err) {
+            console.log('**invalid json**', ev.body)
+            return { statusCode: 422, body: err.message }
+        }
+
+        const sql = neon(getDbString(process.env))
+
+        try {
+            // Add the new machine record and delete the login record
+            const result = await sql`
+                WITH deleted_login AS (
+                    DELETE FROM login
+                    WHERE code = ${msg.code}
+                      AND ts > NOW() - INTERVAL '5 minutes'
+                    RETURNING user_id
+                )
+                INSERT INTO machine (
+                    machine_name,
+                    machine_owner,
+                    did,
+                    seq,
+                    human_name
+                )
+                SELECT
+                    ${machineName},
+                    user_id,
+                    ${parsedHeader.author},
+                    ${seq},
+                    'New Machine'
+                FROM deleted_login
+                RETURNING machine_owner;
+            `
+
+            if (!result || result.length === 0) {
+                console.log('**invalid or expired code**', msg.code)
+                return { statusCode: 403, body: 'Invalid or expired code' }
+            }
+
+            return { statusCode: 200, body: 'Machine added successfully' }
+        } catch (err) {
+            console.log('**error**', err)
+            return { statusCode: 500, body: 'Database error' }
+        }
     }
 
     return { statusCode: 405 }

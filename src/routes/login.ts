@@ -12,11 +12,18 @@ const debug = Debug()
 
 /**
  * Route for if you lost your keys.
+ * @TODO
+ * Should deduplicate requests. Only create a new pending login record if
+ * one does not already exist for the given email.
  */
 export const LoginRoute:FunctionComponent<{
     state:ReturnType<typeof State>;
 }> = function ({ state }) {
     const pendingEmail = useSignal<string>('')
+    // false = failure
+    // null = haven't made a request yet
+    // true = success
+    const loginRequest = useSignal<boolean|null>(null)
     const isResolving = useSignal<boolean>(false)
     const isEmailValid = useComputed<boolean>(() => {
         const split = pendingEmail.value.split('@').filter(Boolean)
@@ -41,9 +48,11 @@ export const LoginRoute:FunctionComponent<{
         isResolving.value = true
         try {
             await State.LoginToken(state, pendingEmail.value)
+            loginRequest.value = true
         } catch (_err) {
             const err = _err as HTTPError
             debug('error', await err.response.text())
+            debug(err)
         }
         isResolving.value = false
     }, [])
@@ -66,5 +75,13 @@ export const LoginRoute:FunctionComponent<{
                 <//>
             </div>
         </form>
+
+        ${loginRequest.value ?
+            html`<div class="status success">
+                <span>Success.</span> If that email exists,
+                a message was sent to it.
+            </div>` :
+            null
+        }
     </div>`
 }
