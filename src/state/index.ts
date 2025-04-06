@@ -514,8 +514,29 @@ State.createInvitation = async function (state:ReturnType<typeof State>, {
     }
 }
 
+State.loginWithToken = async function (
+    state:ReturnType<typeof State>,
+    code:string,
+    machineHumanName
+):Promise<void> {
+    const keys = await Keys.load()
+    ky = SignedRequest(Ky, {
+        publicKey: keys.publicSignKey,
+        privateKey: keys.privateSignKey
+    }, window.localStorage)
+
+    const data = await ky.patch('/api/login', {
+        json: { code, machineHumanName }
+    }).json<{ user:User }>()
+
+    batch(() => {
+        state.keys.value = keys
+        state.user.value = data.user
+    })
+}
+
 /**
- * Get a single-use token via email.
+ * Create a single-use token. Send it by email.
  */
 State.LoginToken = async function (
     state:ReturnType<typeof State>,

@@ -195,49 +195,68 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         }
 
         // parse the message, get their code
-        let msg:{ code:string }
+        let msg:{ code:string, machineHumanName:string }
         try {
             msg = JSON.parse(ev.body!)
             if (!msg.code) throw new Error('Missing code')
+            if (!msg.machineHumanName) throw new Error('Missing machine name')
         } catch (err) {
             console.log('**invalid json**', ev.body)
             return { statusCode: 422, body: err.message }
         }
 
+        const code = msg.code.trim()
+        const machineHumanName = msg.machineHumanName.trim()
+
         const sql = neon(getDbString(process.env))
 
         try {
-            // Add the new machine record and delete the login record
-            const result = await sql`
+            // Add the new machine record, delete the login record,
+            // and return the user record
+            const res = await sql`
                 WITH deleted_login AS (
                     DELETE FROM login
-                    WHERE code = ${msg.code}
+                    WHERE code = ${code}
                       AND ts > NOW() - INTERVAL '5 minutes'
                     RETURNING user_id
-                )
-                INSERT INTO machine (
-                    machine_name,
-                    machine_owner,
-                    did,
-                    seq,
-                    human_name
+                ),
+                inserted_machine AS (
+                    INSERT INTO machine (
+                        machine_name,
+                        machine_owner,
+                        did,
+                        seq,
+                        human_name
+                    )
+                    SELECT
+                        ${machineName},
+                        user_id,
+                        ${parsedHeader.author},
+                        ${seq},
+                        ${machineHumanName}
+                    FROM deleted_login
+                    RETURNING machine_owner
                 )
                 SELECT
-                    ${machineName},
-                    user_id,
-                    ${parsedHeader.author},
-                    ${seq},
-                    'New Machine'
-                FROM deleted_login
-                RETURNING machine_owner;
+                    u.id,
+                    u.email,
+                    u.username,
+                    u.human_name,
+                    u.bluesky,
+                    u.body
+                FROM usr u
+                WHERE u.id = (SELECT user_id FROM deleted_login);
             `
 
-            if (!result || result.length === 0) {
-                console.log('**invalid or expired code**', msg.code)
+            if (!res || res.length === 0) {
+                console.log('**invalid or expired code**', code)
                 return { statusCode: 403, body: 'Invalid or expired code' }
             }
 
-            return { statusCode: 200, body: 'Machine added successfully' }
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ user: res[0] })
+            }
         } catch (err) {
             console.log('**error**', err)
             return { statusCode: 500, body: 'Database error' }
