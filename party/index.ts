@@ -116,13 +116,14 @@ export default class Server extends Connection implements Party.Server {
             await this.sql`
                 INSERT INTO machine (
                     machine_name,
-                    owner,
+                    machine_owner,
                     did,
                     seq,
                     human_name
                 ) VALUES (
                     ${newMachineName},
-                    (SELECT owner FROM machine WHERE machine_name = ${oldMachine.machineName}),
+                    (SELECT machine_owner FROM machine
+                    WHERE machine_name = ${oldMachine.machineName}),
                     ${did},
                     0,
                     ${humanName}
