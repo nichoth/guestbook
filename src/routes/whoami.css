@@ -13,6 +13,12 @@
         }
     }
 
+    & .component.profile {
+        & dt.note {
+            margin-top: 2rem;
+        }
+    }
+
     & ul {
         list-style: none;
         padding: 0;

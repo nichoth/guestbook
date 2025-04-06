@@ -189,7 +189,7 @@ export const Profile:FunctionComponent<{
                 }
             </dd>
 
-            <dt>note</dt>
+            <dt class="note">note</dt>
             <dd class="note">
                 ${isEditing.value ?
                     // always show an input if in edit mode
