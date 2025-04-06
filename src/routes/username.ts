@@ -23,11 +23,18 @@ export const UsernameRoute:FunctionComponent<{
         </div>`
     }
 
+    const isMe = useComputed<boolean>(() => {
+        return !!(
+            state.user.value &&
+            state.user.value.username === username
+        )
+    })
+
     if (!user.value) return null
 
     return html`<div class="route username">
         <h2>${user.value.humanName}</h2>
 
-        <${Profile} user=${user.value} />
+        <${Profile} user=${user.value} isMe=${isMe.value} />
     </div>`
 }

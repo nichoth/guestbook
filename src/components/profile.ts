@@ -22,11 +22,12 @@ if (!isRegistered(EditSquare.TAG_NAME)) {
 }
 
 export const Profile:FunctionComponent<{
+    isMe:boolean;
     user:User;
     context?:'list';
     onEdit?:(data:User)=>Promise<any>;
 }> = function Profile (props) {
-    const { user, context, onEdit } = props
+    const { user, context, onEdit, isMe } = props
     const isEditing = useSignal<boolean>(false)
     const isResolving = useSignal<boolean>(false)
 
@@ -147,12 +148,12 @@ export const Profile:FunctionComponent<{
                 }
             </dd>
 
-            ${context === 'list' ?
-                null :
+            ${(context !== 'list' && isMe) ?
                 html`
                     <dt>username</dt>
                     <dd>${slugName}</dd>
-                `
+                ` :
+                null
             }
 
             <dt>email</dt>
@@ -217,13 +218,13 @@ export const Profile:FunctionComponent<{
 
         ${isEditing.value ?
             html`<div class="controls">
-                    <${BtnPrimary}
-                        isSpinning=${isResolving}
-                        disabled=${!hasEdit.value}
-                        onClick=${handleSave}
-                    >
-                        Save
-                    <//>
+                <${BtnPrimary}
+                    isSpinning=${isResolving}
+                    disabled=${!hasEdit.value}
+                    onClick=${handleSave}
+                >
+                    Save
+                <//>
             </div>` :
             null
         }
