@@ -102,7 +102,13 @@ export const Profile:FunctionComponent<{
         })
     }, [])
 
-    return html`<div class="component profile">
+    const classes = ([
+        'component',
+        'profile',
+        isEditing.value ? 'editing' : null
+    ]).filter(Boolean).join(' ')
+
+    return html`<div class="${classes}">
         ${onEdit ?
             html`
                 <div class="controls">

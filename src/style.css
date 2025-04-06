@@ -13,7 +13,7 @@
         }
 
         & ul {
-            list-style: initial;
+            display: block;
             padding: initial;
             padding-left: 2rem;
 
