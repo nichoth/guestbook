@@ -2,11 +2,15 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { NBSP, EM_DASH } from '@substrate-system/util/constants'
 import './about.css'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 /**
  * The colophon
  */
-export const AboutRoute:FunctionComponent = function () {
+export const AboutRoute:FunctionComponent<{ state, splats }> = function (props) {
+    debug('about route', props)
+
     return html`<div class="route about">
         <h1>The Colophon</h1>
         

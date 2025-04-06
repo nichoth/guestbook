@@ -59,7 +59,11 @@ export const WhoamiRoute:FunctionComponent<{
 
     return html`<div class="route whoami">
         <h2>Who am I?</h2>
-        <${Profile} user=${state.user.value} onEdit=${editProfile} />
+        <${Profile}
+            isMe=${true}
+            user=${state.user.value}
+            onEdit=${editProfile}
+        />
 
         <h2>Your Devices</h2>
         <ul>

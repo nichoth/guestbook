@@ -59,7 +59,7 @@ export default function _Router (state:ReturnType<typeof State>):Router {
         return AcceptRoute
     })
 
-    router.addRoute('/about', () => {
+    router.addRoute('/about*', () => {
         return AboutRoute
     })
 

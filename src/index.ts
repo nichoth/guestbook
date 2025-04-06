@@ -1,5 +1,6 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
+import { NBSP } from '@substrate-system/util/constants'
 import { useCallback, useEffect, useRef } from 'preact/hooks'
 import { useSignal } from '@preact/signals'
 import { Nav } from './nav.js'
@@ -31,6 +32,7 @@ export const Guestbook:FunctionComponent = function () {
     const match = router.match(state.route.value)
     let ChildNode
     let params = {}
+    let splats = {}
     if (!match || !match.action) {
         ChildNode = () => html`<div class="fourzerofour">
             <h1>404</h1>
@@ -39,6 +41,7 @@ export const Guestbook:FunctionComponent = function () {
     } else {
         ChildNode = match.action(match, state)
         params = match.params
+        splats = match.splats
     }
 
     const successToast = useRef<SlAlert>(null)
@@ -84,7 +87,14 @@ export const Guestbook:FunctionComponent = function () {
             <${Nav} state=${state} />
         </header>
 
-        <${ChildNode} state=${state} params=${params} />
+        <${ChildNode} state=${state} params=${params} splats=${splats} />
+
+        <footer role="contentinfo">
+            This website was made by${NBSP}<a href="https://nichoth.com/">nichoth</a>
+            ${NBSP}for the${NBSP}<a href="https://innovatebellingham.org/">
+            Bellingham meetings</a>. See${NBSP}<a href="/about">the colophon</a>
+            ${NBSP}for more information.
+        </footer>
 
         <sl-alert variant="success" ref=${successToast} closable=${true}><//>
         <sl-alert

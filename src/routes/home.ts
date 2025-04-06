@@ -23,16 +23,6 @@ export const HomeRoute:FunctionComponent<{
 
         <hr />
 
-        <p>
-            This is a contact list for the <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://innovatebellingham.org/"
-            >Innovate Bellingham</a> meeting. It is only visible to other
-            members of the group. To join, you must be invited by
-            a member.
-        </p>
-
         <${MainPart} state=${state} />
     </div>`
 }
@@ -45,6 +35,16 @@ function MainPart ({ state }:{ state:ReturnType<typeof State> }) {
 
     if (!state.user.value) {  // false means this machine is not authorized
         return html`
+            <p>
+                This is a contact list for the <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://innovatebellingham.org/"
+                >Innovate Bellingham</a> meeting. It is only visible to other
+                members of the group. To join, you must be invited by
+                a member.
+            </p>
+
             <p>
                 Are you a member? <a href="/link">
                     Link this device to your existing account</a>.
