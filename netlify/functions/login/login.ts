@@ -126,6 +126,8 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
             return { statusCode: 422, body: err.toString() }
         }
 
+        const email = msg.email.trim()
+
         const sql = neon(getDbString(process.env))
         const res = await sql`
             INSERT INTO login (
@@ -137,9 +139,9 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
                 u.id,
                 NOW(),
                 gen_random_uuid()
-            FROM usr u WHERE u.email = ${msg.email}
+            FROM usr u WHERE u.email = ${email}
             RETURNING code, (SELECT human_name 
-                FROM usr WHERE usr.email = ${msg.email}) AS human_name;
+                FROM usr WHERE usr.email = ${email}) AS human_name;
         `
 
         if (!res || res.length === 0) {
@@ -150,9 +152,9 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         const { code, human_name: humanName } = res[0]
         const resend = new Resend(process.env.RESEND_KEY)
 
-        const { data, error } = await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: 'mail@bellingham.guestlist.town',
-            to: [msg.email],
+            to: [email],
             subject: 'Your single-use login code',
             html: LoginTemplate({
                 loginLink: BASE_URL + `/login/${code}`,
@@ -164,7 +166,6 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
             console.log('**error**', error)
             return { statusCode: 500, body: error.message }
         } else {
-            console.log('**sent the email**', data)
             return {
                 body: JSON.stringify({ code }),
                 statusCode: 200

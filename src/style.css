@@ -232,11 +232,11 @@ button {
             padding-bottom: 4px;
 
             &:focus~label {
-                top: -10px
+                top: -16px
             }
 
             &:not(:placeholder-shown)~label {
-                top: -14px;
+                top: -16px;
             }
         }
 
