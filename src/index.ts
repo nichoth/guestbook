@@ -89,12 +89,16 @@ export const Guestbook:FunctionComponent = function () {
 
         <${ChildNode} state=${state} params=${params} splats=${splats} />
 
-        <footer role="contentinfo">
-            This website was made by${NBSP}<a href="https://nichoth.com/">nichoth</a>
-            ${NBSP}for the${NBSP}<a href="https://innovatebellingham.org/">
-            Bellingham meetings</a>. See${NBSP}<a href="/about">the colophon</a>
-            ${NBSP}for more information.
-        </footer>
+        ${state.route.value.includes('/about') ?
+            null :
+            html`<footer role="contentinfo">
+                This website was made by${NBSP}<a href="https://nichoth.com/">nichoth</a>
+                ${NBSP}for the${NBSP}<a href="https://innovatebellingham.org/">
+                Bellingham meetings</a>. See${NBSP}<a href="/about">the colophon</a>
+                ${NBSP}for more information.
+            </footer>`
+        }
+
 
         <sl-alert variant="success" ref=${successToast} closable=${true}><//>
         <sl-alert
