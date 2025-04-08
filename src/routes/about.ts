@@ -2,15 +2,13 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { NBSP, EM_DASH } from '@substrate-system/util/constants'
 import './about.css'
-import Debug from '@substrate-system/debug'
-const debug = Debug()
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 /**
  * The colophon
  */
-export const AboutRoute:FunctionComponent<{ state, splats }> = function (props) {
-    debug('about route', props)
-
+export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props) {
     return html`<div class="route about">
         <h1>The Colophon</h1>
         
@@ -82,7 +80,7 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (props) 
         <p>
             The idea is that you have at least one machine that is always${NBSP}
             "logged in". Logged in, in this context, just means that the browser
-            has a keyapir that is authorized by the server.
+            has a keypair that is authorized by the server.
         </p>
 
         <p>
@@ -90,6 +88,8 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (props) 
             that machine. The new keypair can be time restricted, or have
             different, more granular permissions.
         </p>
+
+        <h2 id="passwords">Passwords</h2>
 
         <p>
             Some good news is that there are no passwords in this system.
@@ -100,9 +100,9 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (props) 
         </p>
 
         <p>
-            Something to keep in mind is that your web browser is the only place
-            where your keys exist. So if you do something like delete your browser
-            data, then your keys disappear too.
+            Something to keep in mind is that <strong>your web browser is the
+            only place where your keys exist</strong>. So if you do something like
+            delete your browser data, then your keys disappear too.
         </p>
 
         <p>
@@ -116,6 +116,25 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (props) 
             that is always logged in. That way, if you need to use a different
             machine, like say a public library terminal, you can use your phone
             to authorize the new machine for a limited time.
+        </p>
+
+        <h2 id="auth">Auth</h2>
+        <p>
+            Since there are no passwords, we use <a href="https://github.com/bicycle-codes/request">
+            a library called request</a> to sign all HTTP calls.
+        </p>
+
+        <h2 id="ucan">UCAN</h2>
+        <p>
+            The idea of UCANs ${EM_DASH} a token signed by an existing device
+            ${NBSP}${EM_DASH} is demonstrated here, but it's not really necessary for
+            this usecase.
+        </p>
+
+        <p>
+            Since this is a traditional, server-based application, we can have
+            some convenient things, like for example you are able to login
+            via a single-use link in an email. 
         </p>
 
         <h2 id="membership">Membership</h2>

@@ -19,7 +19,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@bicycle-codes/keys": "^0.1.12",
+    "@bicycle-codes/keys": "^0.1.14",
     "@bicycle-codes/message": "^0.9.1",
     "@bicycle-codes/one-webcrypto": "^1.1.2",
     "@bicycle-codes/request": "^0.6.20",
