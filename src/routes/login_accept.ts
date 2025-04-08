@@ -11,9 +11,9 @@ import Debug from '@substrate-system/debug'
 const debug = Debug()
 
 /**
- * When you are on a new machine, redeeming a login code.
+ * When you are on a new machine, redeeming a login code that you got by email.
  */
-export const LoginAccept:FunctionComponent<{
+export const LoginAcceptRoute:FunctionComponent<{
     state:ReturnType<typeof State>
     params:{ code:string }
 }> = function ({ state, params }) {
@@ -28,14 +28,14 @@ export const LoginAccept:FunctionComponent<{
 
     const login = useCallback(async (ev:SubmitEvent) => {
         ev.preventDefault()
-        debug('logging in', ev)
         const { code } = params
         const els = (ev.target as HTMLFormElement).elements
         const name = els['machine-name']
         const machineHumanName = name.value
         isResolving.value = true
         try {
-            await State.loginWithToken(state, code, machineHumanName)
+            await State.loginWithCode(state, code, machineHumanName)
+            state._setRoute('/')
         } catch (_err) {
             const err = _err as HTTPError
             if (err.response.status === 403) {

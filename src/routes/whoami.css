@@ -3,6 +3,12 @@
         font-size: 1.6rem;
     }
 
+    & .machine {
+        &.resolving {
+            opacity: 0.4;
+        }
+    }
+
     & span.current-machine {
         font-weight: lighter;
     }

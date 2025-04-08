@@ -69,7 +69,7 @@ export const handler:Handler = async function handler (
             SELECT 1
             FROM usr u
             -- machine must be related to the user
-            JOIN machine m ON u.email = m.machine_owner
+            JOIN machine m ON u.id = m.machine_owner
             WHERE m.machine_name = ${machineToDelete}
             -- verify the machine making the request is ok
             AND check_seq(${machineName}, ${seq}) = TRUE

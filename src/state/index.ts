@@ -71,10 +71,12 @@ export function State ():{
 
     Keys.load().then(keys => {
         if (!keys.persisted) {
-            debug('not persisted keys')
-            // not yet a user, don't create keys yet.
+            // Not yet a user; don't create keys yet.
             // We create & persist keys in the `acceptInvitation` function,
             // or the `newDeviceApproved` function
+            // or the `` function
+
+            debug('not persisted keys')
             state.user.value = false
             return
         }
@@ -514,10 +516,10 @@ State.createInvitation = async function (state:ReturnType<typeof State>, {
     }
 }
 
-State.loginWithToken = async function (
+State.loginWithCode = async function (
     state:ReturnType<typeof State>,
     code:string,
-    machineHumanName
+    machineHumanName:string
 ):Promise<void> {
     const keys = await Keys.load()
     ky = SignedRequest(Ky, {
@@ -527,11 +529,13 @@ State.loginWithToken = async function (
 
     const data = await ky.patch('/api/login', {
         json: { code, machineHumanName }
-    }).json<{ user:User }>()
+    }).json<{ user:User, machines:Machine[] }>()
 
+    await keys.persist()
     batch(() => {
         state.keys.value = keys
         state.user.value = data.user
+        state.machines.value = data.machines
     })
 }
 

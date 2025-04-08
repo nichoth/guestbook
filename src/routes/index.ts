@@ -16,7 +16,7 @@ import { UsernameRoute } from './username.js'
 import { when } from '../util.js'
 import { LoginRoute } from './login.js'
 import Debug from '@substrate-system/debug'
-import { LoginAccept } from './login_accept.js'
+import { LoginAcceptRoute } from './login_accept.js'
 const debug = Debug()
 
 /**
@@ -59,6 +59,9 @@ export default function _Router (state:ReturnType<typeof State>):Router {
         return AcceptRoute
     })
 
+    /**
+     * For the hash links, eg `mypage.com/foo#abc`
+     */
     router.addRoute('/about*', () => {
         return AboutRoute
     })
@@ -75,7 +78,7 @@ export default function _Router (state:ReturnType<typeof State>):Router {
     })
 
     router.addRoute('/login/:code', () => {
-        return LoginAccept
+        return LoginAcceptRoute
     })
 
     router.addRoute('/contact/:username', (match:{ params: { username:string }}) => {

@@ -20,6 +20,8 @@ export const WhoamiRoute:FunctionComponent<{
     state:ReturnType<typeof State>
 }> = function ({ state }) {
     const user = state.user.value
+    const errorSignal = useSignal<null|string>(null)
+    const resolving = useSignal<null|string>(null)
     if (!user) return null
 
     const currentMachine = useSignal<null|string>(null)
@@ -50,10 +52,14 @@ export const WhoamiRoute:FunctionComponent<{
         const machineName = (ev.currentTarget as HTMLButtonElement).dataset['machineid']
         const machine = machinesByName.value![machineName!]
         try {
+            resolving.value = machine.machineName
             await State.removeMachine(state, machine)
         } catch (_err) {
             const err = _err as HTTPError
+            errorSignal.value = err.message
             debug('error', err)
+        } finally {
+            resolving.value = null
         }
     }, [])
 
@@ -70,7 +76,11 @@ export const WhoamiRoute:FunctionComponent<{
             ${state.machines.value?.map(machine => {
                 const machineid = machine.machineName
                 const isCurrent = (currentMachine.value === machineid)
-                return html`<li key=${machineid}>
+                const classes = (['machine'] as (string|null)[]).concat([
+                    resolving.value === machineid ? 'resolving' : null
+                ]).filter(Boolean).join(' ')
+
+                return html`<li key=${machineid} class="${classes}">
                     <div>
                         <${Dot} color=${isCurrent ? 'green' : 'gray'} />
                         <span>${machine.humanName}</span>
@@ -99,5 +109,10 @@ export const WhoamiRoute:FunctionComponent<{
                 </li>`
             })}
         </ul>
+
+        ${errorSignal.value ?
+            html`<div class="error">${errorSignal.value}</div>` :
+            null
+        }
     </div>`
 }

@@ -18,6 +18,7 @@ import { getDbString, sanitizeHeader } from '../util.js'
  * Also, return the contact list here, b/c it saves a round-trip.
  *   - GET method -- login
  *   - POST method -- create a new one-time login URL
+ *   - PATCH method -- redeem a single-use login code that you got via email
  */
 export const handler:Handler = async function handler (ev:HandlerEvent) {
     let BASE_URL = 'https://bellingham.guestlist.town'
@@ -212,7 +213,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
 
         try {
             // Add the new machine record, delete the login record,
-            // and return the user record
+            // and manually retrieve the user record with machines
             const res = await sql`
                 WITH deleted_login AS (
                     DELETE FROM login
@@ -238,24 +239,48 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
                     RETURNING machine_owner
                 )
                 SELECT
-                    u.id,
+                    u.id AS user_id,
                     u.email,
                     u.username,
                     u.human_name,
                     u.bluesky,
-                    u.body
+                    u.body,
+                    COALESCE(
+                        json_agg(
+                            json_build_object(
+                                'machine_name', m.machine_name,
+                                'human_name', m.human_name
+                            )
+                        ) FILTER (WHERE m.machine_name IS NOT NULL),
+                        '[]'
+                    ) AS machines
                 FROM usr u
-                WHERE u.id = (SELECT user_id FROM deleted_login);
+                LEFT JOIN machine m ON u.id = m.machine_owner
+                WHERE u.id = (SELECT user_id FROM deleted_login)
+                GROUP BY u.id;
             `
+
+            console.log('**results**', res[0])
 
             if (!res || res.length === 0) {
                 console.log('**invalid or expired code**', code)
                 return { statusCode: 403, body: 'Invalid or expired code' }
             }
 
+            const { machines, human_name: humanName, ...user } = res[0]
+
             return {
                 statusCode: 200,
-                body: JSON.stringify({ user: res[0] })
+                body: JSON.stringify({
+                    user: {
+                        ...user,
+                        humanName
+                    },
+                    machines: machines.map(machine => ({
+                        machineName: machine.machine_name,
+                        humanName: machine.human_name
+                    }))
+                })
             }
         } catch (err) {
             console.log('**error**', err)

@@ -11,7 +11,8 @@ import Debug from '@substrate-system/debug'
 const debug = Debug()
 
 /**
- * Route for if you lost your keys.
+ * Route for requesting a login code via email.
+ *
  * @TODO
  * Should deduplicate requests. Only create a new pending login record if
  * one does not already exist for the given email.
@@ -64,6 +65,10 @@ export const LoginRoute:FunctionComponent<{
                 displayName="Email"
                 name="email"
             />
+
+            <div class="help-text">
+                Send an email with a single-use login code.
+            </div>
 
             <div class="controls">
                 <${BtnPrimary}

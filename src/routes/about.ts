@@ -2,8 +2,6 @@ import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
 import { NBSP, EM_DASH } from '@substrate-system/util/constants'
 import './about.css'
-// import Debug from '@substrate-system/debug'
-// const debug = Debug()
 
 /**
  * The colophon
