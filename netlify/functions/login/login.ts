@@ -260,10 +260,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
                 GROUP BY u.id;
             `
 
-            console.log('**results**', res[0])
-
             if (!res || res.length === 0) {
-                console.log('**invalid or expired code**', code)
                 return { statusCode: 403, body: 'Invalid or expired code' }
             }
 
@@ -279,7 +276,10 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
                     machines: machines.map(machine => ({
                         machineName: machine.machine_name,
                         humanName: machine.human_name
-                    }))
+                    })).concat({
+                        machineName,
+                        humanName: machineHumanName
+                    })
                 })
             }
         } catch (err) {
