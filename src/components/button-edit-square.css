@@ -1,4 +1,7 @@
 button.btn-edit-square {
+    background-color: transparent;
+    border: none;
+
     /* display: flex;
     justify-content: center; */
     height: fit-content;

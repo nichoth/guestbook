@@ -12,6 +12,7 @@ export const BtnEditSquare:FunctionComponent<{
     isResolving?:boolean;
     type?:'submit'|'reset'|'button';
     class?:string;
+    ariaLabel?:string;
     disabled?:string;
     onClick?:(ev:MouseEvent)=>Promise<any>;
 }> = function Btn (props) {
@@ -21,7 +22,8 @@ export const BtnEditSquare:FunctionComponent<{
         isResolving ? 'resolving' : null]).filter(Boolean).join(' ')
 
     return html`<button
-        aria-label="Edit"
+        ...${props}
+        aria-label=${props.ariaLabel || 'Edit'}
         class="${classes}"
         onClick=${props.onClick}
         disabled=${props.disabled}

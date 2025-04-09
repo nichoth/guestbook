@@ -19,18 +19,8 @@ import { getDbString, sanitizeHeader } from '../util.js'
 export const handler:Handler = async function handler (
     ev:HandlerEvent,
 ) {
-    if (ev.httpMethod !== 'DELETE') {
+    if (ev.httpMethod !== 'DELETE' && ev.httpMethod !== 'POST') {
         return { body: null, statusCode: 405 }
-    }
-
-    // parse the body
-    let machineToDelete:string
-    try {
-        const body:{ machineName } = JSON.parse(ev.body!)
-        machineToDelete = body.machineName
-    } catch (_err) {
-        console.log('**bad json**', ev.body)
-        return { body: 'Invalid JSON', statusCode: 422 }
     }
 
     let author:string, seq:number
@@ -57,24 +47,73 @@ export const handler:Handler = async function handler (
         return { body: err.toString(), statusCode: 403 }
     }
 
+    // parse the body
+    let machineId:string
+    let humanName:string
+    try {
+        const body:{ machineName, humanName } = JSON.parse(ev.body!)
+        machineId = body.machineName
+        humanName = body.humanName
+        if (!machineId) throw new Error('not machine id')
+    } catch (_err) {
+        console.log('**bad json**', ev.body)
+        return { body: 'Invalid JSON', statusCode: 422 }
+    }
+
     const machineName = await getDeviceName(author)
+    const sql = neon(getDbString(process.env))
+
+    if (ev.httpMethod === 'POST') {
+        if (!humanName) return { body: 'Missing human name', statusCode: 422 }
+
+        // update machine record
+        try {
+            await sql`
+                UPDATE machine
+                SET human_name = ${humanName}
+                WHERE machine_name = ${machineId}
+                AND EXISTS (
+                    SELECT 1
+                    FROM usr u
+                    -- machine must be related to the user
+                    JOIN machine m ON u.id = m.machine_owner
+                    WHERE m.machine_name = ${machineId}
+                    -- verify the machine making the request is ok
+                    AND check_seq(${machineName}, ${seq}) = TRUE
+                );
+            `
+        } catch (err) {
+            console.log('**SQL error**', err)
+            return { body: err.message, statusCode: 500 }
+        }
+
+        return { statusCode: 204 }
+    }
+
+    //
+    // method is DELETE
+    //
 
     // Verify the author using the check_seq function,
     // delete the machine
-    const sql = neon(getDbString(process.env))
-    await sql`
-        DELETE FROM machine
-        WHERE machine_name = ${machineToDelete}
-        AND EXISTS (
-            SELECT 1
-            FROM usr u
-            -- machine must be related to the user
-            JOIN machine m ON u.id = m.machine_owner
-            WHERE m.machine_name = ${machineToDelete}
-            -- verify the machine making the request is ok
-            AND check_seq(${machineName}, ${seq}) = TRUE
-        );
-    `
+    try {
+        await sql`
+            DELETE FROM machine
+            WHERE machine_name = ${machineId}
+            AND EXISTS (
+                SELECT 1
+                FROM usr u
+                -- machine must be related to the user
+                JOIN machine m ON u.id = m.machine_owner
+                WHERE m.machine_name = ${machineId}
+                -- verify the machine making the request is ok
+                AND check_seq(${machineName}, ${seq}) = TRUE
+            );
+        `
+    } catch (err) {
+        console.log('**SQL error**', err)
+        return { body: err.message, statusCode: 500 }
+    }
 
     return { statusCode: 204 }
 }

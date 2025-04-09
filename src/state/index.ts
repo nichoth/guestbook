@@ -199,7 +199,7 @@ State.removeMachine = async function (
     debug('removing this one...', machine)
 
     const res = await ky.delete('/api/machine', {
-        json: machine
+        json: { machineId: machine.machineName }
     })
 
     state.machines.value = state.machines.value!.filter(m => {
@@ -245,6 +245,19 @@ State.init = async function (state:ReturnType<typeof State>):Promise<void> {
     if (data.machines) {
         state.machines.value = data.machines
     }
+}
+
+State.editMachine = function (
+    state:ReturnType<typeof State>,
+    { machineName }:Machine
+) {
+    const machine = state.machines.value?.find((machine) => {
+        return machine.machineName === machineName
+    })
+
+    return ky.post('/api/machine', {
+        json: { machine }
+    })
 }
 
 State.updateProfile = async function (

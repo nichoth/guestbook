@@ -36,7 +36,7 @@ const statements = [
     `CREATE TABLE IF NOT EXISTS pending_machine (
         machine_name        VARCHAR(255) PRIMARY KEY,
         ts                  TIMESTAMP    WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        machine_owner               UUID,
+        machine_owner       UUID,
         did                 TEXT NOT NULL,
         seq                 INT DEFAULT 0,
         human_name          VARCHAR(255) NOT NULL,
@@ -287,7 +287,7 @@ const statements = [
             -- Retrieve the newly created machine record as JSON
             SELECT jsonb_build_object(
                 'machine_name', machine_name,
-                'owner', machine_owner,
+                'machine_owner', machine_owner,
                 'did', did,
                 'seq', seq,
                 'human_name', human_name
