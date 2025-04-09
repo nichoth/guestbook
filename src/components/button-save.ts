@@ -3,8 +3,8 @@ import { type FunctionComponent } from 'preact'
 import { SaveCloud, register } from '@substrate-system/icons/save-cloud'
 import { isRegistered } from '@substrate-system/web-component'
 import './button-save.css'
-import Debug from '@substrate-system/debug'
-const debug = Debug()
+// import Debug from '@substrate-system/debug'
+// const debug = Debug()
 
 if (!isRegistered(SaveCloud.TAG_NAME)) {
     register()
@@ -17,7 +17,6 @@ export const BtnSaveCloud:FunctionComponent<{
     onClick?:(ev:MouseEvent)=>Promise<any>;
     title?:string;
 }> = function Btn (_props) {
-    debug('props', _props)
     const { isResolving, title, ...props } = _props
     const classes = ([
         'icon-btn',

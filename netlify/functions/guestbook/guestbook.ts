@@ -4,6 +4,7 @@ import type {
 } from '@netlify/functions'
 import { getDeviceName } from '@bicycle-codes/keys'
 import { z } from 'zod'
+import slugify from '@sindresorhus/slugify'
 import { neon } from '@neondatabase/serverless'
 import {
     verifyParsed,
@@ -11,7 +12,6 @@ import {
     type ParsedHeader
 } from '@bicycle-codes/request'
 import { getDbString, sanitizeHeader } from '../util.js'
-import slugify from '@sindresorhus/slugify'
 
 const PutRequest = z.object({
     humanName: z.string().max(100),

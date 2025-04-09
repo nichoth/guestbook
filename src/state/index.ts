@@ -249,15 +249,24 @@ State.init = async function (state:ReturnType<typeof State>):Promise<void> {
 
 State.editMachine = function (
     state:ReturnType<typeof State>,
-    { machineName }:Machine
+    newMachineData:Machine
 ) {
-    const machine = state.machines.value?.find((machine) => {
-        return machine.machineName === machineName
+    const res = ky.post('/api/machine', {
+        json: newMachineData
     })
 
-    return ky.post('/api/machine', {
-        json: { machine }
+    const { machineName } = newMachineData
+
+    state.machines.value = state.machines.value!.map(machine => {
+        if (machine.machineName !== machineName) return machine
+
+        return {
+            ...machine,
+            humanName: newMachineData.humanName
+        }
     })
+
+    return res
 }
 
 State.updateProfile = async function (

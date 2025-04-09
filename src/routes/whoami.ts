@@ -7,6 +7,7 @@ import {
     useComputed,
     useSignal,
     useSignalEffect,
+    batch,
     type Signal
 } from '@preact/signals'
 import type { Machine, User } from '../types.js'
@@ -79,7 +80,7 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
     errorSignal:Signal<string|null>;
     editing:Signal<string|null>
 }) {
-    const resolving = useSignal<null|string>(null)
+    const resolving = useSignal<null|undefined|string>(null)
     const currentMachine = useSignal<null|string>(null)
     const machineid = machine.machineName
     const isCurrent = (currentMachine.value === machineid)
@@ -127,18 +128,28 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
         ev.preventDefault()
         const btn = ev.currentTarget as HTMLButtonElement
         const data = btn.dataset
-        debug('data.machineid', data.machineid)
         const machineName = data.machineid
         const machine = machinesByName.value![machineName!]
+        const newValue = (document.getElementById('new-machine-name') as HTMLInputElement)
+        const humanName = newValue.value
+        resolving.value = machineName
         try {
             await State.editMachine(state, {
                 ...machine,
-                machineName: machineName!
+                humanName
+            })
+
+            batch(() => {
+                editing.value = null
+                resolving.value = null
             })
         } catch (_err) {
-            // show non-200 reposes
+            // show non-200 reponses
             const err = _err as HTTPError
-            errorSignal.value = await err.response.text()
+            batch(async () => {
+                errorSignal.value = await err.response.text()
+                resolving.value = null
+            })
         }
     }, [])
 
@@ -153,7 +164,6 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
         const btn = ev.currentTarget as HTMLButtonElement
         const data = btn.dataset
         const machineName = data.machineid
-        debug('edit this machine', machineName)
         const machine = machinesByName.value![machineName!]
         editing.value = machine.machineName
     }, [])
@@ -161,12 +171,19 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
     return html`<li key=${machineid} class="${classes}">
         <div>
             <${Dot} color=${isCurrent ? 'green' : 'gray'} />
-            ${(editing.value && editing.value === machine.machineName) ?
+            ${
+                // editing ? show an input
+                (editing.value && editing.value === machine.machineName) ?
                 html`
-                    <input name="edit-machine" type="text" class="inline"
+                    <input
+                        id="new-machine-name"
+                        autofocus=${true}
+                        type="text"
+                        class="inline"
                         defaultValue=${machine.humanName}
                     />
                 ` :
+                // else, show the name
                 html`
                     <span>${machine.humanName}</span>
                     ${isCurrent ?
@@ -188,8 +205,17 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
                 ${(editing.value && editing.value === machine.machineName) ?
                     // are we editing? show save button
                     html`
+                        <sl-tooltip content="Save machine name">
+                            <${BtnSaveCloud}
+                                onClick=${postUpdate}
+                                aria-label="Save"
+                                data-machineid=${machineid}
+                            />
+                        </sl-tooltip>
+
                         <sl-tooltip content="Cancel">
                             <${IconX}
+                                class="cancel"
                                 data-machineid=${machineid}
                                 aria-label="Remove"
                                 name="x-circle"
@@ -218,11 +244,13 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
                     ${(editing.value && editing.value === machine.machineName) ?
                         // are we editing? show save button
                         html`
-                            <${BtnSaveCloud}
-                                onClick=${postUpdate}
-                                aria-label="Save"
-                                data-machineid=${machineid}
-                            />
+                            <sl-tooltip content="Save machine name">
+                                <${BtnSaveCloud}
+                                    onClick=${postUpdate}
+                                    aria-label="Save"
+                                    data-machineid=${machineid}
+                                />
+                            </sl-tooltip>
                             <sl-tooltip content="Cancel">
                                 <${IconX}
                                     class="cancel"
