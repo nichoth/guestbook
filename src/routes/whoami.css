@@ -1,6 +1,13 @@
 .route.whoami {
-    & sl-icon-button {
-        font-size: 1.6rem;
+    & .icon-button {
+        &.cancel {
+            outline: none;
+            border: none;
+
+            &:hover {
+                outline: none;
+            }
+        }
     }
 
     & .machine {

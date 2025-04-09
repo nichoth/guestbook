@@ -16,6 +16,7 @@ import { BtnEditSquare } from '../components/button-edit-square.js'
 import '../components/dl.css'
 import './whoami.css'
 import { IconX } from '../components/icon-close-x.js'
+import { BtnSaveCloud } from '../components/button-save.js'
 import Debug from '@substrate-system/debug'
 const debug = Debug()
 
@@ -162,7 +163,9 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
             <${Dot} color=${isCurrent ? 'green' : 'gray'} />
             ${(editing.value && editing.value === machine.machineName) ?
                 html`
-                    <input name="edit-machine" type="text" class="inline" />
+                    <input name="edit-machine" type="text" class="inline"
+                        defaultValue=${machine.humanName}
+                    />
                 ` :
                 html`
                     <span>${machine.humanName}</span>
@@ -185,7 +188,6 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
                 ${(editing.value && editing.value === machine.machineName) ?
                     // are we editing? show save button
                     html`
-                        <span>save button here</span>
                         <sl-tooltip content="Cancel">
                             <${IconX}
                                 data-machineid=${machineid}
@@ -213,22 +215,46 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
             // not current machine
             // edit button and delete button
             html`<div>
-                <sl-tooltip content="Edit machine name">
-                    <${BtnEditSquare}
-                        title=${''}
-                        data-machineid=${machineid}
-                        aria-label="Edit"
-                        onClick=${editMachine}
-                    />
-                </sl-tooltip>
-                <sl-tooltip content="Remove this machine">
-                    <${IconX}
-                        data-machineid=${machineid}
-                        aria-label="Remove"
-                        name="x-circle"
-                        onClick=${removeMachine}
-                    />
-                </sl-tooltip>
+                    ${(editing.value && editing.value === machine.machineName) ?
+                        // are we editing? show save button
+                        html`
+                            <${BtnSaveCloud}
+                                onClick=${postUpdate}
+                                aria-label="Save"
+                                data-machineid=${machineid}
+                            />
+                            <sl-tooltip content="Cancel">
+                                <${IconX}
+                                    class="cancel"
+                                    data-machineid=${machineid}
+                                    aria-label="Cancel edit"
+                                    name="x-circle"
+                                    onClick=${cancelEdit}
+                                />
+                            </sl-tooltip>
+                        ` :
+                        // else, show edit button
+                        html`<sl-tooltip content="Edit machine name">
+                            <${BtnEditSquare}
+                                title=${''}
+                                data-machineid=${machineid}
+                                aria-label="Edit"
+                                onClick=${editMachine}
+                            />
+                        </sl-tooltip>`
+                    }
+
+                    ${editing.value === machine.machineName ?
+                        null :
+                        html`<sl-tooltip content="Remove this machine">
+                            <${IconX}
+                                data-machineid=${machineid}
+                                aria-label="Remove"
+                                name="x-circle"
+                                onClick=${removeMachine}
+                            />
+                        </sl-tooltip>`
+                    }
             </div>`
         }
     </li>`
