@@ -123,6 +123,8 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
         }
     }, [])
 
+    // use the onFocus event to hightlight text
+
     const postUpdate = useCallback(async (ev:MouseEvent) => {
         // call the API
         ev.preventDefault()

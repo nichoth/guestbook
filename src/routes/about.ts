@@ -82,9 +82,16 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
         </p>
 
         <p>
-            To use a different machine, you authorize a new keypair owned by
-            that machine. The new keypair can be time restricted, or have
-            different, more granular permissions.
+            Since, at the end of the day, this is a traditional, server-based
+            application, we can add some convenient things. Like for example,
+            you are able to login via a single-use link that we send in an
+            email.
+        </p>
+
+        <p>
+            For that reason, UCANs are not necessary here, since there is no need
+            for a document signed by your existing device. Authorization is
+            handled all server-side.
         </p>
 
         <h2 id="passwords">Passwords</h2>
@@ -95,6 +102,12 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
             "non-extractable"</a> keypairs in your browser. This eliminates
             a security vector ${EM_DASH} there are no passwords to think about.
+        </p>
+
+        <p>
+            All requests are signed by your keys, with
+            ${NBSP}<a href="https://github.com/bicycle-codes/request">a
+                library called <code>request</code></a>.
         </p>
 
         <p>
@@ -114,25 +127,6 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
             that is always logged in. That way, if you need to use a different
             machine, like say a public library terminal, you can use your phone
             to authorize the new machine for a limited time.
-        </p>
-
-        <h2 id="auth">Auth</h2>
-        <p>
-            Since there are no passwords, we use <a href="https://github.com/bicycle-codes/request">
-            a library called request</a> to sign all HTTP calls.
-        </p>
-
-        <h2 id="ucan">UCAN</h2>
-        <p>
-            The idea of UCANs ${EM_DASH} a token signed by an existing device
-            ${NBSP}${EM_DASH} is demonstrated here, but it's not really necessary for
-            this usecase.
-        </p>
-
-        <p>
-            Since this is a traditional, server-based application, we can have
-            some convenient things, like for example you are able to login
-            via a single-use link in an email. 
         </p>
 
         <h2 id="membership">Membership</h2>
