@@ -230,7 +230,6 @@ function MachineRecord ({ state, machine, errorSignal, editing }:{
                     html`
                         <sl-tooltip content="Edit machine name">
                             <${BtnEditSquare}
-                                title=${false}
                                 data-machineid=${machineid}
                                 aria-label="Edit"
                                 onClick=${editMachine}
