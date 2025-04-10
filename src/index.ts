@@ -60,14 +60,17 @@ export const Guestbook:FunctionComponent = function () {
         isHamburgerOpen.value = !(isHamburgerOpen.value)
     }, [])
 
-    const logout = useCallback((ev:MouseEvent) => {
+    const logout = useCallback(async (ev:MouseEvent) => {
         ev.preventDefault()
         debug('logout')
+
         // delete the keys and user from state
+        await state.keys.value!.delete()
         batch(() => {
             state.keys.value = null
-            state.user.value = null
+            state.user.value = false
         })
+        state._setRoute('/logout')
     }, [])
 
     const classes = ([
@@ -102,7 +105,7 @@ export const Guestbook:FunctionComponent = function () {
                 ${state.user.value ?
                     html`
                         <sl-tooltip content="Logout">
-                            <${BtnLogout} onClick=${logout} title=${false} />
+                            <${BtnLogout} onClick=${logout} />
                         </sl-tooltip>
                     ` :
                     null

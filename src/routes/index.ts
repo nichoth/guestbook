@@ -17,6 +17,7 @@ import { when } from '../util.js'
 import { LoginRoute } from './login.js'
 import Debug from '@substrate-system/debug'
 import { LoginAcceptRoute } from './login_accept.js'
+import { LogoutRoute } from './logout.js'
 const debug = Debug()
 
 /**
@@ -79,6 +80,10 @@ export default function _Router (state:ReturnType<typeof State>):Router {
 
     router.addRoute('/login/:code', () => {
         return LoginAcceptRoute
+    })
+
+    router.addRoute('/logout', () => {
+        return LogoutRoute
     })
 
     router.addRoute('/contact/:username', (match:{ params: { username:string }}) => {
