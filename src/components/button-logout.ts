@@ -33,6 +33,7 @@ export const BtnLogout:FunctionComponent<{
         onClick=${props.onClick}
         disabled=${props.disabled}
     >
-        <log-out title=${_title}></log-out>
+        <log-out></log-out>
+        <span class="visually-hidden">${_title}</span>
     </button>`
 }

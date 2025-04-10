@@ -10,6 +10,10 @@
     &:hover {
         opacity: 0.4;
     }
+
+    & log-out, & edit-square {
+        pointer-events: none;
+    }
 }
 
 .markdown {
@@ -155,6 +159,7 @@ header {
         align-items: center;
         width: 100%;
         border-bottom: 2px solid;
+        margin-bottom: 0.2rem;
 
         & button.btn-logout {
             position: relative;
@@ -198,8 +203,6 @@ header {
                 }
             }
         }
-
-        
     }
 
     & ul {
@@ -208,7 +211,8 @@ header {
         display: flex;
         flex-flow: row wrap;
         justify-content: space-around;
-        gap: 1rem
+        gap: 1rem;
+        margin-bottom: 0.2rem;
     }
 }
 

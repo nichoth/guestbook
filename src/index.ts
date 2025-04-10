@@ -2,7 +2,7 @@ import { html } from 'htm/preact'
 import { type FunctionComponent, render } from 'preact'
 import { NBSP } from '@substrate-system/util/constants'
 import { useCallback, useEffect, useRef } from 'preact/hooks'
-import { useSignal } from '@preact/signals'
+import { useSignal, batch } from '@preact/signals'
 import { Nav, createLinks } from './nav.js'
 import { State } from './state/index.js'
 import Router from './routes/index.js'
@@ -15,6 +15,7 @@ import type { SlAlert } from '@shoelace-style/shoelace'
 import '@shoelace-style/shoelace/dist/components/alert/alert.js'
 import '@shoelace-style/shoelace/dist/themes/light.css'
 import '@shoelace-style/shoelace/dist/components/icon/icon.js'
+import '@substrate-system/a11y'
 import { createDebug } from '@substrate-system/debug'
 const debug = createDebug()
 
@@ -62,6 +63,11 @@ export const Guestbook:FunctionComponent = function () {
     const logout = useCallback((ev:MouseEvent) => {
         ev.preventDefault()
         debug('logout')
+        // delete the keys and user from state
+        batch(() => {
+            state.keys.value = null
+            state.user.value = null
+        })
     }, [])
 
     const classes = ([
@@ -94,7 +100,11 @@ export const Guestbook:FunctionComponent = function () {
                 </h1>
 
                 ${state.user.value ?
-                    html`<${BtnLogout} onClick=${logout} />` :
+                    html`
+                        <sl-tooltip content="Logout">
+                            <${BtnLogout} onClick=${logout} title=${false} />
+                        </sl-tooltip>
+                    ` :
                     null
                 }
             </div>

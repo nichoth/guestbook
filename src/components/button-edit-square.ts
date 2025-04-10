@@ -12,7 +12,7 @@ export const BtnEditSquare:FunctionComponent<{
     isResolving?:boolean;
     type?:'submit'|'reset'|'button';
     class?:string;
-    ariaLabel?:string;
+    'aria-label'?:string;
     disabled?:string;
     onClick?:(ev:MouseEvent)=>Promise<any>;
 }> = function Btn (props) {
@@ -23,11 +23,12 @@ export const BtnEditSquare:FunctionComponent<{
 
     return html`<button
         ...${props}
-        aria-label=${props.ariaLabel || 'Edit'}
+        aria-label=${props['aria-label'] || 'Edit'}
         class="${classes}"
         onClick=${props.onClick}
         disabled=${props.disabled}
     >
-        <edit-square></edit-square>
+        <edit-square title="Edit"></edit-square>
+        <span class="visually-hidden">Edit</span>
     </button>`
 }
