@@ -1,12 +1,22 @@
 import { html } from 'htm/preact'
 import { type FunctionComponent } from 'preact'
+import { useEffect } from 'preact/hooks'
 import { NBSP, EM_DASH } from '@substrate-system/util/constants'
+import { anchor } from '@substrate-system/anchor'
 import './about.css'
+import Debug from '@substrate-system/debug'
+const debug = Debug()
 
 /**
  * The colophon
  */
 export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props) {
+    useEffect(() => {
+        // wait until things render
+        debug('splats...', _props.splats)
+        anchor({ visible: 'touch' })
+    }, [])
+
     return html`<div class="route about">
         <h1>The Colophon</h1>
         

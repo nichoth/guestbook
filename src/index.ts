@@ -35,6 +35,7 @@ export const Guestbook:FunctionComponent = function () {
     let ChildNode
     let params = {}
     let splats = {}
+    debug('state route value', state.route.value)
     if (!match || !match.action) {
         ChildNode = () => html`<div class="fourzerofour">
             <h1>404</h1>
@@ -46,6 +47,7 @@ export const Guestbook:FunctionComponent = function () {
         splats = match.splats
     }
 
+    // setup shoelace toasts
     const successToast = useRef<SlAlert>(null)
     const errorToast = useRef<SlAlert>(null)
     useEffect(() => {

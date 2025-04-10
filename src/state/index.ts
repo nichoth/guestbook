@@ -6,6 +6,7 @@ import Ky, { type KyInstance, type HTTPError } from 'ky'
 import Route from 'route-event'
 import { SignedRequest, HeaderFactory } from '@bicycle-codes/request'
 import Debug from '@substrate-system/debug'
+import { waitFor } from '@substrate-system/dom'
 import { type RefObject } from 'preact'
 import type SlAlert from '@shoelace-style/shoelace/dist/components/alert/alert.component.js'
 import type { Invitation, User, Machine, Contact, ClientSideMachine } from '../types'
@@ -66,7 +67,7 @@ export function State ():{
         party: signal(null),
         notes: signal(null),
         error: signal(null),
-        route: signal<string>(location.pathname + location.search)
+        route: signal<string>(location.pathname + location.hash + location.search)
     }
 
     Keys.load().then(keys => {
@@ -89,19 +90,34 @@ export function State ():{
     /**
      * set the app state to match the browser URL
      */
-    onRoute((path:string, data) => {
+    onRoute(async (path:string, data) => {
         // for github pages
         state.route.value = path
+        const hash = path.split('#')[1]
         // handle scroll state like a web browser
         // (restore scroll position on back/forward)
         if (data.popstate) {
+            if (path.includes('#')) {
+                return scrollToLink('#' + hash)
+            }
             return window.scrollTo(data.scrollX, data.scrollY)
         }
+
+        // anchor links
+        if (path.includes('#')) {
+            return scrollToLink('#' + path.split('#')[1])
+        }
+
         // if this was a link click (not back button), then scroll to top
         window.scrollTo(0, 0)
     })
 
     return state
+}
+
+async function scrollToLink (id:string) {
+    const el = await waitFor(id)
+    el?.scrollIntoView()
 }
 
 /**
