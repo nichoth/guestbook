@@ -1,0 +1,15 @@
+button.btn-logout {
+    background-color: transparent;
+    border: none;
+
+    &:disabled {
+        opacity: 0.4;
+    }
+
+    & log-out {
+        & svg {
+            height: 1.4rem;
+            width: 1.4rem;
+        }
+    }
+}

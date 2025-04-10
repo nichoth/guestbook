@@ -17,10 +17,6 @@
                 width: 1.4rem;
                 height: 1.4rem;
             }
-
-            &:hover {
-                opacity: 0.4;
-            }
         }
     }
 

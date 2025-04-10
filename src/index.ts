@@ -3,9 +3,10 @@ import { type FunctionComponent, render } from 'preact'
 import { NBSP } from '@substrate-system/util/constants'
 import { useCallback, useEffect, useRef } from 'preact/hooks'
 import { useSignal } from '@preact/signals'
-import { Nav } from './nav.js'
+import { Nav, createLinks } from './nav.js'
 import { State } from './state/index.js'
 import Router from './routes/index.js'
+import { BtnLogout } from './components/button-logout.js'
 import { HamburgerWrapper } from './components/hamburger.js'
 import { MobileNav } from './components/mobile-nav-menu.js'
 import '@substrate-system/css-normalize'
@@ -14,8 +15,8 @@ import type { SlAlert } from '@shoelace-style/shoelace'
 import '@shoelace-style/shoelace/dist/components/alert/alert.js'
 import '@shoelace-style/shoelace/dist/themes/light.css'
 import '@shoelace-style/shoelace/dist/components/icon/icon.js'
-// import { createDebug } from '@substrate-system/debug'
-// const debug = createDebug()
+import { createDebug } from '@substrate-system/debug'
+const debug = createDebug()
 
 const state = State()
 const router = Router(state)
@@ -58,6 +59,11 @@ export const Guestbook:FunctionComponent = function () {
         isHamburgerOpen.value = !(isHamburgerOpen.value)
     }, [])
 
+    const logout = useCallback((ev:MouseEvent) => {
+        ev.preventDefault()
+        debug('logout')
+    }, [])
+
     const classes = ([
         'index',
         state.user.value === null ? 'loading' : null
@@ -72,17 +78,26 @@ export const Guestbook:FunctionComponent = function () {
         ><//>
 
         <${MobileNav} isOpen=${isHamburgerOpen}>
-            <a className="app-nav" href="/example">Example</a>
-            <a className="app-nav" href="/example2">Example2</a>
-            <a className="app-nav" href="/example3">Example3</a>
+            ${createLinks(state).map(link => {
+                return html`<a className="app-nav" href="${link.href}">
+                    ${link.text}
+                </a>`
+            })}
         <//>
 
         <header>
-            <h1>
-                <a href="/">
-                    Bellingham Guestlist
-                </a>
-            </h1>
+            <div>
+                <h1>
+                    <a href="/">
+                        Bellingham Guestlist
+                    </a>
+                </h1>
+
+                ${state.user.value ?
+                    html`<${BtnLogout} onClick=${logout} />` :
+                    null
+                }
+            </div>
 
             <${Nav} state=${state} />
         </header>

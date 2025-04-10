@@ -6,6 +6,12 @@
     --danger: red;
 }
 
+.icon-btn {
+    &:hover {
+        opacity: 0.4;
+    }
+}
+
 .markdown {
     & .markup {
         & p {
@@ -114,10 +120,6 @@ body {
     }
 
     margin-bottom: 2rem;
-
-    &.hamburging {
-        position: fixed;
-    }
 }
 
 pre {
@@ -146,20 +148,31 @@ p {
     line-height: calc(3ex + 4px);
 }
 
-h1 {
-    font-size: 1.4rem;
-    border-bottom: 2px solid;
-
-    & a {
-        color: black;
-        text-decoration: none;
-    }
-}
-
 header {
+    & > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        border-bottom: 2px solid;
+
+        & button.btn-logout {
+            position: relative;
+            bottom: 8px;
+        }
+    }
+
     & h1 {
+        font-size: 1.4rem;
+        margin: 0;
         margin-bottom: 0.2rem;
         text-align: center;
+        width: calc(100% + 1.4rem);
+
+        & a {
+            color: black;
+            text-decoration: none;
+        }
     }
 
     & nav {
@@ -272,11 +285,13 @@ button {
 /* ----------------------- /shoelace overrides ---------------------------- */
 
 @media (max-width: 600px) {
-    nav {
-        height: 5rem;
-
-        & ul {
-            gap: 1.5rem;
+    header {
+        & button.btn-logout {
+            display: none;
         }
+    }
+
+    nav {
+        display: none;
     }
 }

@@ -12,7 +12,7 @@
 
     &.open {
         top: 0;
-        right: -4px;
+        right: 1rem;
 
         & .burger {
             & .line {
@@ -63,7 +63,6 @@
         width: 31px;
         display: block;
         position: relative;
-        right: 5px;
 
         & button {
             position: relative;
@@ -72,9 +71,8 @@
     }
 
     &.open {
-        & .burger {
-            right: 0;
-        }
+        position: relative;
+        top: 1rem;
 
         & .line {
             &.bottom {
