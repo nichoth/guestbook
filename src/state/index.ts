@@ -91,15 +91,14 @@ export function State ():{
      * set the app state to match the browser URL
      */
     onRoute(async (path:string, data) => {
-        // for github pages
-        state.route.value = path
-        const hash = path.split('#')[1]
         // handle scroll state like a web browser
         // (restore scroll position on back/forward)
         if (data.popstate) {
             if (path.includes('#')) {
+                const hash = path.split('#')[1]
                 return scrollToLink('#' + hash)
             }
+
             return window.scrollTo(data.scrollX, data.scrollY)
         }
 
