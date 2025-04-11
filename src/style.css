@@ -106,7 +106,8 @@ body {
     & .sl-toast-stack {
         width: 80vw;
         left: 10vw;
-        top: 82vh;
+        bottom: 0;
+        top: auto;
 
         & sl-alert {
             font-size: 1rem;

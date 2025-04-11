@@ -88,9 +88,13 @@ export const Guestbook:FunctionComponent = function () {
             isOpen=${isHamburgerOpen}
         ><//>
 
-        <${MobileNav} isOpen=${isHamburgerOpen}>
+        <${MobileNav} isOpen=${isHamburgerOpen} onLogout=${logout}>
             ${createLinks(state).map(link => {
-                return html`<a className="app-nav" href="${link.href}">
+                return html`<a
+                    key=${link.text}
+                    className="app-nav"
+                    href="${link.href}"
+                >
                     ${link.text}
                 </a>`
             })}
@@ -119,13 +123,15 @@ export const Guestbook:FunctionComponent = function () {
 
         <${ChildNode} state=${state} params=${params} splats=${splats} />
 
-        ${state.route.value.includes('/about') ?
+        ${(state.route.value.includes('/about') || state.user.value === null) ?
             null :
             html`<footer role="contentinfo">
+                <div>
                 This website was made by${NBSP}<a href="https://nichoth.com/">nichoth</a>
-                ${NBSP}for the${NBSP}<a href="https://innovatebellingham.org/">
+                ${NBSP}for the <a href="https://innovatebellingham.org/">
                 Bellingham meetings</a>. See${NBSP}<a href="/about">the colophon</a>
                 ${NBSP}for more information.
+                </div>
             </footer>`
         }
 

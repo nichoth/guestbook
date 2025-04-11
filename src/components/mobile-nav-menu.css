@@ -3,18 +3,22 @@
     100% { opacity: 0.8; }
 }
 
+@keyframes fade-out {
+    0% { opacity: 0.8; }
+    100% { opacity: 0; }
+}
+
 .mobile-nav-menu {
     display: none;
     position: absolute;
     width: 100vw;
     height: 100vh;
     background-color: black;
-    animation: fade-in var(--fade-in-time, 0.2s);
+    animation: fade-in var(--fade-in-time, 0.4s);
 
     & ul {
         list-style: none;
         align-items: center;
-        margin-bottom: 20vh;
         padding: 0;
         justify-content: center;
         display: flex;
@@ -26,6 +30,20 @@
         
         & li {
             margin: 1.2rem 0;
+        }
+
+        &.controls {
+            color: white;
+
+            & button {
+                border: none;
+                fill: white;
+            }
+
+            & li {
+                display: flex;
+                align-items: center;
+            }
         }
     }
 
@@ -43,7 +61,8 @@
         top: 0;
         left: 0;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        justify-content: space-around;
 
         & .burger {
             & .line {

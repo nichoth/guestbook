@@ -1,5 +1,9 @@
 import { html } from 'htm/preact'
 import type { ComponentChildren, FunctionComponent } from 'preact'
+import {
+    lockBodyScrolling,
+    unlockBodyScrolling
+} from '@substrate-system/util/scroll'
 import { useSignalEffect, type Signal } from '@preact/signals'
 import './hamburger.css'
 
@@ -15,8 +19,10 @@ export const HamburgerWrapper:FunctionComponent<Props> = function (props) {
     useSignalEffect(() => {
         if (!isOpen.value) {
             document.body.classList.remove('hamburging')
+            unlockBodyScrolling(document.body)
         } else {
             document.body.classList.add('hamburging')
+            lockBodyScrolling(document.body)
         }
     })
 

@@ -91,14 +91,11 @@ export function State ():{
      * set the app state to match the browser URL
      */
     onRoute(async (path:string, data) => {
+        state.route.value = path
+
         // handle scroll state like a web browser
         // (restore scroll position on back/forward)
         if (data.popstate) {
-            if (path.includes('#')) {
-                const hash = path.split('#')[1]
-                return scrollToLink('#' + hash)
-            }
-
             return window.scrollTo(data.scrollX, data.scrollY)
         }
 
@@ -211,10 +208,8 @@ State.removeMachine = async function (
     state:ReturnType<typeof State>,
     machine:Machine
 ) {
-    debug('removing this one...', machine)
-
     const res = await ky.delete('/api/machine', {
-        json: { machineId: machine.machineName }
+        json: { machineName: machine.machineName }
     })
 
     state.machines.value = state.machines.value!.filter(m => {
