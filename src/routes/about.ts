@@ -64,15 +64,10 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
                 rel="noopener noreferrer"
                 href="https://innovatebellingham.org/"
             >Bellingham meetings</a> app, we allow anyone who is a member to
-            invite new people. That's one difference. Because this
+            invite new people. Because this
             is designed for the internet in general, only one person is allowed
             to create invitations ${EM_DASH} me. You are trusting that I won't
             give out invitations to spam companies, etc.
-        </p>
-
-        <p>
-            Unfortunately, that means you don't get to see a full demonstration
-            of the invitation process.
         </p>
 
         <h2 id="keys">Keys</h2>
@@ -81,8 +76,7 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
             <a href="https://github.com/bicycle-codes/keys">
                 <code>@bicycle-codes/keys</code>
             </a>, a library that saves a <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
-            set of keys</a> to <code>
-            indexedDB</code> in your browser.
+            set of keys</a> to <code>indexedDB</code> in your browser.
         </p>
 
         <p>
@@ -92,7 +86,7 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
         </p>
 
         <p>
-            The idea is that you have at least one machine that is always${NBSP}
+            The idea is that you have at least one machine that is always
             "logged in". Logged in, in this context, just means that the browser
             has a keypair that is authorized by the server.
         </p>
@@ -116,7 +110,7 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
             Some good news is that there are no passwords in this system.
             You have a set of <a href="https://developer.mozilla.org/en-US/docs/Web/API/CryptoKeyPair">
             keys</a>, which are saved as <a href="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey#extractable">
-            "non-extractable"</a> keypairs in your browser. This eliminates
+            "non-extractable"</a> keypairs in your browser. It eliminates
             a security vector ${EM_DASH} there are no passwords to think about.
         </p>
 
