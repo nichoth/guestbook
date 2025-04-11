@@ -21,12 +21,10 @@ import { getDbString, sanitizeHeader } from '../util.js'
  *   - PATCH method -- redeem a single-use login code that you got via email
  */
 export const handler:Handler = async function handler (ev:HandlerEvent) {
-    let BASE_URL = 'https://bellingham.guestlist.town'
+    let BASE_URL = 'https://guestlist.town'
     const env = process.env.NODE_ENV
     if (env === 'development') {
         BASE_URL = 'http://localhost:8888'
-    } else if (env === 'staging') {
-        BASE_URL = 'https://staging--bellingham-guestbook.netlify.app'
     }
 
     const method = ev.httpMethod
@@ -177,7 +175,7 @@ export const handler:Handler = async function handler (ev:HandlerEvent) {
         //   - add the keys as a new machine record
         //   - delete the login record
 
-        // get the key from the header //
+        /// get the key from the header ///
         const headerString = ev.headers.authorization
         if (!headerString) {
             return { body: 'Need to authenticate', statusCode: 401 }
