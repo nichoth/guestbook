@@ -21,6 +21,11 @@ export const HomeRoute:FunctionComponent<{
             </a>
         </p>
 
+        <p>
+            This started as a simple contact list, but is more interesting
+            as a perspective on web applications in 2025.
+        </p>
+
         <hr />
 
         <${MainPart} state=${state} />

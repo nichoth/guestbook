@@ -66,46 +66,27 @@ export const handler:Handler = async function handler (
     if (ev.httpMethod === 'POST') {
         if (!humanName) return { body: 'Missing human name', statusCode: 422 }
 
-        // update machine record
-        // can only update the human name
-        try {
-            // Lock the row to prevent concurrent modifications
-            const lockResult = await sql`
-                SELECT 1
-                FROM machine
-                WHERE machine_name = ${machineId}
-                FOR UPDATE;
-            `
+        // First validate the request
+        const seqCheckResult = await sql`
+            SELECT check_seq(${machineName}, ${seq}) AS is_valid
+            FROM machine
+            WHERE machine_name = ${machineId};
+        `
 
-            if (lockResult.length === 0) {
-                return {
-                    body: 'Machine not found or not accessible',
-                    statusCode: 404
-                }
-            }
+        if (seqCheckResult.length === 0 || !seqCheckResult[0].is_valid) {
+            return { body: 'Sequence check failed', statusCode: 403 }
+        }
 
-            // Perform the update
-            const result = await sql`
-                UPDATE machine
-                SET human_name = ${humanName}
-                WHERE machine_name = ${machineId}
-                AND EXISTS (
-                    SELECT 1
-                    FROM usr u
-                    JOIN machine m ON u.id = m.machine_owner
-                    WHERE m.machine_name = ${machineId}
-                    AND check_seq(${machineName}, ${seq}) = TRUE
-                )
-                RETURNING machine_name;
-            `
+        // Then update the name
+        const updateResult = await sql`
+            UPDATE machine
+            SET human_name = ${humanName}
+            WHERE machine_name = ${machineId}
+            RETURNING machine_name;
+        `
 
-            if (result.length === 0) {
-                return { body: 'No rows updated', statusCode: 404 }
-            }
-        } catch (err) {
-            console.log('**SQL error**', ev.body)
-            console.log('err', err)
-            return { body: err.message, statusCode: 500 }
+        if (updateResult.length === 0) {
+            return { body: 'No rows updated', statusCode: 404 }
         }
 
         return { statusCode: 204 }
