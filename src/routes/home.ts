@@ -16,21 +16,24 @@ export const HomeRoute:FunctionComponent<{
         </p>
 
         <p>
-            This started as a simple contact list, but is more interesting
-            as a demo of web applications in 2025.
-        </p>
-
-        <hr />
-
-        <p>
             This is a contact list, originally designed for the <a
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://innovatebellingham.org/"
-            >Innovate Bellingham meetings</a>. It demonstrates
+            >Innovate Bellingham meetings</a>. It demonstrates various
             web technologies, notably, the <a href="/about#keys">login system
             </a>, which is nice because there are no passwords.
         </p>
+
+        <p>
+            In the <a href="https://bellingham.guestlist.town/">
+                Bellingham-only version of the app</a>, any member can invite
+            new members. Since this is the internet, though, and not based on
+            people who have met IRL, only I can create invitations. IRL meetings
+            are a good way to create trust.
+        </p>
+
+        <hr />
 
         <${MainPart} state=${state} />
     </div>`
@@ -44,16 +47,6 @@ function MainPart ({ state }:{ state:ReturnType<typeof State> }) {
 
     if (!state.user.value) {  // false means this machine is not authorized
         return html`
-            <p>
-                This is a contact list for the <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://innovatebellingham.org/"
-                >Innovate Bellingham</a> meeting. It is only visible to other
-                members of the group. To join, you must be invited by
-                a member.
-            </p>
-
             <p>
                 Are you a member? <a href="/link">
                     Link this device to your existing account</a>.

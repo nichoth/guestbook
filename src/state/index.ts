@@ -368,10 +368,8 @@ State.fetchMyInvitations = async function (
     state:ReturnType<typeof State>
 ) {
     when(state.user, async () => {
-        debug('**fetching invitations**')
         try {
             const invs = await ky.get('/api/invitation').json<Invitation[]>()
-            debug('**got my invitations**', invs)
             state.myInvitations.value = invs && invs.length ? invs : false
         } catch (_err) {
             const err = _err as HTTPError

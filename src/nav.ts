@@ -35,7 +35,11 @@ export function createLinks (state:ReturnType<typeof State>) {
         { href: '/', text: 'Index' },
         state.user.value ? { href: '/list', text: 'The List' } : null,
         state.user.value ? { href: '/link', text: 'Add a device' } : null,
-        state.user.value ? { href: '/invitations', text: 'Invitations' } : null,
+        // only I can create invitations in the internet guestbook
+        ((state.user.value && state.user.value.email === 'nichoth@nichoth.com') ?
+            { href: '/invitations', text: 'Invitations' } :
+            null
+        ),
         state.user.value ? { href: '/whoami', text: 'Who am I?' } : null,
         { href: '/about', text: 'Colophon' }
     ].filter(Boolean)
