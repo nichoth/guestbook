@@ -50,6 +50,13 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
             my own</a>.
         </p>
 
+        <h2 id="source-code">Source Code</h2>
+        <p>
+            In the spirit of sharing everything, you can view the source code
+            for this website: <a href="https://github.com/nichoth/guestbook">
+                github.com/nichoth/guestbook</a>
+        </p>
+
         <h2 id="identity">Identity</h2>
         <p>
             This site has a concept of <em>who you are</em>, which we use
