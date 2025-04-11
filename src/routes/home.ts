@@ -27,7 +27,7 @@ export const HomeRoute:FunctionComponent<{
                 target="_blank"
                 rel="noopener noreferrer"
                 href="https://innovatebellingham.org/"
-            >Innovate Bellingham meetings</a>. It is a demonstration of various
+            >Innovate Bellingham meetings</a>. It demonstrates
             web technologies, notably, the <a href="/about#keys">login system
             </a>, which is nice because there are no passwords.
         </p>
