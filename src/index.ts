@@ -104,7 +104,7 @@ export const Guestbook:FunctionComponent = function () {
             <div>
                 <h1>
                     <a href="/">
-                        Bellingham Guestlist
+                        Guestlist
                     </a>
                 </h1>
 

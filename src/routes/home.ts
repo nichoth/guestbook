@@ -17,7 +17,7 @@ export const HomeRoute:FunctionComponent<{
 
         <p>
             This started as a simple contact list, but is more interesting
-            as a perspective on web applications in 2025.
+            as a demo of web applications in 2025.
         </p>
 
         <hr />
