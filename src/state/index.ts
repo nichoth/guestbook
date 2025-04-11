@@ -529,21 +529,16 @@ State.createInvitation = async function (state:ReturnType<typeof State>, {
     note,
     uses
 }:{ note?:string, uses:number }) {
-    try {
-        const inv = await ky.post('/api/invitation', {
-            json: {
-                note,
-                uses
-            }
-        }).json<Invitation>()
+    const inv = await ky.post('/api/invitation', {
+        json: {
+            note,
+            uses
+        }
+    }).json<Invitation>()
 
-        debug('called the api, created this invitation::', inv)
+    debug('called the api, created this invitation:: ', inv)
 
-        state.myInvitations.value = (state.myInvitations.value || []).concat([inv])
-    } catch (_err) {
-        const err = _err as HTTPError
-        debug('error creating the invitation...', await err.response.text())
-    }
+    state.myInvitations.value = (state.myInvitations.value || []).concat([inv])
 }
 
 State.loginWithCode = async function (

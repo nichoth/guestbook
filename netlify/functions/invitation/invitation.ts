@@ -352,7 +352,7 @@ export const handler:Handler = async function handler (
 
         const headerString = ev.headers.authorization
         if (!headerString) {
-            return { body: 'Need to authenticate', statusCode: 401 }
+            return { body: 'No header; need to authenticate.', statusCode: 401 }
         }
 
         const parsedHeader:ParsedHeader = parseHeader(headerString)
@@ -398,10 +398,10 @@ export const handler:Handler = async function handler (
                         u.email AS creator,
                         ${note} AS note
                     FROM machine m
-                    JOIN usr u ON u.email = m.machine_owner
+                    JOIN usr u ON u.id = m.machine_owner
                     WHERE m.machine_name = ${machineName}
                         AND (SELECT seq_valid FROM seq_check)
-                    RETURNING *
+                    RETURNING id, remaining, initial, creator, note
                 )
                 SELECT * FROM new_invitation;
             `
