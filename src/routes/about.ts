@@ -54,7 +54,7 @@ export const AboutRoute:FunctionComponent<{ state, splats }> = function (_props)
         <p>
             In the spirit of sharing everything, you can view the source code
             for this website: <a href="https://github.com/nichoth/guestbook">
-                github.com/nichoth/guestbook</a>
+                github.com/nichoth/guestbook</a>.
         </p>
 
         <h2 id="identity">Identity</h2>
