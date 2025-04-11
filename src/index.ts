@@ -101,11 +101,22 @@ export const Guestbook:FunctionComponent = function () {
         <//>
 
         <header>
-            <h1>
-                <a href="/">
-                    Guestbook
-                </a>
-            </h1>
+            <div>
+                <h1>
+                    <a href="/">
+                        Bellingham Guestlist
+                    </a>
+                </h1>
+
+                ${state.user.value ?
+                    html`
+                        <sl-tooltip content="Logout">
+                            <${BtnLogout} onClick=${logout} />
+                        </sl-tooltip>
+                    ` :
+                    null
+                }
+            </div>
 
             <${Nav} state=${state} />
         </header>
