@@ -1,6 +1,7 @@
 # Internet Guestbook
 
-A contact list, as a demonstration of various web technologies.
+A contact list, as a demonstration of various web technologies:
+
 
 * [Single-page application](https://developer.mozilla.org/en-US/docs/Glossary/SPA)
 * view library -- [preact](https://preactjs.com/)
@@ -9,6 +10,7 @@ A contact list, as a demonstration of various web technologies.
 * web components -- [shoelace](https://shoelace.style/), [@substrate-system](https://github.com/substrate-system/)
 * "serverless" SQL -- [Neon DB](https://neon.tech/)
 * "serverless" websockets -- [Partykit](https://www.partykit.io/)
+* [lambda functions](https://www.netlify.com/platform/core/functions/)
 
 
 ## develop
