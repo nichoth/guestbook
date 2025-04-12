@@ -12,6 +12,7 @@ A contact list, as a demonstration of various web technologies:
 * "serverless" websockets -- [Partykit](https://www.partykit.io/)
 * [lambda functions](https://www.netlify.com/platform/core/functions/)
 
+See [the /about page for more](https://guestlist.town/about)
 
 ## develop
 
