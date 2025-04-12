@@ -2,6 +2,14 @@
 
 A contact list, as a demonstration of various web technologies.
 
+* [Single-page application](https://developer.mozilla.org/en-US/docs/Glossary/SPA)
+* view library -- [preact](https://preactjs.com/)
+* state machine -- [signals](https://preactjs.com/guide/v10/signals/)
+* input validation -- [zod](https://zod.dev/)
+* web components -- [shoelace](https://shoelace.style/)
+* "serverless" SQL -- [Neon DB](https://neon.tech/)
+* "serverless" websockets -- [Partykit](https://www.partykit.io/)
+
 ## develop
 
 Start a local lambda function server, frontend server, and websocket server.
