@@ -6,9 +6,10 @@ A contact list, as a demonstration of various web technologies.
 * view library -- [preact](https://preactjs.com/)
 * state machine -- [signals](https://preactjs.com/guide/v10/signals/)
 * input validation -- [zod](https://zod.dev/)
-* web components -- [shoelace](https://shoelace.style/)
+* web components -- [shoelace](https://shoelace.style/), [@substrate-system](https://github.com/substrate-system/)
 * "serverless" SQL -- [Neon DB](https://neon.tech/)
 * "serverless" websockets -- [Partykit](https://www.partykit.io/)
+
 
 ## develop
 
