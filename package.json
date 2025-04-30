@@ -43,7 +43,7 @@
     "@substrate-system/util": "^0.1.27",
     "htm": "^3.1.1",
     "ky": "^1.7.4",
-    "luxon": "^3.5.0",
+    "luxon": "^3.6.1",
     "marked": "^15.0.7",
     "partyserver": "^0.0.66",
     "partysocket": "1.0.3",
