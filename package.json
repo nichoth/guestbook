@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.8.22",
-    "@cloudflare/workers-types": "^4.20250321.0",
+    "@cloudflare/workers-types": "^4.20250506.0",
     "@netlify/functions": "^3.0.1",
     "@substrate-system/debug": "^0.7.22",
     "@substrate-system/tapzero": "^0.10.13",
