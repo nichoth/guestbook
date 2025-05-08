@@ -71,7 +71,7 @@
     "concurrently": "^9.0.1",
     "cssnano": "^7.0.6",
     "dotenv": "^16.4.7",
-    "esbuild": "^0.25.3",
+    "esbuild": "^0.25.4",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "netlify-cli": "^20.1.1",
