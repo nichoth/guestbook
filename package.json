@@ -75,7 +75,7 @@
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "netlify-cli": "^21.3.0",
-    "partykit": "0.0.111",
+    "partykit": "0.0.114",
     "postcss-nesting": "^13.0.1",
     "prisma": "^6.5.0",
     "stylelint-config-standard": "^37.0.0",
