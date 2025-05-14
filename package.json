@@ -61,7 +61,7 @@
     "@cloudflare/workers-types": "^4.20250507.0",
     "@netlify/functions": "^3.0.1",
     "@substrate-system/debug": "^0.7.22",
-    "@substrate-system/tapzero": "^0.10.13",
+    "@substrate-system/tapzero": "^0.10.15",
     "@substrate-system/wait-on": "^8.0.3",
     "@substrate-system/web-component": "^0.0.14",
     "@types/pg": "^8.11.11",
