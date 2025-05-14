@@ -51,7 +51,7 @@
     "preact-markup": "^2.1.1",
     "resend": "^4.2.0",
     "route-event": "^6.0.9",
-    "stylelint": "^16.16.0",
+    "stylelint": "^16.19.1",
     "uuid": "^11.1.0",
     "vite-plugin-static-copy": "^2.3.0",
     "zod": "^3.24.4"
