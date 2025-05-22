@@ -33,7 +33,7 @@
     "@preact/signals": "^2.0.0",
     "@shoelace-style/shoelace": "^2.20.1",
     "@sindresorhus/slugify": "^2.2.1",
-    "@substrate-system/a11y": "^0.0.5",
+    "@substrate-system/a11y": "^0.0.11",
     "@substrate-system/anchor": "^0.0.4",
     "@substrate-system/copy-button": "^0.5.6",
     "@substrate-system/css-normalize": "^0.0.7",
