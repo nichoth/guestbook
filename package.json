@@ -28,7 +28,7 @@
     "@nichoth/components": "^0.16.17",
     "@nichoth/nanoid": "^5.0.8",
     "@nichoth/nanoid-dictionary": "^5.0.7",
-    "@octokit/core": "^6.1.4",
+    "@octokit/core": "^7.0.3",
     "@preact/preset-vite": "^2.10.1",
     "@preact/signals": "^2.3.1",
     "@shoelace-style/shoelace": "^2.20.1",
