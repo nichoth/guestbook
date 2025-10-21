@@ -82,7 +82,7 @@
     "tap-spec": "^5.0.0",
     "tape-run": "^11.0.0",
     "typescript": "^5.9.2",
-    "vite": "^6.3.6",
+    "vite": "^7.1.11",
     "wrangler": "^4.13.2"
   },
   "author": "nichoth <nichoth@nichoth.com> (https://nichoth.com)"
